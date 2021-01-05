@@ -7,6 +7,9 @@ from utils.http_helper import hp
 from utils.tools import gen_table
 from sf.module.sctp import sctp_config, sctp_stat
 from sw.intf.interface import intf_stat_sw
+from sf.acl.acl import acl
+from sf.action.action import action
+
 
 
 def dev_op(ctx, args, incomplete):

@@ -5,11 +5,10 @@ from utils.http_helper import hp
 from utils.tools import gen_table
 
 def acl_imsi_operation(ctx, args, incomplete):
-    colors = [('show', 'show config'),
-              ('enable', 'enable feature'), 
-              ('disable', 'disble config'),
-              ('timeout', 'set timeout')]
-    return [c for c in colors if incomplete in c[0]]
+    op = [('show', 'show acl'),
+              ('create', 'create acl'), 
+              ('delete', 'delete acl')]
+    return [c for c in op if c[0].startswith(incomplete)]
 
 def config_field(ctx, args, incomplete):
     field = [  ('acl_imsi_decode', 'acl_imsi_decode_enable'),
@@ -35,7 +34,7 @@ def config_value(ctx, args, incomplete):
 @click.argument("op", type=click.STRING, autocompletion=acl_imsi_operation)
 @click.argument("field", type=click.STRING, autocompletion=config_field, required=False)
 @click.argument("value", type=click.STRING, autocompletion=config_value, required=False)
-def acl_imsi_config(op, field=None, value =None):
+def acl(op, field=None, value =None):
     if op == 'show':
         data = hp.cpu_get('acl/config/group_1')
         print(gen_table(data,))
@@ -46,6 +45,7 @@ def acl_imsi_config(op, field=None, value =None):
         op_data = []
         data = hp.cpu_put('acl_imsi/stat', )
         print(gen_table(data, tab="code"))
+
 
 # def acl_imsi_stat_operation(ctx, args, incomplete):
 #     colors = [('show', 'show stat'),
