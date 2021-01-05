@@ -1,4 +1,7 @@
+import os
+import pickle
 import requests
+import time
 from json import dumps
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -20,31 +23,35 @@ class Http:
         self.login_url = self.base_url+ "login"
         self.session  = requests.Session()
         self.timeout = 10
-        ret = self.login()
+        ret = self.login_may_use_cookie()
         if ret[0] not in [200, 201]:
             print("login failed", ret)
         # print("login", ret)
 
-    def login(self):
+    def login_may_use_cookie(self, diff_time=7190):# diff_time 2h-10s
+        cookie = "/tmp/cookie_"+self.addr.replace(":","_")
+        if os.path.isfile(cookie) :
+            diff_time = time.time()- os.path.getmtime(cookie)
+            if diff_time < 7190:
+                with open(cookie,"rb") as cke:
+                    self.session.cookies = pickle.load(cke)
+            else:
+                self.session.post(self.login_url, 
+                    timeout=self.timeout, data=self.auth,verify=False)
+        else:
+            self.session.post(self.login_url, 
+                timeout=self.timeout, data=self.auth,verify=False)
+        if self.session.cookies:  #refash cookie
+            if diff_time >= 7190:
+                with open(cookie,"wb") as cke:
+                    pickle.dump(self.session.cookies,cke)
+            return [201]
+        else:
+            return [400]
+
+    def get(self , short_url): 
         try:
-            #if cookie valid, avoid login  duplicate
-
-            response = self.session.post(self.login_url, timeout=self.timeout, verify=False, data=self.auth)
-            if response.status_code in [200, 201]:
-                #save_cookie
-            return [response.status_code, STATUS[response.status_code][-1]]
-        except requests.exceptions.Timeout:
-            return [response.status_code , ]
-        except requests.exceptions.ConnectionError:
-            return [response.status_code ,]
-        except requests.exceptions.HTTPError:
-            return [response.status_code]
-
-
-    def get(self, short_url): 
-        try:
-            url = self.base_url + short_url
-            response = self.session.get(url=url, timeout=self.timeout,verify=False)
+            response = self.session.get(url = self.base_url + short_url, timeout = self.timeout,verify=False)
             # response.raise_for_status()
             return [response.status_code, self.addr, response.json()]
         except requests.exceptions.Timeout:
@@ -53,20 +60,6 @@ class Http:
             return [response.status_code ,"Connection impassability!"]
         except requests.exceptions.HTTPError:
             return [response.status_code]
-
-
-    def rest_post(self):
-        try:
-            response = self.session.post(url = self.sfurl, timeout = self.timeout, json = self.sfdata,  verify=False)
-            return [response.status_code , response.text]
-        except requests.exceptions.Timeout:
-            return [response.status_code , "Timeout!"]
-        except requests.exceptions.ConnectionError:
-            return [response.status_code ,"Connection impassability!"]
-        except requests.exceptions.HTTPError:
-            return [response.status_code]
-        #finally:
-        #    return response.status_code
 
     def rest_delete(self):
         try:

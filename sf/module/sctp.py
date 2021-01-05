@@ -49,6 +49,7 @@ def sctp_stat_filter(ctx, args, incomplete):
 @click.argument("filter", type=click.STRING, autocompletion=sctp_stat_filter, required=False)
 def sctp_stat(op, filter):
     if op == 'show':
+        print("get data ing...")
         data = hp.cpu_get('sctp/stat')
         print(gen_table(data, tab="count", filter=filter))
     elif op == 'clean':

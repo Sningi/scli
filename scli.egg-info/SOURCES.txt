@@ -1,3 +1,4 @@
+README.md
 scli.py
 setup.py
 scli.egg-info/PKG-INFO
