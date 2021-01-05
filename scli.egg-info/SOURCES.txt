@@ -1,9 +1,0 @@
-README.md
-scli.py
-setup.py
-scli.egg-info/PKG-INFO
-scli.egg-info/SOURCES.txt
-scli.egg-info/dependency_links.txt
-scli.egg-info/entry_points.txt
-scli.egg-info/requires.txt
-scli.egg-info/top_level.txt
