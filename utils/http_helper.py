@@ -10,19 +10,21 @@ from utils.http_code import STATUS
 from config import Config
 
 class Http:
-    timeout = 5
+    timeout = 10
 
     def __init__(self, uname, pwd, addr , restv):
         self.addr = addr
         self.base_url = "https://" + addr + restv
         if pwd == "Passok":
+            """sw"""
             self.auth =dumps({'username': uname,'password':pwd})
+            self.login_url = "https://" + addr+ "/login"
         else:
+            """cpu"""
             self.auth ={'username': uname,'password':pwd}
+            self.login_url = "https://" + addr + restv + "login"
 
-        self.login_url = self.base_url+ "login"
         self.session  = requests.Session()
-        self.timeout = 10
         ret = self.login_may_use_cookie()
         if ret[0] not in [200, 201]:
             print("login failed", ret)
@@ -49,10 +51,9 @@ class Http:
         else:
             return [400]
 
-    def get(self , short_url): 
+    def get(self, short_url): 
         try:
-            response = self.session.get(url = self.base_url + short_url, timeout = self.timeout,verify=False)
-            # response.raise_for_status()
+            response = self.session.get(url=self.base_url + short_url, timeout=self.timeout, verify=False)
             return [response.status_code, self.addr, response.json()]
         except requests.exceptions.Timeout:
             return [response.status_code , "Timeout!"]
@@ -61,9 +62,20 @@ class Http:
         except requests.exceptions.HTTPError:
             return [response.status_code]
 
-    def rest_delete(self):
+    def post(self, short_url, data): 
         try:
-            response = self.session.delete(url = self.sfurl, timeout = self.timeout, params = self.sfparams,verify=False)
+            response = self.session.get(url=self.base_url + short_url, json=data, timeout=self.timeout, verify=False)
+            return [response.status_code, self.addr, response.json()]
+        except requests.exceptions.Timeout:
+            return [response.status_code , "Timeout!"]
+        except requests.exceptions.ConnectionError:
+            return [response.status_code ,"Connection impassability!"]
+        except requests.exceptions.HTTPError:
+            return [response.status_code]
+
+    def delete(self, short_url):
+        try:
+            response = self.session.delete(url=self.base_url + short_url, timeout=self.timeout, verify=False)
             # response.raise_for_status()
             return [response.status_code , response.text]
         except requests.exceptions.Timeout:
@@ -73,7 +85,7 @@ class Http:
         except requests.exceptions.HTTPError:
             return [response.status_code]
 
-    def rest_put(self):
+    def put(self, short_url, data):
         try:
             response = self.session.put(url = self.sfurl, json = self.sfdata, timeout = self.timeout, verify=False)
             # response.raise_for_status()
@@ -99,17 +111,6 @@ class Http:
         finally:
             return [response.status_code, self.addr, response.status_code]
 
-    def rest_get_cookie(self):
-        try:
-            response = self.session.post(self.SF_login, timeout = self.timeout, verify=False, data= self.auth)
-            return [response.status_code ,response.cookies.items()]
-        except requests.exceptions.Timeout:
-            return [response.status_code , "Timeout!"]
-        except requests.exceptions.ConnectionError:
-            return [response.status_code ,"Connection impassability!"]
-        except requests.exceptions.HTTPError:
-            return [response.status_code]
-
 class Helper:
 
     @classmethod
@@ -127,7 +128,8 @@ class Helper:
         return data
 
     def cpu_put(self, url, data):
-        pass
+        data = [rest.get(url) for rest in self.cpus]
+        return data
 
     def cpu_post(self, url, data):
         pass
@@ -140,7 +142,8 @@ class Helper:
         pass
 
     def sw_get(self, url):
-        pass
+        data = [rest.get(url) for rest in self.sws]
+        return data
 
     def sw_put(self, url, data):
         pass
