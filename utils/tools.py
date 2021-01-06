@@ -2,8 +2,8 @@ from json import dumps
 from prettytable import PrettyTable
 from utils.http_code import STATUS
 
-INTF_MAP = dict((["X%d"%i, i] for i in range(1, 49)))
-temp = dict((["C%d"% (i-48), i] for i in range(49, 55)))
+INTF_MAP = dict((["X%d"%i, i] for i in range(1, 73)))
+temp = dict((["C%d"% (i-72), i] for i in range(73, 79)))
 for key in temp:
     INTF_MAP[key]= temp[key]
 INTF_MAP_REST = dict(([INTF_MAP[k], k] for k in INTF_MAP))
@@ -40,7 +40,7 @@ def gen_table_intf(data, tab="item",filter=None):
     if not isinstance(data, list) or len(data)<1:
         return
     tb = PrettyTable()
-    ports = [(list(item[2].keys())[0]) for item in data]
+    ports = [(list(item[2].keys())[0]) for item in data if item[2]]
     tb.field_names = [tab, *expect]
     tb.align[tab] = "l"
     for portinfo in data:
@@ -51,7 +51,7 @@ def gen_table_intf(data, tab="item",filter=None):
                     row = [port,*portstat]
                     tb.add_row(row)
                 else:
-                    print(filter, "filter error")
+                    pass
         else:
             row = [tab, *[ item[2] for item in data] ]
             tb.add_row(row)

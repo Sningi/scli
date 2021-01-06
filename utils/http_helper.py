@@ -30,8 +30,12 @@ class Http:
             print("login failed", ret)
         # print("login", ret)
 
-    def login_may_use_cookie(self, diff_time=7190):# diff_time 2h-10s
+    def login_may_use_cookie(self, clear_cookie=False, diff_time=7190):# diff_time 2h-10s
         cookie = "/tmp/cookie_"+self.addr.replace(":","_")
+        if clear_cookie and os.path.isfile(cookie):
+            #cookie is invalid
+            os.remove(cookie)
+
         if os.path.isfile(cookie) :
             diff_time = time.time()- os.path.getmtime(cookie)
             if diff_time < 7190:
@@ -54,6 +58,9 @@ class Http:
     def get(self, short_url): 
         try:
             response = self.session.get(url=self.base_url + short_url, timeout=self.timeout, verify=False)
+            if response.status_code == 401:
+                self.login_may_use_cookie(clear_cookie=True)
+                return self.get(short_url)
             return [response.status_code, self.addr, response.json()]
         except requests.exceptions.Timeout:
             return [response.status_code , "Timeout!"]
@@ -61,10 +68,17 @@ class Http:
             return [response.status_code ,"Connection impassability!"]
         except requests.exceptions.HTTPError:
             return [response.status_code]
+        except Exception as e:
+            print("error :",e)
+            print(response.status_code)
+            print(response.content)
 
     def post(self, short_url, data): 
         try:
             response = self.session.get(url=self.base_url + short_url, json=data, timeout=self.timeout, verify=False)
+            if response.status_code == 401:
+                self.login_may_use_cookie(clear_cookie=True)
+                return self.post(short_url, data)
             return [response.status_code, self.addr, response.json()]
         except requests.exceptions.Timeout:
             return [response.status_code , "Timeout!"]
@@ -75,8 +89,10 @@ class Http:
 
     def delete(self, short_url):
         try:
-            response = self.session.delete(url=self.base_url + short_url, timeout=self.timeout, verify=False)
-            # response.raise_for_status()
+            response = self.session.delete(url=self.base_url+short_url, timeout=self.timeout, verify=False)
+            if response.status_code == 401:
+                self.login_may_use_cookie(clear_cookie=True)
+                return self.delete(short_url)
             return [response.status_code , response.text]
         except requests.exceptions.Timeout:
             return [response.status_code , "Timeout!"]
@@ -87,8 +103,11 @@ class Http:
 
     def put(self, short_url, data):
         try:
-            response = self.session.put(url = self.sfurl, json = self.sfdata, timeout = self.timeout, verify=False)
-            # response.raise_for_status()
+            response = self.session.put(url=self.base_url+short_url, json=dumps(data), timeout=self.timeout, verify=False)
+            if response.status_code == 401:
+                self.login_may_use_cookie(clear_cookie=True)
+                return self.put(short_url, data)
+            return [response.status_code, self.addr, response.text]
         except requests.exceptions.Timeout:
             return [response.status_code , "Timeout!"]
         except requests.exceptions.ConnectionError:
@@ -102,6 +121,10 @@ class Http:
         try:
             url = self.base_url + short_url
             response = self.session.patch(url=url, json=data, timeout=self.timeout, verify=False)
+            if response.status_code == 401:
+                self.login_may_use_cookie(clear_cookie=True)
+                return self.patch(short_url, data)
+            return [response.status_code,self.addr, response.text]
         except requests.exceptions.Timeout:
             return [response.status_code , "Timeout!"]
         except requests.exceptions.ConnectionError:
@@ -128,11 +151,12 @@ class Helper:
         return data
 
     def cpu_put(self, url, data):
-        data = [rest.get(url) for rest in self.cpus]
+        data = [rest.put(url,data) for rest in self.cpus]
         return data
 
     def cpu_post(self, url, data):
-        pass
+        data = [rest.post(url,data) for rest in self.cpus]
+        return data
 
     def cpu_patch(self, url, data):
         data = [rest.patch(url, data) for rest in self.cpus]
