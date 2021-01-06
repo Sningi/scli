@@ -25,10 +25,10 @@ def sw_intfs(ctx, args, incomplete):
             if isinstance(d[2],list):
                 for item in d[2]:
                     intfs.add(item.split('/')[-1])
-        return [i for i in intfs if incomplete in i]
+        return [i for i in intfs if incomplete in i]#.append(("all", "all port"))
         
     except Exception as e:
-        print("\nget sw interface error:",e)
+        click.echo("\nget sw interface error:{0}".format(e))
         exit()
 
 @cli.command()
@@ -40,7 +40,7 @@ def intf_stat_sw(op, intf, filter=None):
     if "-" in intf:
         intfs = intf.split("-")
         if len(intfs)<2 or intfs[0] not in INTF_MAP or intfs[-1] not in INTF_MAP:
-            print("PORT INDEX ERROR")
+            click.echo("PORT INDEX ERROR")
             exit()
         for i in range(INTF_MAP[intfs[0]], INTF_MAP[intfs[-1]]+1):
             restid.append(INTF_MAP_REST[i])
@@ -52,7 +52,7 @@ def intf_stat_sw(op, intf, filter=None):
     elif intf in INTF_MAP:
         restid.append(intf)
     if not restid:
-        print("PORT INDEX ERROR")
+        click.echo("PORT INDEX ERROR")
         exit()
     if op == 'show':
         for sw in hp.sws:
@@ -64,7 +64,10 @@ def intf_stat_sw(op, intf, filter=None):
                 temp = [sw.get(surl)]
                 for i in temp:
                     data.append(i)
-            print(gen_table_intf(data, tab=sw.addr, filter=filter))
+            tb = gen_table_intf(data, tab=sw.addr, filter=filter)
+            click.echo(click.style(str(tb), fg='green',))
     elif op == 'clean':
-        data = hp.cpu_patch('sctp/stat', clean_data)
-        print(gen_table_intf(data, tab="code"))
+        for idx in restid:
+            op_data = [{"op": "remove", "path": "/statistics"}]
+            data = hp.sw_patch('interfaces/{0}'.format(idx),op_data)
+            click.echo(gen_table(data, tab=idx))

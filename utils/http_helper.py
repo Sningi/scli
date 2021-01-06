@@ -27,7 +27,7 @@ class Http:
         self.session  = requests.Session()
         ret = self.login_may_use_cookie()
         if ret[0] not in [200, 201]:
-            print("login failed", ret)
+            print("{0} login failed ".format(self.addr), ret)
         # print("login", ret)
 
     def login_may_use_cookie(self, clear_cookie=False, diff_time=7190):# diff_time 2h-10s
@@ -42,11 +42,17 @@ class Http:
                 with open(cookie,"rb") as cke:
                     self.session.cookies = pickle.load(cke)
             else:
+                try:
+                    self.session.post(self.login_url, 
+                        timeout=self.timeout, data=self.auth,verify=False)
+                except Exception as e:
+                    print("login {0} failed", self.addr)
+        else:
+            try:
                 self.session.post(self.login_url, 
                     timeout=self.timeout, data=self.auth,verify=False)
-        else:
-            self.session.post(self.login_url, 
-                timeout=self.timeout, data=self.auth,verify=False)
+            except Exception as e:
+                print("login {0} failed".format(self.addr))  
         if self.session.cookies:  #refash cookie
             if diff_time >= 7190:
                 with open(cookie,"wb") as cke:
@@ -55,17 +61,20 @@ class Http:
         else:
             return [400]
 
-    def get(self, short_url): 
+    def get(self, short_url, loop=0):
+        loop += 1
+        if loop > 5:
+            return ["error",self.addr,"Connection impassability!"]
         try:
             response = self.session.get(url=self.base_url + short_url, timeout=self.timeout, verify=False)
             if response.status_code == 401:
                 self.login_may_use_cookie(clear_cookie=True)
-                return self.get(short_url)
+                return self.get(short_url,loop)
             return [response.status_code, self.addr, response.json()]
         except requests.exceptions.Timeout:
             return [response.status_code , "Timeout!"]
         except requests.exceptions.ConnectionError:
-            return [response.status_code ,"Connection impassability!"]
+            return ["error",self.addr,"Connection impassability!"]
         except requests.exceptions.HTTPError:
             return [response.status_code]
         except Exception as e:
@@ -124,7 +133,7 @@ class Http:
             if response.status_code == 401:
                 self.login_may_use_cookie(clear_cookie=True)
                 return self.patch(short_url, data)
-            return [response.status_code,self.addr, response.text]
+            return [response.status_code, self.addr, response.json()]
         except requests.exceptions.Timeout:
             return [response.status_code , "Timeout!"]
         except requests.exceptions.ConnectionError:
@@ -176,7 +185,8 @@ class Helper:
         pass
 
     def sw_patch(self, url, data):
-        pass
+        data = [rest.patch(url, data) for rest in self.sws]
+        return data
 
     def sw_delete(self, url, data):
         pass
