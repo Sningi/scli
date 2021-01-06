@@ -181,8 +181,33 @@ class Helper:
     def sw_delete(self, url, data):
         pass
 
+def helper_may_use_cache(config):
 
-hp = Helper(Config)
+    def create_helper():
+        hp = Helper(config)
+        with open(helper_cache,"wb") as hpc:
+                pickle.dump(hp,hpc)
+        return hp
+    
+    helper_cache = "/tmp/scli_helper"
+    if os.path.isfile(helper_cache):
+        diff_time = os.path.getmtime("./config.py") - os.path.getmtime(helper_cache) 
+        if diff_time < 0:
+            with open(helper_cache,"rb") as hpc:
+                return pickle.load(hpc)
+        else:
+            return create_helper()
+    else:
+        return create_helper()
 
+hp = helper_may_use_cache(Config)
+
+# import timeit
+# def f1():
+#     hp = helper_may_use_cache(Config)
+# def f2():
+#     hp = Helper(Config)
+# print(timeit.repeat(stmt=f1,setup="from utils.http_helper import f1",number=100))
+# print(timeit.repeat(stmt=f2,setup="from utils.http_helper import f2",number=100))
 
 
