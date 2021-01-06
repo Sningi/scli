@@ -10,7 +10,7 @@ from utils.http_code import STATUS
 from config import Config
 
 class Http:
-    timeout = 10
+    timeout = 15
 
     def __init__(self, uname, pwd, addr , restv):
         self.addr = addr
@@ -129,19 +129,20 @@ class Http:
     def patch(self, short_url, data):
         try:
             url = self.base_url + short_url
-            response = self.session.patch(url=url, json=data, timeout=self.timeout, verify=False)
+            response = self.session.patch(url=url, data=dumps(data), timeout=self.timeout, verify=False)
             if response.status_code == 401:
                 self.login_may_use_cookie(clear_cookie=True)
                 return self.patch(short_url, data)
-            return [response.status_code, self.addr, response.json()]
+            data = [response.status_code, self.addr, response.status_code]
+            return data
         except requests.exceptions.Timeout:
             return [response.status_code , "Timeout!"]
         except requests.exceptions.ConnectionError:
             return [response.status_code ,"Connection impassability!"]
         except requests.exceptions.HTTPError:
             return [response.status_code]
-        finally:
-            return [response.status_code, self.addr, response.status_code]
+        except Exception as e:
+            print(e)
 
 class Helper:
 

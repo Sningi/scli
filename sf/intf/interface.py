@@ -2,11 +2,12 @@ import click
 
 from base import cli, clean_data
 from utils.http_helper import hp
-from utils.tools import gen_table, gen_table_intf_cpu, INTF_CPU_MAP,INTF_CPU_MAP_REST
+from utils.tools import *
 
 def cpu_intf_op(ctx, args, incomplete):
     comp = [('show', 'show stat'),
-              ('clean', 'clean stat')]
+              ('clean', 'clean stat'),
+              ('set', 'set config')]
     return [c for c in comp if incomplete in c[0]]
 
 
@@ -37,22 +38,9 @@ def cpu_intfs(ctx, args, incomplete):
 @click.argument("op", type=click.STRING, autocompletion=cpu_intf_op)
 @click.argument("intf", type=click.STRING, autocompletion=cpu_intfs)
 @click.argument("filter", type=click.STRING, autocompletion=cpu_intf_filter)
-def intf_stat_cpu(op, intf, filter=None):
-    restid = []
-    if "-" in intf:
-        intfs = intf.split("-")
-        if len(intfs)<2 or intfs[0] not in INTF_CPU_MAP or intfs[-1] not in INTF_CPU_MAP:
-            click.echo("PORT INDEX ERROR")
-            exit()
-        for i in range(INTF_CPU_MAP[intfs[0]], INTF_CPU_MAP[intfs[-1]]+1):
-            restid.append(INTF_CPU_MAP_REST[i])
-    elif ',' in intf:
-        intfs = intf.split(",")
-        for i in intfs:
-            if i in INTF_CPU_MAP:
-                restid.append(i)
-    elif intf in INTF_CPU_MAP:
-        restid.append(intf)
+@click.argument("value", type=click.STRING, autocompletion=cpu_intf_filter, required=False)
+def intf_cfg_cpu(op, intf, filter=None, value=None):
+    restid = gen_intfs_cpu(intf)
     if not restid:
         click.echo("PORT INDEX ERROR")
         exit()
@@ -67,5 +55,13 @@ def intf_stat_cpu(op, intf, filter=None):
             tb = gen_table_intf_cpu(data, cpu.addr, filter=filter)
             click.echo(click.style(str(tb), fg='green'))
     elif op == 'clean':
-        data = hp.cpu_patch('interfaces/config/', clean_data)
+        data = hp.cpu_patch('interfaces/config', clean_data)
+        click.echo(gen_table(data, tab="code"))
+    elif op == "set":
+        plist = gen_intfs_sw(value)
+        op_data = []
+        for idx in restid:
+            cfg = {"op": "replace", "path": "/{0}/{1}".format(idx,filter), "value": plist}
+            op_data.append(cfg)
+        data = hp.cpu_patch('interfaces/config', op_data)
         click.echo(gen_table(data, tab="code"))

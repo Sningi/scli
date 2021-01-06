@@ -7,7 +7,8 @@ from utils.http_helper import hp
 from utils.tools import gen_table
 from sf.module.sctp import sctp_config, sctp_stat
 from sf.module.http2 import http2_config, http2_stat
-from sf.intf.interface import intf_stat_cpu
+from sf.module.ip_reass import ipreass_config, ipreass_stat
+from sf.intf.interface import intf_cfg_cpu
 from sf.acl.acl import acl
 from sf.action.action import action
 from sw.intf.interface import intf_stat_sw
