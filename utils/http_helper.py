@@ -84,11 +84,14 @@ class Http:
 
     def post(self, short_url, data): 
         try:
-            response = self.session.get(url=self.base_url + short_url, json=data, timeout=self.timeout, verify=False)
+            response = self.session.post(url=self.base_url + short_url, data=dumps(data), timeout=self.timeout, verify=False)
             if response.status_code == 401:
                 self.login_may_use_cookie(clear_cookie=True)
                 return self.post(short_url, data)
-            return [response.status_code, self.addr, response.json()]
+            data = response.status_code
+            if response.text:
+                data = response.text
+            return [response.status_code, self.addr, data]
         except requests.exceptions.Timeout:
             return [response.status_code , "Timeout!"]
         except requests.exceptions.ConnectionError:
@@ -102,7 +105,10 @@ class Http:
             if response.status_code == 401:
                 self.login_may_use_cookie(clear_cookie=True)
                 return self.delete(short_url)
-            return [response.status_code , response.text]
+            data = response.status_code
+            if response.text:
+                data = response.text
+            return [response.status_code, self.addr, data]
         except requests.exceptions.Timeout:
             return [response.status_code , "Timeout!"]
         except requests.exceptions.ConnectionError:
@@ -172,8 +178,9 @@ class Helper:
         data = [rest.patch(url, data) for rest in self.cpus]
         return data
 
-    def cpu_delete(self, url, data):
-        pass
+    def cpu_delete(self, url):
+        data = [rest.delete(url) for rest in self.cpus]
+        return data
 
     def sw_get(self, url):
         data = [rest.get(url) for rest in self.sws]
@@ -197,7 +204,8 @@ def helper_may_use_cache(config):
     def create_helper():
         hp = Helper(config)
         with open(helper_cache,"wb") as hpc:
-                pickle.dump(hp,hpc)
+            #hp.cpus[0].session.cookies.clear() test
+            pickle.dump(hp,hpc)
         return hp
     
     helper_cache = "/tmp/scli_helper"
@@ -205,13 +213,22 @@ def helper_may_use_cache(config):
         diff_time = os.path.getmtime("./config.py") - os.path.getmtime(helper_cache) 
         if diff_time < 0:
             with open(helper_cache,"rb") as hpc:
-                return pickle.load(hpc)
+                hp = pickle.load(hpc)
+                for rest in hp.cpus:
+                    #session.cookie may None
+                    if not rest.session.cookies:
+                        return create_helper()
+                for rest in hp.sws:
+                    if not rest.session.cookie:
+                        return create_helper()
+                return hp
         else:
             return create_helper()
     else:
         return create_helper()
 
 hp = helper_may_use_cache(Config)
+# hp = Helper(Config)
 
 # import timeit
 # def f1():

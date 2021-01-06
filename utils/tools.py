@@ -1,6 +1,7 @@
 from json import dumps
 from prettytable import PrettyTable
 from utils.http_code import STATUS
+from utils.http_helper import hp
 
 INTF_MAP = dict((["X%d"%i, i] for i in range(1, 57)))
 temp = dict((["C%d"% (i-56), i] for i in range(57, 63)))
@@ -9,7 +10,26 @@ for key in temp:
 INTF_MAP_REST = dict(([INTF_MAP[k], k] for k in INTF_MAP))
 
 INTF_CPU_MAP = dict((["IG%d"%i, i] for i in range(1, 65)))
+INTF_CPU_MAP |= dict((["G%d"%(i-64), i] for i in range(65, 86)))
 INTF_CPU_MAP_REST = dict(([INTF_CPU_MAP[k], k] for k in INTF_CPU_MAP))
+
+def get_intfs_from_rest():
+    intfs = set()
+    data = hp.cpu_get("interfaces/config")
+    for d in data:
+        if isinstance(d[2],dict):
+            for item in d[2]:
+                intfs.add(item)
+    return intfs
+
+def get_existed_action():
+    idxs = set()
+    data = hp.cpu_get("actions")
+    for d in data:
+        if isinstance(d[2],dict):
+            for item in d[2]:
+                idxs.add(item)
+    return idxs
 
 def gen_intfs_cpu(desc):
     restid = []
@@ -116,7 +136,6 @@ def gen_table_intf(data, tab="item",filter=None):
     tb.get_string(sortby=tab)
     return tb
 
-
 def gen_table_intf_cpu(data, tab="item",filter=None):
     if not isinstance(data, list) or len(data)<1:
         return
@@ -131,7 +150,8 @@ def gen_table_intf_cpu(data, tab="item",filter=None):
         if isinstance(portinfo[2], dict):
             for port in portinfo[2]:
                 if filter in portinfo[2][port]:
-                    row = [port,  ",".join(portinfo[2][port][filter])]
+                    # row = [port,  ",".join(portinfo[2][port][filter])]
+                    row = [port,  portinfo[2][port][filter]]
                     tb.add_row(row)
                 else:
                     pass

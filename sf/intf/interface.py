@@ -21,13 +21,8 @@ def cpu_intf_filter(ctx, args, incomplete):
 
 
 def cpu_intfs(ctx, args, incomplete):
-    intfs = set()
     try:
-        data = hp.cpu_get("interfaces/config")
-        for d in data:
-            if isinstance(d[2],dict):
-                for item in d[2]:
-                    intfs.add(item)
+        intfs = get_intfs_from_rest()
         return [i for i in intfs if incomplete in i]
         
     except Exception as e:
