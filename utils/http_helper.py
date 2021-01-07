@@ -3,32 +3,41 @@ import pickle
 import requests
 import time
 from json import dumps
+from utils.http_code import Httplib
+from config import Config
+
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
-from utils.http_code import STATUS
-from config import Config
+def SCLI_HTTP_REQUEST(cls_func):
+    def wrapper(self, *args, **kwargs):
+        try:
+            return cls_func(self, *args, **kwargs)
+        except Exception as e:
+            if type(e).__name__ in requests.exceptions.__dir__():
+                return [type(e).__name__  , self.addr, "connect error!!"]
+    return wrapper
+
 
 class Http:
-    timeout = 10
+    timeout = 30
 
-    def __init__(self, uname, pwd, addr , restv):
+    def __init__(self, uname, pwd, addr , restv, dev_rest_type = "switch"):
         self.addr = addr
         self.base_url = "https://" + addr + restv
-        if pwd == "Passok":
-            """sw"""
-            self.auth =dumps({'username': uname,'password':pwd})
-            self.login_url = "https://" + addr+ "/login"
-        else:
+        if dev_rest_type == "cpu":
             """cpu"""
             self.auth ={'username': uname,'password':pwd}
             self.login_url = "https://" + addr + restv + "login"
+        else:
+            """sw"""
+            self.auth =dumps({'username': uname,'password':pwd})
+            self.login_url = "https://" + addr+ "/login"
 
         self.session  = requests.Session()
         ret = self.login_may_use_cookie()
-        if ret[0] not in [200, 201]:
+        if ret[0] not in [Httplib.OK, Httplib.CREATED]:
             print("{0} login failed ".format(self.addr), ret)
-        # print("login", ret)
 
     def login_may_use_cookie(self, clear_cookie=False, diff_time=7190):# diff_time 2h-10s
         cookie = "/tmp/cookie_"+self.addr.replace(":","_")
@@ -57,91 +66,60 @@ class Http:
             if diff_time >= 7190:
                 with open(cookie,"wb") as cke:
                     pickle.dump(self.session.cookies,cke)
-            return [201]
+            return [Httplib.CREATED]
         else:
-            return [400]
+            return [Httplib.BAD_REQUEST]
 
-    def get(self, short_url, loop=0):
+    @SCLI_HTTP_REQUEST
+    def get(self, short_url, data=None, params = None, loop = 0):
         loop += 1
         if loop > 5:
             return ["error",self.addr,"Connection impassability!"]
-        try:
-            response = self.session.get(url=self.base_url + short_url, timeout=self.timeout, verify=False)
-            if response.status_code == 401:
-                self.login_may_use_cookie(clear_cookie=True)
-                return self.get(short_url,loop)
-            return [response.status_code, self.addr, response.json()]
-        except requests.exceptions.Timeout:
-            return [response.status_code , "Timeout!"]
-        except requests.exceptions.ConnectionError:
-            return ["error",self.addr,"Connection impassability!"]
-        except requests.exceptions.HTTPError:
-            return [response.status_code]
-        except Exception as e:
-            print("error :",e)
-            print(response.status_code)
-            print(response.content)
+        self.response = self.session.get(url=self.base_url + short_url, params = params, timeout=self.timeout, verify=False)
+        if self.response.status_code == Httplib.UNAUTHORIZED:
+            self.login_may_use_cookie(clear_cookie=True)
+            return self.get(short_url, data, params, loop = loop)
+        return [self.response.status_code, self.addr, self.response.json()]
 
-    def post(self, short_url, data): 
-        try:
-            response = self.session.get(url=self.base_url + short_url, json=data, timeout=self.timeout, verify=False)
-            if response.status_code == 401:
-                self.login_may_use_cookie(clear_cookie=True)
-                return self.post(short_url, data)
-            return [response.status_code, self.addr, response.json()]
-        except requests.exceptions.Timeout:
-            return [response.status_code , "Timeout!"]
-        except requests.exceptions.ConnectionError:
-            return [response.status_code ,"Connection impassability!"]
-        except requests.exceptions.HTTPError:
-            return [response.status_code]
+    @SCLI_HTTP_REQUEST
+    def post(self, short_url, data, params = None): 
+        self.response = self.session.post(url=self.base_url + short_url, json=data, params = params, timeout=self.timeout, verify=False)
+        if self.response.status_code == Httplib.UNAUTHORIZED:
+            self.login_may_use_cookie(clear_cookie=True)
+            return self.post(short_url, data, params)
+        return [self.response.status_code, self.addr, self.response.json()]
 
-    def delete(self, short_url):
-        try:
-            response = self.session.delete(url=self.base_url+short_url, timeout=self.timeout, verify=False)
-            if response.status_code == 401:
-                self.login_may_use_cookie(clear_cookie=True)
-                return self.delete(short_url)
-            return [response.status_code , response.text]
-        except requests.exceptions.Timeout:
-            return [response.status_code , "Timeout!"]
-        except requests.exceptions.ConnectionError:
-            return [response.status_code ,"Connection impassability!"]
-        except requests.exceptions.HTTPError:
-            return [response.status_code]
+    @SCLI_HTTP_REQUEST
+    def raw_post(self, short_url, raw_data, header = None, params = None): 
+        self.response = self.session.post(url=self.base_url + short_url, data=raw_data, header = header , params = params, timeout=self.timeout, verify=False)
+        if self.response.status_code == Httplib.UNAUTHORIZED:
+            self.login_may_use_cookie(clear_cookie=True)
+            return self.post(short_url, data, header, params)
+        return [self.response.status_code, self.addr, self.response.text]
 
-    def put(self, short_url, data):
-        try:
-            response = self.session.put(url=self.base_url+short_url, json=dumps(data), timeout=self.timeout, verify=False)
-            if response.status_code == 401:
-                self.login_may_use_cookie(clear_cookie=True)
-                return self.put(short_url, data)
-            return [response.status_code, self.addr, response.text]
-        except requests.exceptions.Timeout:
-            return [response.status_code , "Timeout!"]
-        except requests.exceptions.ConnectionError:
-            return [response.status_code ,"Connection impassability!"]
-        except requests.exceptions.HTTPError:
-            return [response.status_code]
-        finally:
-            return [response.status_code, response.text]
+    @SCLI_HTTP_REQUEST
+    def delete(self, short_url, data=None, params = None, ):
+        self.response = self.session.delete(url=self.base_url+short_url, params = params, timeout=self.timeout, verify=False)
+        if self.response.status_code == Httplib.UNAUTHORIZED:
+            self.login_may_use_cookie(clear_cookie=True)
+            return self.delete(short_url, data, params)
+        return [self.response.status_code ,self,addr, self.response.text]
 
-    def patch(self, short_url, data):
-        try:
-            url = self.base_url + short_url
-            response = self.session.patch(url=url, json=data, timeout=self.timeout, verify=False)
-            if response.status_code == 401:
-                self.login_may_use_cookie(clear_cookie=True)
-                return self.patch(short_url, data)
-            return [response.status_code, self.addr, response.json()]
-        except requests.exceptions.Timeout:
-            return [response.status_code , "Timeout!"]
-        except requests.exceptions.ConnectionError:
-            return [response.status_code ,"Connection impassability!"]
-        except requests.exceptions.HTTPError:
-            return [response.status_code]
-        finally:
-            return [response.status_code, self.addr, response.status_code]
+    @SCLI_HTTP_REQUEST
+    def put(self, short_url, data, params = None):
+        self.response = self.session.put(url=self.base_url+short_url, json=data, params = params, timeout=self.timeout, verify=False)
+        if self.response.status_code == Httplib.UNAUTHORIZED:
+            self.login_may_use_cookie(clear_cookie=True)
+            return self.put(short_url, data, params)
+        return [self.response.status_code, self.addr, self.response.text]
+
+    @SCLI_HTTP_REQUEST
+    def patch(self, short_url, data, params = None):
+        self.response = self.session.patch(url=self.base_url + short_url, json=data, params = params, timeout=self.timeout, verify=False)
+        if self.response.status_code == Httplib.UNAUTHORIZED:
+            self.login_may_use_cookie(clear_cookie=True)
+            return self.patch(short_url, data, params)
+        return [self.response.status_code, self.addr, self.response.text]
 
 class Helper:
 
@@ -152,43 +130,55 @@ class Helper:
         return Helper._instance
 
     def __init__(self, cfg):
-        self.sws = [Http(cfg.sw_name, cfg.sw_pwd, addr, cfg.sw_restv) for addr in cfg.sw_addrs] 
-        self.cpus = [Http(cfg.cpu_name, cfg.cpu_pwd, addr, cfg.cpu_restv) for addr in cfg.cpu_addrs] 
+        self.sws =  [Http(cfg.sw_user,  cfg.sw_pwd,  addr, cfg.sw_restv, "switch")  for addr in cfg.sw_addrs] 
+        self.cpus = [Http(cfg.cpu_user, cfg.cpu_pwd, addr, cfg.cpu_restv, "cpu") for addr in cfg.cpu_addrs] 
     
-    def cpu_get(self, url):
-        data = [rest.get(url) for rest in self.cpus]
+    def cpu_get(self, url, data = None, params = None):
+        data = [rest.get(url, data = None) for rest in self.cpus]
         return data
 
-    def cpu_put(self, url, data):
+    def cpu_put(self, url, data = None, params = None):
         data = [rest.put(url,data) for rest in self.cpus]
         return data
 
-    def cpu_post(self, url, data):
+    def cpu_post(self, url, data = None, params = None):
         data = [rest.post(url,data) for rest in self.cpus]
         return data
 
-    def cpu_patch(self, url, data):
+    def cpu_raw_post(self, url, data = None, header = None, params = None):
+        data = [rest.raw_post(url, data, header) for rest in self.cpus]
+        return data
+
+    def cpu_patch(self, url, data = None, params = None):
         data = [rest.patch(url, data) for rest in self.cpus]
         return data
 
-    def cpu_delete(self, url, data):
+    def cpu_delete(self, url, data = None, params = None):
+        data = [rest.delete(url, data) for rest in self.cpus]
         pass
 
-    def sw_get(self, url):
-        data = [rest.get(url) for rest in self.sws]
+    def sw_get(self, url, data = None, params = None):
+        data = [rest.get(url, data) for rest in self.sws]
         return data
 
-    def sw_put(self, url, data):
+    def sw_put(self, url, data = None, params = None):
+        data = [rest.put(url,data) for rest in self.sws]
         pass
 
-    def sw_post(self, url, data):
+    def sw_post(self, url, data = None, params = None):
+        data = [rest.post(url,data) for rest in self.sws]
         pass
 
-    def sw_patch(self, url, data):
+    def sw_raw_post(self, url, data = None, header = None, params = None):
+        data = [rest.raw_post(url, data, header) for rest in self.sws]
+        return data
+
+    def sw_patch(self, url, data = None, params = None):
         data = [rest.patch(url, data) for rest in self.sws]
         return data
 
-    def sw_delete(self, url, data):
+    def sw_delete(self, url, data = None, params = None):
+        data = [rest.delete(url, data) for rest in self.sws]
         pass
 
 def helper_may_use_cache(config):
@@ -201,7 +191,7 @@ def helper_may_use_cache(config):
     
     helper_cache = "/tmp/scli_helper"
     if os.path.isfile(helper_cache):
-        diff_time = os.path.getmtime("./config.py") - os.path.getmtime(helper_cache) 
+        diff_time = os.path.getmtime("./scli.cfg") - os.path.getmtime(helper_cache) 
         if diff_time < 0:
             with open(helper_cache,"rb") as hpc:
                 return pickle.load(hpc)

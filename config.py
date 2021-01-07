@@ -1,31 +1,56 @@
+import json
+import configparser
 
 class Config:
+    cpu_user  = None 
+    cpu_pwd   = None
 
-    cpu_ip_ports = []
-    switch_ip_ports = []
-    cpu_name = "admin"
-    cpu_pwd = "passok"
-    sw_name = "admin"
-    sw_pwd = "Passok"
-    sw_restv = "/rest/v2/"
-    cpu_restv = "/rest/v1/"
+    sw_user   = None
+    sw_pwd    = None
+
+    cpu_restv = None
+    sw_restv  = None
+
+    cpu_addrs = []
+    sw_addrs  = []
+
     @classmethod
     def instance(cls, *args, **kwargs):
         if not hasattr(Config, "_instance"):
             Config._instance = Config(*args, **kwargs)
         return Config._instance
 
-Config.cpu_addrs = [
-    "192.168.1.210:2020",
-    "192.168.1.210:2014",
-    # "192.168.3.95:2020",
-    ]
 
-Config.sw_addrs = [
-    "192.168.1.210:81",
-    "192.168.3.207:81",
-    ]
+scli_cfg_dir = ""
+scli_cfg_filename = scli_cfg_dir + "scli.cfg"
 
+scli_config = configparser.ConfigParser()
+scli_config.read(scli_cfg_filename , encoding = "utf-8")
+
+devControl = "devControl"
+
+if scli_config.has_section(devControl):
+    options_list = scli_config.options(devControl)
+    for option in options_list:
+        if option == "cpu_user":
+            Config.cpu_user = scli_config.get(devControl, option)
+        elif option == "cpu_pwd":
+            Config.cpu_pwd  = scli_config.get(devControl, option)
+        elif option == "sw_user":
+            Config.sw_user  = scli_config.get(devControl, option)
+        elif option == "sw_pwd":
+            Config.sw_pwd  = scli_config.get(devControl, option)
+        elif option == "cpu_restv":
+            Config.cpu_restv  = scli_config.get(devControl, option)
+        elif option == "sw_restv":
+            Config.sw_restv  = scli_config.get(devControl, option)
+        elif option == "cpu_addrs":
+            Config.cpu_addrs = json.loads(scli_config.get(devControl, option))
+        elif option == "sw_addrs":
+            Config.sw_addrs  = json.loads(scli_config.get(devControl, option))
 
 if __name__ == "__main__":
-    print("TEST IP:",Config.cpp_addrs)
+    print("TEST IP:",Config.cpu_addrs, " type:", type(Config.cpu_addrs))
+    print("TEST IP:",Config.sw_addrs, " type:", type(Config.sw_addrs))
+    print("RESTv:",Config.sw_restv)
+    print("RESTv:",Config.cpu_restv)

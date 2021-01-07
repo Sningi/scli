@@ -1,6 +1,6 @@
 from json import dumps
 from prettytable import PrettyTable
-from utils.http_code import STATUS
+from utils.http_code import Httplib 
 
 INTF_MAP = dict((["X%d"%i, i] for i in range(1, 73)))
 temp = dict((["C%d"% (i-72), i] for i in range(73, 79)))
@@ -11,6 +11,43 @@ INTF_MAP_REST = dict(([INTF_MAP[k], k] for k in INTF_MAP))
 INTF_CPU_MAP = dict((["IG%d"%i, i] for i in range(1, 65)))
 INTF_CPU_MAP_REST = dict(([INTF_CPU_MAP[k], k] for k in INTF_CPU_MAP))
 
+
+####General operation interface
+def create_custiom_table(data, field_names,filter = None, padding_width = 1):
+    if not isinstance(field_names, list) or len(field_names)<1:
+        return
+    if not isinstance(data, list) or len(data)<1:
+        return
+    tb = PrettyTable()
+    tb.field_names = field_names
+    tb.align[field_names[0]] = "l"
+    tb.padding_width = padding_width
+    for body in data:
+        if not isinstance(body, list) or len(body)<1:
+            print("You need to use list")
+            continue
+        tb.add_row(body)
+    return tb
+
+'''
+[value1, value2, value3 .... , valueX]
+'''
+def table_add_row(tb, data):
+    if not isinstance(data, list) or len(data)<1:
+        print("You need to use list")
+        return
+    tb.add_row(data)
+
+'''
+[tab, value1, value2, value3 .... , valueX]
+'''
+def table_add_colum(tb, data):
+    if not isinstance(data, list) or len(data)<1:
+        print("You need to use list")
+        return
+    tb.add_colum(data)
+
+####Common Generator Functions
 def gen_table(data, tab="item",filter=None):
     if not isinstance(data, list) or len(data)<1:
         return
@@ -24,7 +61,6 @@ def gen_table(data, tab="item",filter=None):
                 tb.add_row(row)
                 tb.get_string(sortby=tab, reversesort=True)
     else:
-        # row = ["code", *[ STATUS[item[2]][0] for item in data] ]
         row = [tab, *[ item[2] for item in data] ]
         tb.add_row(row)
     return tb
