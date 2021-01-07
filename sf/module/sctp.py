@@ -90,4 +90,4 @@ def sctp_stat(op, filter):
         print(gen_table(data, tab="count", filter=filter))
     elif op == 'clean':
         data = hp.cpu_patch('sctp/stat', clean_data)
-        print(gen_table(data, tab="code"))
+        print(gen_table(data, tab="result"))

@@ -37,7 +37,8 @@ class Http:
         self.session  = requests.Session()
         ret = self.login_may_use_cookie()
         if ret[0] not in [Httplib.OK, Httplib.CREATED]:
-            print("{0} login failed ".format(self.addr), ret)
+            pass
+            # print("{0} login failed ".format(self.addr), ret)
 
     def login_may_use_cookie(self, clear_cookie=False, diff_time=7190):# diff_time 2h-10s
         cookie = "/tmp/cookie_"+self.addr.replace(":","_")
@@ -55,13 +56,15 @@ class Http:
                     self.session.post(self.login_url, 
                         timeout=self.timeout, data=self.auth,verify=False)
                 except Exception as e:
-                    print("login {0} failed", self.addr)
+                    # print("login {0} failed:".format(self.addr),e)
+                    pass
         else:
             try:
                 self.session.post(self.login_url, 
                     timeout=self.timeout, data=self.auth,verify=False)
             except Exception as e:
-                print("login {0} failed".format(self.addr))  
+                pass
+                # print("login {0} failed:".format(self.addr),e)  
         if self.session.cookies:  #refash cookie
             if diff_time >= 7190:
                 with open(cookie,"wb") as cke:
@@ -74,7 +77,7 @@ class Http:
     def get(self, short_url, data=None, params = None, loop = 0):
         loop += 1
         if loop > 5:
-            return ["error",self.addr,"Connection impassability!"]
+            return [400,self.addr,"login failed may error passwd"]
         self.response = self.session.get(url=self.base_url + short_url, params = params, timeout=self.timeout, verify=False)
         if self.response.status_code == Httplib.UNAUTHORIZED:
             self.login_may_use_cookie(clear_cookie=True)
@@ -82,43 +85,58 @@ class Http:
         return [self.response.status_code, self.addr, self.response.json()]
 
     @SCLI_HTTP_REQUEST
-    def post(self, short_url, data, params = None): 
+    def post(self, short_url, data, params = None, loop = 0):
+        loop += 1
+        if loop > 5:
+            return [400,self.addr,"login failed may error passwd"]
         self.response = self.session.post(url=self.base_url + short_url, json=data, params = params, timeout=self.timeout, verify=False)
         if self.response.status_code == Httplib.UNAUTHORIZED:
             self.login_may_use_cookie(clear_cookie=True)
-            return self.post(short_url, data, params)
+            return self.post(short_url, data, params,loop = loop)
         return [self.response.status_code, self.addr, self.response.json()]
 
     @SCLI_HTTP_REQUEST
-    def raw_post(self, short_url, raw_data, header = None, params = None): 
+    def raw_post(self, short_url, raw_data, header = None, params = None, loop=0): 
+        loop += 1
+        if loop > 5:
+            return [400,self.addr,"login failed may error passwd"]
         self.response = self.session.post(url=self.base_url + short_url, data=raw_data, header = header , params = params, timeout=self.timeout, verify=False)
         if self.response.status_code == Httplib.UNAUTHORIZED:
             self.login_may_use_cookie(clear_cookie=True)
-            return self.post(short_url, data, header, params)
+            return self.raw_post(short_url, raw_data, header, params, loop=loop)
         return [self.response.status_code, self.addr, self.response.text]
 
     @SCLI_HTTP_REQUEST
-    def delete(self, short_url, data=None, params = None, ):
+    def delete(self, short_url, data=None, params = None, loop = 0):
+        loop += 1
+        if loop > 5:
+            return [400,self.addr,"login failed may error passwd"]
         self.response = self.session.delete(url=self.base_url+short_url, params = params, timeout=self.timeout, verify=False)
         if self.response.status_code == Httplib.UNAUTHORIZED:
             self.login_may_use_cookie(clear_cookie=True)
-            return self.delete(short_url, data, params)
+            return self.delete(short_url, data, params, loop=loop)
         return [self.response.status_code ,self,addr, self.response.text]
 
     @SCLI_HTTP_REQUEST
-    def put(self, short_url, data, params = None):
+    def put(self, short_url, data, params = None, loop=0):
+        loop += 1
+        if loop > 5:
+            return [400,self.addr,"login failed may error passwd"]
         self.response = self.session.put(url=self.base_url+short_url, json=data, params = params, timeout=self.timeout, verify=False)
         if self.response.status_code == Httplib.UNAUTHORIZED:
             self.login_may_use_cookie(clear_cookie=True)
-            return self.put(short_url, data, params)
+            return self.put(short_url, data, params,loop=loop)
         return [self.response.status_code, self.addr, self.response.text]
 
     @SCLI_HTTP_REQUEST
-    def patch(self, short_url, data, params = None):
+    def patch(self, short_url, data, params = None, loop=0):
+        loop += 1
+        if loop > 5:
+            return [400,self.addr,"login failed may error passwd"]
         self.response = self.session.patch(url=self.base_url + short_url, json=data, params = params, timeout=self.timeout, verify=False)
         if self.response.status_code == Httplib.UNAUTHORIZED:
             self.login_may_use_cookie(clear_cookie=True)
-            return self.patch(short_url, data, params)
+            return self.patch(short_url, data, params, loop=loop)
         return [self.response.status_code, self.addr, self.response.text]
 
 class Helper:

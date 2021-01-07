@@ -31,7 +31,6 @@ def action_type(ctx, args, incomplete):
     if args[-2] in ("delete, show"):
         return [("press_enter",),("push_enter",),]
     else:
-        click.echo("error")
         types = [('forward', 'forward interface'),
                 ('load_balance', 'load_balance interfaces')]
         return [c for c in types if c[0].startswith(incomplete)]

@@ -106,18 +106,22 @@ def gen_intfs_sw(desc):
 def gen_table(data, tab="item",filter=None):
     if not isinstance(data, list) or len(data)<1:
         return
+    for d in data:
+        if not isinstance(d, list) or len(d) != 3:
+            return
     tb = PrettyTable()
     tb.field_names = [tab,*[item[1] for item in data]]
     tb.align[tab] = "l"
     if isinstance(data[0][2], dict):
         for key in sorted(data[0][2]):
             if (filter and filter in key) or not filter:
-                row = [key, *[ dumps(item[2][key]) for item in data]]
+                row = [key, *[item[2][key] if isinstance(item[2],dict) else item[2] for item in data]]
+                # if(len(row)==len(tb.field_names)):
                 tb.add_row(row)
-                tb.get_string(sortby=tab, reversesort=True)
     else:
-        row = [tab, *[ item[2] for item in data] ]
+        row = [tab, *[ Httplib.STATUS[item[0]][0] if item[0] in Httplib.STATUS else item[0] for item in data] ]
         tb.add_row(row)
+    tb.get_string(sortby=tab, reversesort=True)
     return tb
 
 def gen_table_intf(data, tab="item",filter=None):
