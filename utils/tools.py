@@ -1,16 +1,17 @@
 from json import dumps
 from prettytable import PrettyTable
 from utils.http_code import Httplib 
+from utils.http_helper import hp
 
-INTF_MAP = dict((["X%d"%i, i] for i in range(1, 73)))
-temp = dict((["C%d"% (i-72), i] for i in range(73, 79)))
+INTF_MAP = dict((["X%d"%i, i] for i in range(1, 57)))
+temp = dict((["C%d"% (i-56), i] for i in range(57, 63)))
 for key in temp:
     INTF_MAP[key]= temp[key]
 INTF_MAP_REST = dict(([INTF_MAP[k], k] for k in INTF_MAP))
 
 INTF_CPU_MAP = dict((["IG%d"%i, i] for i in range(1, 65)))
+INTF_CPU_MAP.update(dict((["G%d"%(i-64), i] for i in range(65, 86))))
 INTF_CPU_MAP_REST = dict(([INTF_CPU_MAP[k], k] for k in INTF_CPU_MAP))
-
 
 ####General operation interface
 def create_custiom_table(data, field_names,filter = None, padding_width = 1):
@@ -48,6 +49,60 @@ def table_add_colum(tb, data):
     tb.add_colum(data)
 
 ####Common Generator Functions
+def get_intfs_from_rest():
+    intfs = set()
+    data = hp.cpu_get("interfaces/config")
+    for d in data:
+        if isinstance(d[2],dict):
+            for item in d[2]:
+                intfs.add(item)
+    return intfs
+
+def get_existed_action():
+    idxs = set()
+    data = hp.cpu_get("actions")
+    for d in data:
+        if isinstance(d[2],dict):
+            for item in d[2]:
+                idxs.add(item)
+    return idxs
+
+def gen_intfs_cpu(desc):
+    restid = []
+    if "-" in desc:
+        intfs = desc.split("-")
+        if len(intfs)<2 or intfs[0] not in INTF_CPU_MAP or intfs[-1] not in INTF_CPU_MAP:
+            print("PORT INDEX ERROR")
+            exit()
+        for i in range(INTF_CPU_MAP[intfs[0]], INTF_CPU_MAP[intfs[-1]]+1):
+            restid.append(INTF_CPU_MAP_REST[i])
+    elif ',' in desc:
+        intfs = desc.split(",")
+        for i in intfs:
+            if i in INTF_CPU_MAP:
+                restid.append(i)
+    elif desc in INTF_CPU_MAP:
+        restid.append(desc)
+    return restid
+
+def gen_intfs_sw(desc):
+    restid = []
+    if "-" in desc:
+        intfs = desc.split("-")
+        if len(intfs)<2 or intfs[0] not in INTF_MAP or intfs[-1] not in INTF_MAP:
+            print("PORT INDEX ERROR")
+            exit()
+        for i in range(INTF_MAP[intfs[0]], INTF_MAP[intfs[-1]]+1):
+            restid.append(INTF_MAP_REST[i])
+    elif ',' in desc:
+        intfs = desc.split(",")
+        for i in intfs:
+            if i in INTF_MAP:
+                restid.append(i)
+    elif desc in INTF_MAP:
+        restid.append(desc)
+    return restid
+
 def gen_table(data, tab="item",filter=None):
     if not isinstance(data, list) or len(data)<1:
         return
@@ -66,16 +121,32 @@ def gen_table(data, tab="item",filter=None):
     return tb
 
 def gen_table_intf(data, tab="item",filter=None):
-    expect = [
-        "rx_mbps",
-        "rx_kpps",
-        "rx_packets",
-        "rx_bytes",
-        "tx_mbps",
-        "tx_kpps",
-        "tx_packets",
-        "tx_bytes"
-    ]
+    print(dumps(data))
+    expect = {
+        "statistics":[
+            "rx_mbps",
+            "rx_kpps",
+            "rx_packets",
+            "rx_bytes",
+            # "rx_dropped",
+            "tx_mbps",
+            "tx_kpps",
+            "tx_packets",
+            "tx_bytes",
+            # "tx_dropped"
+            ],
+        "status":[
+            "connector",
+            "link_state",
+            "support_speeds"
+            ],
+        "configuration":[
+            "speed",
+            "mtu",
+            "enable",
+            ]
+
+    }
     if not isinstance(data, list) or len(data)<1:
         return
     tb = PrettyTable()
@@ -83,13 +154,13 @@ def gen_table_intf(data, tab="item",filter=None):
         ports = [(list(item[2].keys())[0]) for item in data if item[2]]
     except Exception as e:
         return "\n!!!{} data is none !!!\n".format(tab)
-    tb.field_names = [tab, *expect]
+    tb.field_names = [tab, *expect[filter]]
     tb.align[tab] = "l"
     for portinfo in data:
         if isinstance(portinfo[2], dict):
             for port in portinfo[2]:
                 if filter in portinfo[2][port]:
-                    portstat = [portinfo[2][port][filter][stat] for stat in expect]
+                    portstat = [portinfo[2][port][filter][stat] for stat in expect[filter]]
                     row = [port,*portstat]
                     tb.add_row(row)
                 else:
@@ -99,7 +170,6 @@ def gen_table_intf(data, tab="item",filter=None):
             tb.add_row(row)
     tb.get_string(sortby=tab)
     return tb
-
 
 def gen_table_intf_cpu(data, tab="item",filter=None):
     if not isinstance(data, list) or len(data)<1:
@@ -115,7 +185,8 @@ def gen_table_intf_cpu(data, tab="item",filter=None):
         if isinstance(portinfo[2], dict):
             for port in portinfo[2]:
                 if filter in portinfo[2][port]:
-                    row = [port, portinfo[2][port][filter]]
+                    # row = [port,  ",".join(portinfo[2][port][filter])]
+                    row = [port,  portinfo[2][port][filter]]
                     tb.add_row(row)
                 else:
                     pass

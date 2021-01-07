@@ -2,74 +2,70 @@ import click
 
 from base import cli, clean_data
 from utils.http_helper import hp
-from utils.tools import gen_table
+from utils.tools import *
 
 def action_op(ctx, args, incomplete):
-    op = [('show', 'show acl'),
-              ('create', 'create acl'), 
-              ('delete', 'delete acl')]
+    op = [('show', 'show action'),
+            ('create', 'create action'), 
+            ('delete', 'delete action'),
+            ('set', 'modify action'),              ]
     return [c for c in op if c[0].startswith(incomplete)]
 
-def config_field(ctx, args, incomplete):
-    field = [  ('acl_imsi_decode', 'acl_imsi_decode_enable'),
-                ('acl_imsi_decode_upproto', 'acl_imsi_decode_upproto_enable'),
-                ('ngap_decode', 'ngap_decode_enable'),
-                ('ngap_skip_paging', 'ngap_decode_skip_paging_enable'),
-                ('ngap_cdr', 'ngap_cdr_enable'),
-                ('nas_decrypt', 'ngap_nas_decrypt_enable'),
-                ('nas_decrypted_output', 'ngap_nas_decrypted_output_enable'),
-
-                ('ngap_cdr_timeout', 'ngap_imsi_timeout_cycle'),
-                ('ngap_cdr_timeout', 'ngap_cdr_timeout'),
-                ('ngap_small_cdr_timeout', 'ngap_small_cdr_timeout'),
-                ('ngap_handover_cdr_timeout', 'ngap_handover_cdr_timeout'),]
-    return [i for i in field if incomplete in i[0]]
+def action_idx(ctx, args, incomplete):
+    try:
+        idxs = get_existed_action()
+        if args[-1] in ["show", "delete",'set']:
+            return [i for i in idxs if incomplete in i]
+        elif args[-1] in ["create"]:
+            return [str(i) for i in range(1,129) if str(i).startswith(incomplete) and str(i) not in idxs]
+    except Exception as e:
+        click.echo("\ngetcpu interface error:{0}".format(e))
+        exit()
 
 def config_value(ctx, args, incomplete):
     colors = [('enable', 'enable feature'),
               ('disable', 'set config')]
     return [c for c in colors if c[0].startswith(incomplete)]
 
+def action_type(ctx, args, incomplete):
+    if args[-2] in ("delete, show"):
+        return [("press_enter",),("push_enter",),]
+    else:
+        click.echo("error")
+        types = [('forward', 'forward interface'),
+                ('load_balance', 'load_balance interfaces')]
+        return [c for c in types if c[0].startswith(incomplete)]
+
+def target_intf(ctx, args, incomplete):
+    intfs = get_intfs_from_rest()
+    return [i for i in intfs if incomplete in i]
+
 @cli.command()# @cli, not @click!
 @click.argument("op", type=click.STRING, autocompletion=action_op)
-@click.argument("field", type=click.STRING, autocompletion=config_field, required=False)
-@click.argument("value", type=click.STRING, autocompletion=config_value, required=False)
-def action(op, field=None, value =None):
+@click.argument("idx", type=click.STRING, autocompletion=action_idx, required=False)
+@click.argument("type", type=click.STRING, autocompletion=action_type, required=False)
+@click.argument("intf", type=click.STRING, autocompletion=target_intf, required=False)
+def action(op, idx=None, type=None, intf=None):
     if op == 'show':
-        data = hp.cpu_get('actions')
+        url = "actions"
+        if idx:
+            url += "/{0}".format(idx)
+        data = hp.cpu_get(url)
         print(data)
         print(gen_table(data,))
     elif op == 'create':
-        
-        pass
+        data = {str(idx):{
+                        "basis_actions":
+                        {
+                            "type": type,
+                            "interfaces": [intf],
+                            "load_balance_weight": "", 
+                            "load_balance_mode": ""
+                        }
+                    }
+                }
+        data = hp.cpu_post('actions', data)
+        print(gen_table(data))
     elif op == 'delete':
-        if not field:
-            print("{0} field is none".format(op))
-            exit()
-        op_data = []
-        data = hp.cpu_put('acl_imsi/stat', )
-        print(gen_table(data, tab="code"))
-
-# def acl_imsi_stat_operation(ctx, args, incomplete):
-#     colors = [('show', 'show stat'),
-#               ('clean', 'clean stat')]
-#     return [c for c in colors if incomplete in c[0]]
-
-
-# def acl_imsi_stat_filter(ctx, args, incomplete):
-#     colors = [('chunk', 'chunk stat'),
-#               ('error', 'error stat'),
-#               ('total', 'total stat')]
-#     return [c for c in colors if incomplete in c[0]]
-
-
-# @cli.command()
-# @click.argument("op", type=click.STRING, autocompletion=acl_imsi_stat_operation)
-# @click.argument("filter", type=click.STRING, autocompletion=acl_imsi_stat_filter, required=False)
-# def acl_imsi_stat(op, filter):
-#     if op == 'show':
-#         data = hp.cpu_get('acl_imsi/stat')
-#         print(gen_table(data, tab="count", filter=filter))
-#     elif op == 'clean':
-#         data = hp.cpu_patch('acl_imsi/stat', clean_data)
-#         print(gen_table(data, tab="code"))
+        data = hp.cpu_delete('actions/{0}'.format(idx))
+        print(gen_table(data))

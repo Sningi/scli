@@ -155,7 +155,7 @@ class Helper:
 
     def cpu_delete(self, url, data = None, params = None):
         data = [rest.delete(url, data) for rest in self.cpus]
-        pass
+        return data
 
     def sw_get(self, url, data = None, params = None):
         data = [rest.get(url, data) for rest in self.sws]
@@ -163,11 +163,11 @@ class Helper:
 
     def sw_put(self, url, data = None, params = None):
         data = [rest.put(url,data) for rest in self.sws]
-        pass
+        return data
 
     def sw_post(self, url, data = None, params = None):
         data = [rest.post(url,data) for rest in self.sws]
-        pass
+        return data
 
     def sw_raw_post(self, url, data = None, header = None, params = None):
         data = [rest.raw_post(url, data, header) for rest in self.sws]
@@ -179,14 +179,15 @@ class Helper:
 
     def sw_delete(self, url, data = None, params = None):
         data = [rest.delete(url, data) for rest in self.sws]
-        pass
+        return data
 
 def helper_may_use_cache(config):
 
     def create_helper():
         hp = Helper(config)
         with open(helper_cache,"wb") as hpc:
-                pickle.dump(hp,hpc)
+            #hp.cpus[0].session.cookies.clear() test
+            pickle.dump(hp,hpc)
         return hp
     
     helper_cache = "/tmp/scli_helper"
@@ -194,13 +195,22 @@ def helper_may_use_cache(config):
         diff_time = os.path.getmtime("./scli.cfg") - os.path.getmtime(helper_cache) 
         if diff_time < 0:
             with open(helper_cache,"rb") as hpc:
-                return pickle.load(hpc)
+                hp = pickle.load(hpc)
+                for rest in hp.cpus:
+                    #session.cookie may None
+                    if not rest.session.cookies:
+                        return create_helper()
+                for rest in hp.sws:
+                    if not rest.session.cookies:
+                        return create_helper()
+                return hp
         else:
             return create_helper()
     else:
         return create_helper()
 
 hp = helper_may_use_cache(Config)
+# hp = Helper(Config)
 
 # import timeit
 # def f1():
