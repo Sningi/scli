@@ -147,6 +147,7 @@ def gen_table_intf(data, tab="item",filter=None):
             "speed",
             "mtu",
             "enable",
+            "transceiver_mode",
             ]
 
     }
@@ -163,7 +164,7 @@ def gen_table_intf(data, tab="item",filter=None):
         if isinstance(portinfo[2], dict):
             for port in portinfo[2]:
                 if filter in portinfo[2][port]:
-                    portstat = [portinfo[2][port][filter][stat] for stat in expect[filter]]
+                    portstat = [portinfo[2][port][filter][stat] if stat in portinfo[2][port][filter] else None for stat in expect[filter]]
                     row = [port,*portstat]
                     tb.add_row(row)
                 else:

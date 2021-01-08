@@ -8,7 +8,7 @@ from utils.tools import create_custiom_table
 
 from sf.acl.acl import acl
 from sf.action.action import action
-from sw.intf.interface import intf_stat_sw
+from sw.intf.interface import intf_sw
 from sf.intf.interface import intf_cfg_cpu
 #module
 from sf.module.sctp import sctp_cfg, sctp_stat
