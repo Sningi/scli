@@ -39,7 +39,7 @@ def cfg_value(ctx, args, incomplete):
 @click.argument("op", type=click.STRING, autocompletion=http2_operation)
 @click.argument("field", type=click.STRING, autocompletion=cfg_field, required=False)
 @click.argument("value", type=click.STRING, autocompletion=cfg_value, required=False)
-def http2_config(op, field=None, value =None):
+def http2_cfg(op, field=None, value =None):
     if op == 'show':
         data = hp.cpu_get('http2/config')
         if field:

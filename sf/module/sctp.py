@@ -114,9 +114,8 @@ def ngap_stat_filter(ctx, args, incomplete):
 @click.argument("filter", type=click.STRING, autocompletion=ngap_stat_filter, required=False)
 def ngap_stat(op, type, filter):
     if op == 'show':
-        print('sctp/{0}'.format(ngap_type[type][1]))
+        # print('sctp/{0}'.format(ngap_type[type][1]))
         data = hp.cpu_get('sctp/{0}'.format(ngap_type[type][1]))
-        print(data)
         print(gen_table(data, tab="count", filter=filter))
     elif op == 'clean':
         data = hp.cpu_patch('sctp/stat', clean_data)

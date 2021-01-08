@@ -35,7 +35,7 @@ def cfg_value(ctx, args, incomplete):
 @click.argument("op", type=click.STRING, autocompletion=ipreass_operation)
 @click.argument("field", type=click.STRING, autocompletion=cfg_field, required=False)
 @click.argument("value", type=click.STRING, autocompletion=cfg_value, required=False)
-def ipreass_config(op, field=None, value =None):
+def ipreass_cfg(op, field=None, value =None):
     if op == 'show':
         data = hp.cpu_get('ip_reass/config')
         if field:
