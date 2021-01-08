@@ -1,5 +1,7 @@
 import os
 import pickle
+# import asyncio
+# from concurrent.futures import ThreadPoolExecutor
 import requests
 import time
 from json import dumps
@@ -154,9 +156,22 @@ class Helper:
     def __init__(self, cfg):
         self.sws =  [Http(cfg.sw_user,  cfg.sw_pwd,  addr, cfg.sw_restv, "switch")  for addr in cfg.sw_addrs] 
         self.cpus = [Http(cfg.cpu_user, cfg.cpu_pwd, addr, cfg.cpu_restv, "cpu") for addr in cfg.cpu_addrs] 
-    
+        # cpu = len(self.cpus)
+        # sw = len(self.sws)
+        # if cpu < sw:
+        #     cpu = sw
+        # self.loop = asyncio.get_event_loop()
+        # self.executor = ThreadPoolExecutor(cpu)
+
     def cpu_get(self, url, data = None, params = None):
         data = [rest.get(url, data = None) for rest in self.cpus]
+        # print(data)
+        # tasks = []
+        # for rest in self.cpus:
+        #     task = self.loop.run_in_executor(self.executor, rest.get, url)
+        #     tasks.append(task)
+        # tuple_t = self.loop.run_until_complete(asyncio.wait(tasks))
+        # data = [future.result() for future in tuple_t[0]]
         return data
 
     def cpu_put(self, url, data = None, params = None):
