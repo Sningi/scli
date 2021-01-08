@@ -1,6 +1,7 @@
 import click
 
-from base import cli, clean_data
+from base import cli
+from sf.general_rest_api import general_clean_data
 from utils.http_helper import hp
 from utils.tools import *
 
@@ -50,7 +51,7 @@ def intf_cfg_cpu(op, intf, filter=None, value=None):
             tb = gen_table_intf_cpu(data, cpu.addr, filter=filter)
             click.echo(click.style(str(tb), fg='green'))
     elif op == 'clean':
-        data = hp.cpu_patch('interfaces/config', clean_data)
+        data = hp.cpu_patch('interfaces/config', general_clean_data)
         click.echo(gen_table(data, tab="code"))
     elif op == "set":
         plist = gen_intfs_sw(value)

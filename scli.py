@@ -1,5 +1,6 @@
 import os
 import click
+from itertools import zip_longest
 
 from config import Config
 from base import cli
@@ -37,7 +38,7 @@ def show_devcontrol_ip(op, dev):
     if op == "show":
         if dev == "all":
             field_names = ["index", "SWITCH", "CPU"]
-            for index, group in enumerate(zip(Config.cpu_addrs,Config.sw_addrs)):
+            for index, group in enumerate(zip_longest(Config.cpu_addrs,Config.sw_addrs)):
                 data.append([index + 1, group[0], group[1]])
             tb = create_custiom_table(data, field_names)
             click.echo(tb)

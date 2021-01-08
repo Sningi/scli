@@ -1,7 +1,8 @@
 import click
 from json import dumps
 
-from base import cli, clean_data
+from base import cli
+from sf.general_rest_api import general_clean_data
 from utils.http_helper import hp
 from utils.tools import gen_table
 from utils.static_data import *
@@ -89,5 +90,5 @@ def sctp_stat(op, filter):
         data = hp.cpu_get('sctp/stat')
         print(gen_table(data, tab="count", filter=filter))
     elif op == 'clean':
-        data = hp.cpu_patch('sctp/stat', clean_data)
+        data = hp.cpu_patch('sctp/stat', general_clean_data)
         print(gen_table(data, tab="result"))

@@ -1,6 +1,7 @@
 import click
 
-from base import cli, clean_data
+from base import cli 
+from sf.general_rest_api import general_clean_data
 from utils.http_helper import hp
 from utils.tools import gen_table
 
@@ -68,5 +69,5 @@ def acl_imsi_config(op, field=None, value =None):
 #         data = hp.cpu_get('acl_imsi/stat')
 #         print(gen_table(data, tab="count", filter=filter))
 #     elif op == 'clean':
-#         data = hp.cpu_patch('acl_imsi/stat', clean_data)
+#         data = hp.cpu_patch('acl_imsi/stat', general_clean_data)
 #         print(gen_table(data, tab="code"))

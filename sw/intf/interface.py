@@ -1,6 +1,6 @@
 import click
 
-from base import cli, clean_data
+from base import cli
 from utils.http_helper import hp
 from utils.tools import gen_table, gen_table_intf, INTF_MAP,INTF_MAP_REST
 

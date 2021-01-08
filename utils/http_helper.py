@@ -16,6 +16,10 @@ def SCLI_HTTP_REQUEST(cls_func):
         except Exception as e:
             if type(e).__name__ in requests.exceptions.__dir__():
                 return [type(e).__name__  , self.addr, "connect error!!"]
+            if type(e).__name__ == "JSONDecodeError":
+                return [self.response.status_code, self.addr, self.response.text]
+            else:
+                return [type(e).__name__  , self.addr, "other error!!"]
     return wrapper
 
 
@@ -96,14 +100,14 @@ class Http:
         return [self.response.status_code, self.addr, self.response.json()]
 
     @SCLI_HTTP_REQUEST
-    def raw_post(self, short_url, raw_data, header = None, params = None, loop=0): 
+    def raw_post(self, short_url, raw_data, header = None, params = None, files = None, loop=0): 
         loop += 1
         if loop > 5:
             return [400,self.addr,"login failed may error passwd"]
-        self.response = self.session.post(url=self.base_url + short_url, data=raw_data, header = header , params = params, timeout=self.timeout, verify=False)
+        self.response = self.session.post(url=self.base_url + short_url, data=raw_data, headers = header , params = params, files = files, timeout=self.timeout, verify=False)
         if self.response.status_code == Httplib.UNAUTHORIZED:
             self.login_may_use_cookie(clear_cookie=True)
-            return self.raw_post(short_url, raw_data, header, params, loop=loop)
+            return self.raw_post(short_url, raw_data, header, params, files = files, loop=loop)
         return [self.response.status_code, self.addr, self.response.text]
 
     @SCLI_HTTP_REQUEST
@@ -115,7 +119,7 @@ class Http:
         if self.response.status_code == Httplib.UNAUTHORIZED:
             self.login_may_use_cookie(clear_cookie=True)
             return self.delete(short_url, data, params, loop=loop)
-        return [self.response.status_code ,self,addr, self.response.text]
+        return [self.response.status_code ,self.addr, self.response.text]
 
     @SCLI_HTTP_REQUEST
     def put(self, short_url, data, params = None, loop=0):
@@ -163,8 +167,8 @@ class Helper:
         data = [rest.post(url,data) for rest in self.cpus]
         return data
 
-    def cpu_raw_post(self, url, data = None, header = None, params = None):
-        data = [rest.raw_post(url, data, header) for rest in self.cpus]
+    def cpu_raw_post(self, url, data = None, header = None, params = None, files = None):
+        data = [rest.raw_post(url, data, header, params, files) for rest in self.cpus]
         return data
 
     def cpu_patch(self, url, data = None, params = None):
@@ -187,8 +191,8 @@ class Helper:
         data = [rest.post(url,data) for rest in self.sws]
         return data
 
-    def sw_raw_post(self, url, data = None, header = None, params = None):
-        data = [rest.raw_post(url, data, header) for rest in self.sws]
+    def sw_raw_post(self, url, data = None, header = None, params = None, files = None):
+        data = [rest.raw_post(url, data, header, params, files) for rest in self.sws]
         return data
 
     def sw_patch(self, url, data = None, params = None):

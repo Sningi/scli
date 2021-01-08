@@ -50,21 +50,21 @@ def table_add_colum(tb, data):
 
 ####Common Generator Functions
 def get_intfs_from_rest():
-    intfs = set()
+    intfs = [] 
     data = hp.cpu_get("interfaces/config")
     for d in data:
         if isinstance(d[2],dict):
             for item in d[2]:
-                intfs.add(item)
+                intfs.append(item)
     return intfs
 
 def get_existed_action():
-    idxs = set()
+    idxs = []
     data = hp.cpu_get("actions")
     for d in data:
         if isinstance(d[2],dict):
             for item in d[2]:
-                idxs.add(item)
+                idxs.append(item)
     return idxs
 
 def gen_intfs_cpu(desc):
