@@ -15,7 +15,7 @@ def SCLI_HTTP_REQUEST(cls_func):
             return cls_func(self, *args, **kwargs)
         except Exception as e:
             if type(e).__name__ in requests.exceptions.__dir__():
-                return [type(e).__name__  , self.addr, "connect error!!"]
+                return [111  , self.addr, "connect error"]
             if type(e).__name__ == "JSONDecodeError":
                 return [self.response.status_code, self.addr, self.response.text]
             else:

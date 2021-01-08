@@ -11,7 +11,7 @@ def sctp_operation(ctx, args, incomplete):
     colors = [('show', 'show config'),
               ('enable', 'enable feature'), 
               ('disable', 'disble feature'),
-              ('timeout', 'set timeout')]
+              ('set', 'set timeout')]
     return [c for c in colors if incomplete in c[0]]
 
 sctp_cfg_field = [  ('sctp_decode', 'sctp_decode_enable'),
@@ -22,7 +22,7 @@ sctp_cfg_field = [  ('sctp_decode', 'sctp_decode_enable'),
             ('nas_decrypt', 'ngap_nas_decrypt_enable'),
             ('nas_decrypted_output', 'ngap_nas_decrypted_output_enable'),
 
-            ('ngap_cdr_timeout', 'ngap_imsi_timeout_cycle'),
+            ('ngap_imsi_timeout', 'ngap_imsi_timeout_cycle'),
             ('ngap_cdr_timeout', 'ngap_cdr_timeout'),
             ('ngap_small_cdr_timeout', 'ngap_small_cdr_timeout'),
             ('ngap_handover_cdr_timeout', 'ngap_handover_cdr_timeout')]
@@ -30,7 +30,7 @@ sctp_cfg_dict = dict(sctp_cfg_field)
 
 
 def cfg_field(ctx, args, incomplete):
-    if args[-1] == "timeout":
+    if args[-1] == "set":
         return [i for i in sctp_cfg_field if incomplete in i[0] and "timeout" in i[0]]
     elif args[-1] in ["enable", "disable"]:
         return [i for i in sctp_cfg_field if incomplete in i[0] and "timeout" not in i[0]]
@@ -46,7 +46,7 @@ def cfg_value(ctx, args, incomplete):
 @click.argument("op", type=click.STRING, autocompletion=sctp_operation)
 @click.argument("field", type=click.STRING, autocompletion=cfg_field, required=False)
 @click.argument("value", type=click.STRING, autocompletion=cfg_value, required=False)
-def sctp_config(op, field=None, value =None):
+def sctp_cfg(op, field=None, value =None):
     if op == 'show':
         data = hp.cpu_get('sctp/config')
         if field:
@@ -61,8 +61,7 @@ def sctp_config(op, field=None, value =None):
                     "value":SWITCH[op]}]
         data = hp.cpu_patch('sctp/config', op_data)
         print(gen_table(data, tab="code"))
-    elif op == "timeout":
-
+    elif op == "set":
         op_data = [{"op":"replace",
             "path":"/"+sctp_cfg_dict[field],
             "value":value}]
@@ -91,4 +90,34 @@ def sctp_stat(op, filter):
         print(gen_table(data, tab="count", filter=filter))
     elif op == 'clean':
         data = hp.cpu_patch('sctp/stat', general_clean_data)
+        print(gen_table(data, tab="result"))
+
+
+ngap_type = { 'small_cdr':("small_cdr",'ngap/small_cdr/stat'),
+              'nas_dec':('nas_dec',"ngap/nas_dec/stat"),
+              'sig':("sig",'ngap/sig/stat'),
+              'ngap':("ngap",'ngap/stat'),
+              "sync":("sync",'sig/sync'),
+              '5gs':("5gs",'sig/5gs_arch'),
+              }
+def ngap_type_comp(ctx, args, incomplete):
+    return [ngap_type[key] for key in ngap_type if ngap_type[key][0].startswith(incomplete)]
+
+def ngap_stat_filter(ctx, args, incomplete):
+    comp = [('create', 'chunk stat'),
+              ('failed', 'error stat'),
+              ('total', 'total stat')]
+    return [c for c in comp if c[0].startswith(incomplete)]
+
+@cli.command()
+@click.argument("op", type=click.STRING, autocompletion=sctp_stat_operation)
+@click.argument("type", type=click.STRING, autocompletion=ngap_type_comp)
+@click.argument("filter", type=click.STRING, autocompletion=ngap_stat_filter, required=False)
+def ngap_stat(op, type, filter):
+    if op == 'show':
+        # print('sctp/{0}'.format(ngap_type[type][1]))
+        data = hp.cpu_get('sctp/{0}'.format(ngap_type[type][1]))
+        print(gen_table(data, tab="count", filter=filter))
+    elif op == 'clean':
+        data = hp.cpu_patch('sctp/stat', clean_data)
         print(gen_table(data, tab="result"))

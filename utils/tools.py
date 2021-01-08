@@ -112,20 +112,22 @@ def gen_table(data, tab="item",filter=None):
     tb = PrettyTable()
     tb.field_names = [tab,*[item[1] for item in data]]
     tb.align[tab] = "l"
-    if isinstance(data[0][2], dict):
-        for key in sorted(data[0][2]):
-            if (filter and filter in key) or not filter:
-                row = [key, *[item[2][key] if isinstance(item[2],dict) else item[2] for item in data]]
-                # if(len(row)==len(tb.field_names)):
-                tb.add_row(row)
-    else:
-        row = [tab, *[ Httplib.STATUS[item[0]][0] if item[0] in Httplib.STATUS else item[0] for item in data] ]
+    # if isinstance(data[0][2], dict): 
+    for one in data:
+        if isinstance(one[2],dict):
+            for key in sorted(one[2]):
+                if (filter and filter in key) or not filter:
+                    row = [key, *[item[2][key] if isinstance(item[2],dict) else item[2] for item in data]]
+                    # if(len(row)==len(tb.field_names)):
+                    tb.add_row(row)
+            break
+    if len(tb._rows) == 0:
+        row = ["status", *[ Httplib.STATUS[item[0]][0] if item[0] in Httplib.STATUS else item[0] for item in data] ]
         tb.add_row(row)
     tb.get_string(sortby=tab, reversesort=True)
     return tb
 
 def gen_table_intf(data, tab="item",filter=None):
-    print(dumps(data))
     expect = {
         "statistics":[
             "rx_mbps",
@@ -148,6 +150,7 @@ def gen_table_intf(data, tab="item",filter=None):
             "speed",
             "mtu",
             "enable",
+            "transceiver_mode",
             ]
 
     }
@@ -164,7 +167,7 @@ def gen_table_intf(data, tab="item",filter=None):
         if isinstance(portinfo[2], dict):
             for port in portinfo[2]:
                 if filter in portinfo[2][port]:
-                    portstat = [portinfo[2][port][filter][stat] for stat in expect[filter]]
+                    portstat = [portinfo[2][port][filter][stat] if stat in portinfo[2][port][filter] else None for stat in expect[filter]]
                     row = [port,*portstat]
                     tb.add_row(row)
                 else:

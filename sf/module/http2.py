@@ -40,7 +40,7 @@ def cfg_value(ctx, args, incomplete):
 @click.argument("op", type=click.STRING, autocompletion=http2_operation)
 @click.argument("field", type=click.STRING, autocompletion=cfg_field, required=False)
 @click.argument("value", type=click.STRING, autocompletion=cfg_value, required=False)
-def http2_config(op, field=None, value =None):
+def http2_cfg(op, field=None, value =None):
     if op == 'show':
         data = hp.cpu_get('http2/config')
         if field:
@@ -86,7 +86,7 @@ def http2_stat_filter(ctx, args, incomplete):
 def http2_stat(op, filter):
     if op == 'show':
         data = hp.cpu_get('http2/stat')
-        data = [[d[0],d[1],d[2]["stat"]] for d in data]
+        data = [[d[0],d[1],d[2]["stat"]] if isinstance(d[2],dict) else [d[0],d[1],d[2]] for d in data]
         if filter == "all":
             filter = None
         print(gen_table(data, tab="count", filter=filter))

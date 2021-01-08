@@ -35,7 +35,7 @@ def cpu_intfs(ctx, args, incomplete):
 @click.argument("intf", type=click.STRING, autocompletion=cpu_intfs)
 @click.argument("filter", type=click.STRING, autocompletion=cpu_intf_filter)
 @click.argument("value", type=click.STRING, autocompletion=cpu_intf_filter, required=False)
-def intf_cfg_cpu(op, intf, filter=None, value=None):
+def intf_cpu(op, intf, filter=None, value=None):
     restid = gen_intfs_cpu(intf)
     if not restid:
         click.echo("PORT INDEX ERROR")
