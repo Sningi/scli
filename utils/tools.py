@@ -125,7 +125,6 @@ def gen_table(data, tab="item",filter=None):
     return tb
 
 def gen_table_intf(data, tab="item",filter=None):
-    print(dumps(data))
     expect = {
         "statistics":[
             "rx_mbps",

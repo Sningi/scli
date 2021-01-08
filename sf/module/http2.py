@@ -85,7 +85,7 @@ def http2_stat_filter(ctx, args, incomplete):
 def http2_stat(op, filter):
     if op == 'show':
         data = hp.cpu_get('http2/stat')
-        data = [[d[0],d[1],d[2]["stat"]] for d in data]
+        data = [[d[0],d[1],d[2]["stat"]] if isinstance(d[2],dict) else [d[0],d[1],d[2]] for d in data]
         if filter == "all":
             filter = None
         print(gen_table(data, tab="count", filter=filter))

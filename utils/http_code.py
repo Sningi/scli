@@ -163,6 +163,7 @@ class Httplib:
         556: ('SF SERVER out of memory', 'Asterfuion FusionNOS'),
         598: ('Network read timeout error', 'Unknown'),
         599: ('Network connect timeout error', 'Unknown'),
+        111: ('rest unavailable', 'Connection refused'),
     }
 
     def __new__(cls, *args, **kwargs):
