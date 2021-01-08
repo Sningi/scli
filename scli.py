@@ -17,6 +17,7 @@ from sf.module.http2 import http2_cfg, http2_stat
 from sf.module.gtpu import gtpu_stat
 from sf.module.ip_reass import ipreass_cfg, ipreass_stat
 from sf.module.sslcon import *
+from sw.module.sslcon import *
 
 def dev_op(ctx, args, incomplete):
     comp = [('show', 'show stat')]

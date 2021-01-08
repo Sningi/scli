@@ -214,6 +214,8 @@ def sslcon_stat(op, filter):
         data = hp.cpu_patch('ssl_concatenation/stat', clean_data)
         field_names = ["code",  "ipaddr", "body"]
         SF_PRINT(str(create_custiom_table(data,field_names)))
+    else:
+        SF_PRINT("Invalid values input!!")
 
 ################################ passthrough_ip  ####################################
 def sslcon_passip_operation(ctx, args, incomplete):
@@ -280,6 +282,8 @@ def sslcon_passthrough_ip(op, filter, value):
                 SF_PRINT("Invalid values input!!")
         else:
             SF_PRINT("Invalid values input!!")
+    else:
+        SF_PRINT("Invalid values input!!")
 
 
 ################################ SERVER CONFIG  ####################################
