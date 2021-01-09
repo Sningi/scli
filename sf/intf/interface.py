@@ -48,9 +48,11 @@ def intf_cpu(op, intf, filter=None, value=None):
             data = []
             for idx in restid:
                 surl = 'interfaces/config/{0}'.format(idx)
-                temp = [cpu.get(surl)]
-                for i in temp:
-                    data.append(i)
+                tasks = [hp.loop.create_task(cpu.get(surl))]
+                wait_task = asyncio.wait(tasks)
+                hp.loop.run_until_complete(wait_task)
+                data += [task.result() for task in tasks]
+
             tb = gen_table_intf_cpu(data, cpu.addr, filter=filter)
             click.echo(click.style(str(tb), fg='green'))
     elif op == 'clean':

@@ -177,6 +177,8 @@ class Helper:
         self.loop.run_until_complete(wait_login)
 
     def cpu_get(self, url, data=None, params=None):
+        if not self.cpus:
+            return None
         tasks = [self.loop.create_task(
             rest.get(url, data, params)) for rest in self.cpus]
         get = asyncio.wait(tasks)
@@ -184,6 +186,8 @@ class Helper:
         return [task.result() for task in tasks]
 
     def cpu_put(self, url, data=None, params=None):
+        if not self.cpus:
+            return None
         tasks = [self.loop.create_task(
             rest.put(url, data, params)) for rest in self.cpus]
         put = asyncio.wait(tasks)
@@ -191,6 +195,8 @@ class Helper:
         return [task.result() for task in tasks]
 
     def cpu_post(self, url, data=None, params=None):
+        if not self.cpus:
+            return None
         tasks = [self.loop.create_task(
             rest.post(url, data, params)) for rest in self.cpus]
         post = asyncio.wait(tasks)
@@ -198,27 +204,35 @@ class Helper:
         return [task.result() for task in tasks]
 
     def cpu_raw_post(self, url, data=None, header=None, params=None, files=None):
-        tasks = [self.loop.create_task(rest.raw_post(
-            url, data, header, params, files)) for rest in self.cpus]
+        if not self.cpus:
+            return None
+        tasks = [self.loop.create_task(
+            rest.raw_post(url, data, header, params, files)) for rest in self.cpus]
         post = asyncio.wait(tasks)
         self.loop.run_until_complete(post)
         return [task.result() for task in tasks]
 
     def cpu_patch(self, url, data=None, params=None):
-        tasks = [self.loop.create_task(rest.patch(
-            url, data, params)) for rest in self.cpus]
+        if not self.cpus:
+            return None
+        tasks = [self.loop.create_task(
+            rest.patch(url, data, params)) for rest in self.cpus]
         patch = asyncio.wait(tasks)
         self.loop.run_until_complete(patch)
         return [task.result() for task in tasks]
 
     def cpu_delete(self, url, data=None, params=None):
-        tasks = [self.loop.create_task(rest.delete(
-            url, data, params)) for rest in self.cpus]
+        if not self.cpus:
+            return None
+        tasks = [self.loop.create_task(
+            rest.delete(url, data, params)) for rest in self.cpus]
         delete = asyncio.wait(tasks)
         self.loop.run_until_complete(delete)
         return [task.result() for task in tasks]
 
     def sw_get(self, url, data=None, params=None):
+        if not self.sws:
+            return []
         tasks = [self.loop.create_task(
             rest.get(url, data, params)) for rest in self.sws]
         get = asyncio.wait(tasks)
@@ -226,6 +240,8 @@ class Helper:
         return [task.result() for task in tasks]
 
     def sw_put(self, url, data=None, params=None):
+        if not self.sws:
+            return []
         tasks = [self.loop.create_task(
             rest.put(url, data, params)) for rest in self.sws]
         put = asyncio.wait(tasks)
@@ -233,6 +249,8 @@ class Helper:
         return [task.result() for task in tasks]
 
     def sw_post(self, url, data=None, params=None):
+        if not self.sws:
+            return []
         tasks = [self.loop.create_task(
             rest.post(url, data, params)) for rest in self.sws]
         post = asyncio.wait(tasks)
@@ -240,22 +258,28 @@ class Helper:
         return [task.result() for task in tasks]
 
     def sw_raw_post(self, url, data=None, header=None, params=None, files=None):
-        tasks = [self.loop.create_task(rest.raw_post(
-            url, data, header, params, files)) for rest in self.sws]
+        if not self.sws:
+            return []
+        tasks = [self.loop.create_task(
+            rest.raw_post(url, data, header, params, files)) for rest in self.sws]
         post = asyncio.wait(tasks)
         self.loop.run_until_complete(post)
         return [task.result() for task in tasks]
 
     def sw_patch(self, url, data=None, params=None):
-        tasks = [self.loop.create_task(rest.patch(
-            url, data, params)) for rest in self.sws]
+        if not self.sws:
+            return []
+        tasks = [self.loop.create_task(
+            rest.patch(url, data, params)) for rest in self.sws]
         patch = asyncio.wait(tasks)
         self.loop.run_until_complete(patch)
         return [task.result() for task in tasks]
 
     def sw_delete(self, url, data=None, params=None):
-        tasks = [self.loop.create_task(rest.delete(
-            url, data, params)) for rest in self.sws]
+        if not self.sws:
+            return []
+        tasks = [self.loop.create_task(
+            rest.delete(url, data, params)) for rest in self.sws]
         delete = asyncio.wait(tasks)
         self.loop.run_until_complete(delete)
         return [task.result() for task in tasks]

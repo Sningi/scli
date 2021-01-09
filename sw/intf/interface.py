@@ -1,3 +1,4 @@
+import asyncio
 import click
 
 from base import cli
@@ -90,7 +91,10 @@ def intf_sw(op, intf, filter=None):
                 surl = 'interfaces/{0}'.format(idx)
                 if filter:
                     surl += "?keys={}".format(filter)
-                data.append(sw.get(surl))
+                tasks = [hp.loop.create_task(sw.get(surl))]
+                wait_task = asyncio.wait(tasks)
+                hp.loop.run_until_complete(wait_task)
+                data += [task.result() for task in tasks]
             tb = gen_table_intf(data, tab=sw.addr, filter=filter)
             click.echo(click.style(str(tb), fg='green',))
     elif op == 'set':
