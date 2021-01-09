@@ -1,5 +1,4 @@
-import pytest  # 引入pytest包
-
+import pytest
 import click
 from click.testing import CliRunner
 from sf.module.gtpu import gtpu_stat, gtpu_cfg

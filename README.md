@@ -15,4 +15,19 @@ eval "$(_SCLI_COMPLETE=source scli)"
 ```shell
 source ~/.bashrc
 ```
+### 3. Usage
+```
+scli sctp-stat show
+scli sctp-cfg enable nas_decrypt
+```
 
+### 4. config 
+```
+vim scli.cfg
+```
+
+### 5. test
+
+```
+pytest -v test.py
+```

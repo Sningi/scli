@@ -9,6 +9,7 @@ from config import Config
 
 
 def SCLI_HTTP_REQUEST(cls_func):
+    """this Decorators may need not"""
     def wrapper(self, *args, **kwargs):
         try:
             return cls_func(self, *args, **kwargs)
@@ -78,7 +79,7 @@ class Http:
         else:
             return HTTP.OK
 
-    @SCLI_HTTP_REQUEST
+    # @SCLI_HTTP_REQUEST
     async def get(self, short_url, data=None, params=None, loop=0):
         loop += 1
         if loop > 5:
@@ -90,7 +91,7 @@ class Http:
                 return await self.get(short_url, data, params, loop=loop)
             return [res.status, self.addr, data]
 
-    @SCLI_HTTP_REQUEST
+    # @SCLI_HTTP_REQUEST
     async def post(self, short_url, data, params=None, loop=0):
         loop += 1
         if loop > 5:
@@ -102,7 +103,7 @@ class Http:
                 return await self.post(short_url, data, params, loop=loop)
             return [res.status, self.addr, data]
 
-    @SCLI_HTTP_REQUEST
+    # @SCLI_HTTP_REQUEST
     async def raw_post(self, short_url, raw_data, header=None, params=None, files=None, loop=0):
         loop += 1
         if loop > 5:
@@ -114,7 +115,7 @@ class Http:
             return await self.raw_post(short_url, raw_data, header, params, files=files, loop=loop)
         return [res.status, self.addr, data]
 
-    @SCLI_HTTP_REQUEST
+    # @SCLI_HTTP_REQUEST
     async def delete(self, short_url, data=None, params=None, loop=0):
         loop += 1
         if loop > 5:
@@ -126,7 +127,7 @@ class Http:
                 return await self.delete(short_url, data, params, loop=loop)
         return [res.status, self.addr, data]
 
-    @SCLI_HTTP_REQUEST
+    # @SCLI_HTTP_REQUEST
     async def put(self, short_url, data, params=None, loop=0):
         loop += 1
         if loop > 5:
@@ -138,7 +139,7 @@ class Http:
                 return await self.put(short_url, data, params, loop=loop)
             return [res.status, self.addr, data]
 
-    @SCLI_HTTP_REQUEST
+    # @SCLI_HTTP_REQUEST
     async def patch(self, short_url, data, params=None, loop=0):
         loop += 1
         if loop > 5:
@@ -176,6 +177,18 @@ class Helper:
         wait_login = asyncio.wait(tasks)
         self.loop.run_until_complete(wait_login)
 
+
+    def data_from_tasks(self, tasks):
+        data = []
+        for task in tasks:
+            try:
+                data.append(task.result())
+            except aiohttp.client_exceptions.ClientConnectorError as e:
+                data.append([111, '{0}:{1}'.format(e.host, e.port), "connect error"])
+            except Exception as e:
+                data.append([111, 'unknown addr', "connect error"])
+        return data
+
     def cpu_get(self, url, data=None, params=None):
         if not self.cpus:
             return None
@@ -183,7 +196,7 @@ class Helper:
             rest.get(url, data, params)) for rest in self.cpus]
         get = asyncio.wait(tasks)
         self.loop.run_until_complete(get)
-        return [task.result() for task in tasks]
+        return self.data_from_tasks(tasks)
 
     def cpu_put(self, url, data=None, params=None):
         if not self.cpus:
@@ -192,7 +205,7 @@ class Helper:
             rest.put(url, data, params)) for rest in self.cpus]
         put = asyncio.wait(tasks)
         self.loop.run_until_complete(put)
-        return [task.result() for task in tasks]
+        return self.data_from_tasks(tasks)
 
     def cpu_post(self, url, data=None, params=None):
         if not self.cpus:
@@ -201,7 +214,7 @@ class Helper:
             rest.post(url, data, params)) for rest in self.cpus]
         post = asyncio.wait(tasks)
         self.loop.run_until_complete(post)
-        return [task.result() for task in tasks]
+        return self.data_from_tasks(tasks)
 
     def cpu_raw_post(self, url, data=None, header=None, params=None, files=None):
         if not self.cpus:
@@ -210,7 +223,7 @@ class Helper:
             rest.raw_post(url, data, header, params, files)) for rest in self.cpus]
         post = asyncio.wait(tasks)
         self.loop.run_until_complete(post)
-        return [task.result() for task in tasks]
+        return self.data_from_tasks(tasks)
 
     def cpu_patch(self, url, data=None, params=None):
         if not self.cpus:
@@ -219,7 +232,7 @@ class Helper:
             rest.patch(url, data, params)) for rest in self.cpus]
         patch = asyncio.wait(tasks)
         self.loop.run_until_complete(patch)
-        return [task.result() for task in tasks]
+        return self.data_from_tasks(tasks)
 
     def cpu_delete(self, url, data=None, params=None):
         if not self.cpus:
@@ -228,7 +241,7 @@ class Helper:
             rest.delete(url, data, params)) for rest in self.cpus]
         delete = asyncio.wait(tasks)
         self.loop.run_until_complete(delete)
-        return [task.result() for task in tasks]
+        return self.data_from_tasks(tasks)
 
     def sw_get(self, url, data=None, params=None):
         if not self.sws:
@@ -237,7 +250,7 @@ class Helper:
             rest.get(url, data, params)) for rest in self.sws]
         get = asyncio.wait(tasks)
         self.loop.run_until_complete(get)
-        return [task.result() for task in tasks]
+        return self.data_from_tasks(tasks)
 
     def sw_put(self, url, data=None, params=None):
         if not self.sws:
@@ -246,7 +259,7 @@ class Helper:
             rest.put(url, data, params)) for rest in self.sws]
         put = asyncio.wait(tasks)
         self.loop.run_until_complete(put)
-        return [task.result() for task in tasks]
+        return self.data_from_tasks(tasks)
 
     def sw_post(self, url, data=None, params=None):
         if not self.sws:
@@ -255,7 +268,7 @@ class Helper:
             rest.post(url, data, params)) for rest in self.sws]
         post = asyncio.wait(tasks)
         self.loop.run_until_complete(post)
-        return [task.result() for task in tasks]
+        return self.data_from_tasks(tasks)
 
     def sw_raw_post(self, url, data=None, header=None, params=None, files=None):
         if not self.sws:
@@ -264,7 +277,7 @@ class Helper:
             rest.raw_post(url, data, header, params, files)) for rest in self.sws]
         post = asyncio.wait(tasks)
         self.loop.run_until_complete(post)
-        return [task.result() for task in tasks]
+        return self.data_from_tasks(tasks)
 
     def sw_patch(self, url, data=None, params=None):
         if not self.sws:
@@ -273,7 +286,7 @@ class Helper:
             rest.patch(url, data, params)) for rest in self.sws]
         patch = asyncio.wait(tasks)
         self.loop.run_until_complete(patch)
-        return [task.result() for task in tasks]
+        return self.data_from_tasks(tasks)
 
     def sw_delete(self, url, data=None, params=None):
         if not self.sws:
@@ -282,7 +295,7 @@ class Helper:
             rest.delete(url, data, params)) for rest in self.sws]
         delete = asyncio.wait(tasks)
         self.loop.run_until_complete(delete)
-        return [task.result() for task in tasks]
+        return self.data_from_tasks(tasks)
 
     def __del__(self):
         tasks = [self.loop.create_task(sw.del_session()) for sw in self.sws]
