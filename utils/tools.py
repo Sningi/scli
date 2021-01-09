@@ -1,6 +1,6 @@
 from json import dumps
 from prettytable import PrettyTable
-from utils.http_code import Httplib 
+from utils.http_code import HTTP 
 from utils.http_helper import hp
 
 INTF_MAP = dict((["X%d"%i, i] for i in range(1, 57)))
@@ -122,7 +122,7 @@ def gen_table(data, tab="item",filter=None):
                     tb.add_row(row)
             break
     if len(tb._rows) == 0:
-        row = ["status", *[ Httplib.STATUS[item[0]][0] if item[0] in Httplib.STATUS else item[0] for item in data] ]
+        row = ["status", *[ HTTP.STATUS[item[0]][0] if item[0] in HTTP.STATUS else item[0] for item in data] ]
         tb.add_row(row)
     tb.get_string(sortby=tab, reversesort=True)
     return tb

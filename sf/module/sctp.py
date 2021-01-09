@@ -90,7 +90,8 @@ def sctp_stat(op, filter):
         print(gen_table(data, tab="count", filter=filter))
     elif op == 'clean':
         data = hp.cpu_patch('sctp/stat', general_clean_data)
-        print(gen_table(data, tab="result"))
+        print(data)
+        # print(gen_table(data, tab="result"))
 
 
 ngap_type = { 'small_cdr':("small_cdr",'ngap/small_cdr/stat'),
@@ -115,9 +116,8 @@ def ngap_stat_filter(ctx, args, incomplete):
 @click.argument("filter", type=click.STRING, autocompletion=ngap_stat_filter, required=False)
 def ngap_stat(op, type, filter):
     if op == 'show':
-        # print('sctp/{0}'.format(ngap_type[type][1]))
         data = hp.cpu_get('sctp/{0}'.format(ngap_type[type][1]))
         print(gen_table(data, tab="count", filter=filter))
     elif op == 'clean':
-        data = hp.cpu_patch('sctp/stat', clean_data)
+        data = hp.cpu_patch('sctp/stat', general_clean_data)
         print(gen_table(data, tab="result"))

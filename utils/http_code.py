@@ -1,4 +1,4 @@
-class Httplib:
+class HTTP:
     # status codes
     # informational
     CONTINUE = 100
@@ -167,6 +167,6 @@ class Httplib:
     }
 
     def __new__(cls, *args, **kwargs):
-        if cls is Httplib:
-            raise TypeError("Httplib may not be instantiated")
+        if cls is HTTP:
+            raise TypeError("HTTP may not be instantiated")
         return object.__new__(cls, *args, **kwargs)
