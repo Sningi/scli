@@ -1,42 +1,46 @@
 import click
 
-from base import cli 
+from base import cli
 from sf.general_rest_api import general_clean_data
 from utils.http_helper import hp
 from utils.tools import gen_table
 
+
 def acl_imsi_operation(ctx, args, incomplete):
     colors = [('show', 'show config'),
-              ('enable', 'enable feature'), 
+              ('enable', 'enable feature'),
               ('disable', 'disble config'),
               ('timeout', 'set timeout')]
     return [c for c in colors if incomplete in c[0]]
 
-def config_field(ctx, args, incomplete):
-    field = [  ('acl_imsi_decode', 'acl_imsi_decode_enable'),
-                ('acl_imsi_decode_upproto', 'acl_imsi_decode_upproto_enable'),
-                ('ngap_decode', 'ngap_decode_enable'),
-                ('ngap_skip_paging', 'ngap_decode_skip_paging_enable'),
-                ('ngap_cdr', 'ngap_cdr_enable'),
-                ('nas_decrypt', 'ngap_nas_decrypt_enable'),
-                ('nas_decrypted_output', 'ngap_nas_decrypted_output_enable'),
 
-                ('ngap_cdr_timeout', 'ngap_imsi_timeout_cycle'),
-                ('ngap_cdr_timeout', 'ngap_cdr_timeout'),
-                ('ngap_small_cdr_timeout', 'ngap_small_cdr_timeout'),
-                ('ngap_handover_cdr_timeout', 'ngap_handover_cdr_timeout'),]
+def config_field(ctx, args, incomplete):
+    field = [('acl_imsi_decode', 'acl_imsi_decode_enable'),
+             ('acl_imsi_decode_upproto', 'acl_imsi_decode_upproto_enable'),
+             ('ngap_decode', 'ngap_decode_enable'),
+             ('ngap_skip_paging', 'ngap_decode_skip_paging_enable'),
+             ('ngap_cdr', 'ngap_cdr_enable'),
+             ('nas_decrypt', 'ngap_nas_decrypt_enable'),
+             ('nas_decrypted_output', 'ngap_nas_decrypted_output_enable'),
+
+             ('ngap_cdr_timeout', 'ngap_imsi_timeout_cycle'),
+             ('ngap_cdr_timeout', 'ngap_cdr_timeout'),
+             ('ngap_small_cdr_timeout', 'ngap_small_cdr_timeout'),
+             ('ngap_handover_cdr_timeout', 'ngap_handover_cdr_timeout'), ]
     return [i for i in field if incomplete in i[0]]
+
 
 def config_value(ctx, args, incomplete):
     colors = [('enable', 'enable feature'),
               ('disable', 'set config')]
     return [c for c in colors if c[0].startswith(incomplete)]
 
-@cli.command()# @cli, not @click!
+
+@cli.command()  # @cli, not @click!
 @click.argument("op", type=click.STRING, autocompletion=acl_imsi_operation)
 @click.argument("field", type=click.STRING, autocompletion=config_field, required=False)
 @click.argument("value", type=click.STRING, autocompletion=config_value, required=False)
-def acl_imsi_config(op, field=None, value =None):
+def acl_imsi_config(op, field=None, value=None):
     if op == 'show':
         data = hp.cpu_get('acl/config/group_1')
         print(gen_table(data,))

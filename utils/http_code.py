@@ -4,7 +4,7 @@ class HTTP:
     CONTINUE = 100
     SWITCHING_PROTOCOLS = 101
     PROCESSING = 102
-    
+
     # successful
     OK = 200
     CREATED = 201
@@ -15,7 +15,7 @@ class HTTP:
     PARTIAL_CONTENT = 206
     MULTI_STATUS = 207
     IM_USED = 226
-    
+
     # redirection
     MULTIPLE_CHOICES = 300
     MOVED_PERMANENTLY = 301
@@ -24,7 +24,7 @@ class HTTP:
     NOT_MODIFIED = 304
     USE_PROXY = 305
     TEMPORARY_REDIRECT = 307
-    
+
     # client error
     BAD_REQUEST = 400
     UNAUTHORIZED = 401
@@ -48,7 +48,7 @@ class HTTP:
     LOCKED = 423
     FAILED_DEPENDENCY = 424
     UPGRADE_REQUIRED = 426
-    
+
     # server error
     INTERNAL_SERVER_ERROR = 500
     NOT_IMPLEMENTED = 501

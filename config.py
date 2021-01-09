@@ -1,18 +1,19 @@
 import json
 import configparser
 
-class Config:
-    cpu_user  = None 
-    cpu_pwd   = None
 
-    sw_user   = None
-    sw_pwd    = None
+class Config:
+    cpu_user = None
+    cpu_pwd = None
+
+    sw_user = None
+    sw_pwd = None
 
     cpu_restv = None
-    sw_restv  = None
+    sw_restv = None
 
     cpu_addrs = []
-    sw_addrs  = []
+    sw_addrs = []
 
     @classmethod
     def instance(cls, *args, **kwargs):
@@ -25,7 +26,7 @@ scli_cfg_dir = ""
 scli_cfg_filename = scli_cfg_dir + "scli.cfg"
 
 scli_config = configparser.ConfigParser()
-scli_config.read(scli_cfg_filename , encoding = "utf-8")
+scli_config.read(scli_cfg_filename, encoding="utf-8")
 
 devControl = "devControl"
 
@@ -35,22 +36,22 @@ if scli_config.has_section(devControl):
         if option == "cpu_user":
             Config.cpu_user = scli_config.get(devControl, option)
         elif option == "cpu_pwd":
-            Config.cpu_pwd  = scli_config.get(devControl, option)
+            Config.cpu_pwd = scli_config.get(devControl, option)
         elif option == "sw_user":
-            Config.sw_user  = scli_config.get(devControl, option)
+            Config.sw_user = scli_config.get(devControl, option)
         elif option == "sw_pwd":
-            Config.sw_pwd  = scli_config.get(devControl, option)
+            Config.sw_pwd = scli_config.get(devControl, option)
         elif option == "cpu_restv":
-            Config.cpu_restv  = scli_config.get(devControl, option)
+            Config.cpu_restv = scli_config.get(devControl, option)
         elif option == "sw_restv":
-            Config.sw_restv  = scli_config.get(devControl, option)
+            Config.sw_restv = scli_config.get(devControl, option)
         elif option == "cpu_addrs":
             Config.cpu_addrs = json.loads(scli_config.get(devControl, option))
         elif option == "sw_addrs":
-            Config.sw_addrs  = json.loads(scli_config.get(devControl, option))
+            Config.sw_addrs = json.loads(scli_config.get(devControl, option))
 
 if __name__ == "__main__":
-    print("TEST IP:",Config.cpu_addrs, " type:", type(Config.cpu_addrs))
-    print("TEST IP:",Config.sw_addrs, " type:", type(Config.sw_addrs))
-    print("RESTv:",Config.sw_restv)
-    print("RESTv:",Config.cpu_restv)
+    print("TEST IP:", Config.cpu_addrs, " type:", type(Config.cpu_addrs))
+    print("TEST IP:", Config.sw_addrs, " type:", type(Config.sw_addrs))
+    print("RESTv:", Config.sw_restv)
+    print("RESTv:", Config.cpu_restv)

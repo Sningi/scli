@@ -5,19 +5,20 @@ from itertools import zip_longest
 from config import Config
 from base import cli
 from utils.http_helper import hp
-from utils.tools import create_custiom_table 
+from utils.tools import create_custiom_table
 
-from sf.acl.acl import acl
-from sf.action.action import action
-from sw.intf.interface import intf_sw
-from sf.intf.interface import intf_cpu
-#module
-from sf.module.sctp import sctp_cfg, sctp_stat
-from sf.module.http2 import http2_cfg, http2_stat
-from sf.module.gtpu import gtpu_stat
-from sf.module.ip_reass import ipreass_cfg, ipreass_stat
-from sf.module.sslcon import *
-from sw.module.sslcon import *
+from sf.acl.acl import sf_acl_finish
+from sf.action.action import sf_action_finish
+from sw.intf.interface import sw_intf_finish
+from sf.intf.interface import sf_intf_finish
+# module
+from sf.module.sctp import sf_sctp_finish
+from sf.module.http2 import sf_http2_finish
+from sf.module.gtpu import sf_gtpu_finish
+from sf.module.ip_reass import sf_ipreass_finish
+from sf.module.sslcon import sf_sslcon_finish
+from sw.module.sslcon import sw_sslcon_finsh
+
 
 def dev_op(ctx, args, incomplete):
     comp = [('show', 'show stat')]
@@ -25,20 +26,21 @@ def dev_op(ctx, args, incomplete):
 
 
 def dev_type(ctx, args, incomplete):
-    comp = [    ('cpu', 'cpu ip'),
-                ('switch', 'switch ip'),
-                ('all', 'all ip')]
+    comp = [('cpu', 'cpu ip'),
+            ('switch', 'switch ip'),
+            ('all', 'all ip')]
     return [c for c in comp if incomplete in c[0]]
+
 
 @cli.command()
 @click.argument("op", type=click.STRING, autocompletion=dev_op)
 @click.argument("dev", type=click.STRING, autocompletion=dev_type)
-def show_devcontrol_ip(op, dev):
+def dev_ip(op, dev):
     data = []
     if op == "show":
         if dev == "all":
             field_names = ["index", "SWITCH", "CPU"]
-            for index, group in enumerate(zip_longest(Config.cpu_addrs,Config.sw_addrs)):
+            for index, group in enumerate(zip_longest(Config.cpu_addrs, Config.sw_addrs)):
                 data.append([index + 1, group[0], group[1]])
             tb = create_custiom_table(data, field_names)
             click.echo(tb)
@@ -54,6 +56,7 @@ def show_devcontrol_ip(op, dev):
                 data.append([index + 1, group])
             tb = create_custiom_table(data, field_names)
             click.echo(tb)
+
 
 if __name__ == '__main__':
     pass

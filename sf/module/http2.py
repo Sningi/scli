@@ -1,25 +1,27 @@
 import click
 from json import dumps
 
-from base import cli 
+from base import cli
 from sf.general_rest_api import general_clean_data
 from utils.http_helper import hp
 from utils.tools import gen_table
 from utils.static_data import *
 
+
 def http2_operation(ctx, args, incomplete):
     colors = [('show', 'show config'),
-              ('enable', 'enable feature'), 
+              ('enable', 'enable feature'),
               ('disable', 'disble feature'),
               ('timeout', 'set timeout')]
     return [c for c in colors if c[0].startswith(incomplete)]
 
-http2_cfg_field = [  ('http2_decode', 'enable'),
-            ('n11_decode', 'enable_N11_decode'),
 
-            ('n11_timeout', 'N11_table_time'),
-            ('stream_timeout', 'stream_time'),
-            ('connect_timeout', 'connect_time')]
+http2_cfg_field = [('http2_decode', 'enable'),
+                   ('n11_decode', 'enable_N11_decode'),
+
+                   ('n11_timeout', 'N11_table_time'),
+                   ('stream_timeout', 'stream_time'),
+                   ('connect_timeout', 'connect_time')]
 http2_cfg_dict = dict(http2_cfg_field)
 
 
@@ -36,11 +38,12 @@ def cfg_value(ctx, args, incomplete):
     field = [('1-1200', 'timeout value')]
     return [c for c in field if c[0].startswith(incomplete)]
 
-@cli.command()# @cli, not @click!
+
+@cli.command()  # @cli, not @click!
 @click.argument("op", type=click.STRING, autocompletion=http2_operation)
 @click.argument("field", type=click.STRING, autocompletion=cfg_field, required=False)
 @click.argument("value", type=click.STRING, autocompletion=cfg_value, required=False)
-def http2_cfg(op, field=None, value =None):
+def http2_cfg(op, field=None, value=None):
     if op == 'show':
         data = hp.cpu_get('http2/config')
         if field:
@@ -50,16 +53,16 @@ def http2_cfg(op, field=None, value =None):
         if not field or field not in http2_cfg_dict:
             print("{0} field is none".format(op))
             exit()
-        op_data = [{"op":"replace",
-                    "path":"/"+http2_cfg_dict[field],
+        op_data = [{"op": "replace",
+                    "path": "/"+http2_cfg_dict[field],
                     "value":SWITCH[op]}]
         data = hp.cpu_patch('http2/config', op_data)
         print(gen_table(data, tab="code"))
     elif op == "timeout":
 
-        op_data = [{"op":"replace",
-            "path":"/"+http2_cfg_dict[field],
-            "value":int(value)}]
+        op_data = [{"op": "replace",
+                    "path": "/"+http2_cfg_dict[field],
+                    "value":int(value)}]
         data = hp.cpu_patch('http2/config', op_data)
         print(gen_table(data, tab="code"))
 
@@ -73,7 +76,7 @@ def http2_stat_operation(ctx, args, incomplete):
 def http2_stat_filter(ctx, args, incomplete):
     if args[-1] == "clean":
         comp = [('all', 'all stat')]
-    elif args[-1]== "show":
+    elif args[-1] == "show":
         comp = [('h2', 'http2 stat'),
                 ('n11', 'n11 stat'),
                 ('all', 'all stat')]
@@ -86,10 +89,14 @@ def http2_stat_filter(ctx, args, incomplete):
 def http2_stat(op, filter):
     if op == 'show':
         data = hp.cpu_get('http2/stat')
-        data = [[d[0],d[1],d[2]["stat"]] if isinstance(d[2],dict) else [d[0],d[1],d[2]] for d in data]
+        data = [[d[0], d[1], d[2]["stat"]] if isinstance(
+            d[2], dict) else [d[0], d[1], d[2]] for d in data]
         if filter == "all":
             filter = None
         print(gen_table(data, tab="count", filter=filter))
     elif op == 'clean':
         data = hp.cpu_patch('http2/stat', general_clean_data)
         print(gen_table(data, tab="code"))
+
+
+sf_http2_finish = ''

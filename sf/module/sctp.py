@@ -7,25 +7,27 @@ from utils.http_helper import hp
 from utils.tools import gen_table
 from utils.static_data import *
 
+
 def sctp_operation(ctx, args, incomplete):
     colors = [('show', 'show config'),
-              ('enable', 'enable feature'), 
+              ('enable', 'enable feature'),
               ('disable', 'disble feature'),
               ('set', 'set timeout')]
     return [c for c in colors if incomplete in c[0]]
 
-sctp_cfg_field = [  ('sctp_decode', 'sctp_decode_enable'),
-            ('sctp_decode_upproto', 'sctp_decode_upproto_enable'),
-            ('ngap_decode', 'ngap_decode_enable'),
-            ('ngap_skip_paging', 'ngap_decode_skip_paging_enable'),
-            ('ngap_cdr', 'ngap_cdr_enable'),
-            ('nas_decrypt', 'ngap_nas_decrypt_enable'),
-            ('nas_decrypted_output', 'ngap_nas_decrypted_output_enable'),
 
-            ('ngap_imsi_timeout', 'ngap_imsi_timeout_cycle'),
-            ('ngap_cdr_timeout', 'ngap_cdr_timeout'),
-            ('ngap_small_cdr_timeout', 'ngap_small_cdr_timeout'),
-            ('ngap_handover_cdr_timeout', 'ngap_handover_cdr_timeout')]
+sctp_cfg_field = [('sctp_decode', 'sctp_decode_enable'),
+                  ('sctp_decode_upproto', 'sctp_decode_upproto_enable'),
+                  ('ngap_decode', 'ngap_decode_enable'),
+                  ('ngap_skip_paging', 'ngap_decode_skip_paging_enable'),
+                  ('ngap_cdr', 'ngap_cdr_enable'),
+                  ('nas_decrypt', 'ngap_nas_decrypt_enable'),
+                  ('nas_decrypted_output', 'ngap_nas_decrypted_output_enable'),
+
+                  ('ngap_imsi_timeout', 'ngap_imsi_timeout_cycle'),
+                  ('ngap_cdr_timeout', 'ngap_cdr_timeout'),
+                  ('ngap_small_cdr_timeout', 'ngap_small_cdr_timeout'),
+                  ('ngap_handover_cdr_timeout', 'ngap_handover_cdr_timeout')]
 sctp_cfg_dict = dict(sctp_cfg_field)
 
 
@@ -42,11 +44,12 @@ def cfg_value(ctx, args, incomplete):
     field = [('1-1200', 'timeout value')]
     return [c for c in field if c[0].startswith(incomplete)]
 
-@cli.command()# @cli, not @click!
+
+@cli.command()  # @cli, not @click!
 @click.argument("op", type=click.STRING, autocompletion=sctp_operation)
 @click.argument("field", type=click.STRING, autocompletion=cfg_field, required=False)
 @click.argument("value", type=click.STRING, autocompletion=cfg_value, required=False)
-def sctp_cfg(op, field=None, value =None):
+def sctp_cfg(op, field=None, value=None):
     if op == 'show':
         data = hp.cpu_get('sctp/config')
         if field:
@@ -56,17 +59,18 @@ def sctp_cfg(op, field=None, value =None):
         if not field or field not in sctp_cfg_dict:
             print("{0} field is none".format(op))
             exit()
-        op_data = [{"op":"replace",
-                    "path":"/"+sctp_cfg_dict[field],
+        op_data = [{"op": "replace",
+                    "path": "/"+sctp_cfg_dict[field],
                     "value":SWITCH[op]}]
         data = hp.cpu_patch('sctp/config', op_data)
         print(gen_table(data, tab="code"))
     elif op == "set":
-        op_data = [{"op":"replace",
-            "path":"/"+sctp_cfg_dict[field],
-            "value":value}]
+        op_data = [{"op": "replace",
+                    "path": "/"+sctp_cfg_dict[field],
+                    "value":value}]
         data = hp.cpu_patch('sctp/config', op_data)
         print(gen_table(data, tab="code"))
+
 
 def sctp_stat_operation(ctx, args, incomplete):
     colors = [('show', 'show stat'),
@@ -94,21 +98,25 @@ def sctp_stat(op, filter):
         # print(gen_table(data, tab="result"))
 
 
-ngap_type = { 'small_cdr':("small_cdr",'ngap/small_cdr/stat'),
-              'nas_dec':('nas_dec',"ngap/nas_dec/stat"),
-              'sig':("sig",'ngap/sig/stat'),
-              'ngap':("ngap",'ngap/stat'),
-              "sync":("sync",'sig/sync'),
-              '5gs':("5gs",'sig/5gs_arch'),
-              }
+ngap_type = {'small_cdr': ("small_cdr", 'ngap/small_cdr/stat'),
+             'nas_dec': ('nas_dec', "ngap/nas_dec/stat"),
+             'sig': ("sig", 'ngap/sig/stat'),
+             'ngap': ("ngap", 'ngap/stat'),
+             "sync": ("sync", 'sig/sync'),
+             '5gs': ("5gs", 'sig/5gs_arch'),
+             }
+
+
 def ngap_type_comp(ctx, args, incomplete):
     return [ngap_type[key] for key in ngap_type if ngap_type[key][0].startswith(incomplete)]
 
+
 def ngap_stat_filter(ctx, args, incomplete):
     comp = [('create', 'chunk stat'),
-              ('failed', 'error stat'),
-              ('total', 'total stat')]
+            ('failed', 'error stat'),
+            ('total', 'total stat')]
     return [c for c in comp if c[0].startswith(incomplete)]
+
 
 @cli.command()
 @click.argument("op", type=click.STRING, autocompletion=sctp_stat_operation)
@@ -121,3 +129,6 @@ def ngap_stat(op, type, filter):
     elif op == 'clean':
         data = hp.cpu_patch('sctp/stat', general_clean_data)
         print(gen_table(data, tab="result"))
+
+
+sf_sctp_finish = ''

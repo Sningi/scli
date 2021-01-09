@@ -7,15 +7,17 @@ from utils.http_helper import hp
 from utils.tools import gen_table
 from utils.static_data import *
 
+
 def ipreass_operation(ctx, args, incomplete):
     colors = [('show', 'show config'),
-              ('enable', 'enable feature'), 
+              ('enable', 'enable feature'),
               ('disable', 'disble feature'),
               ('timeout', 'set timeout')]
     return [c for c in colors if incomplete in c[0]]
 
-ipreass_cfg_field = [  ('ipreass_decode', 'ipreass_decode_enable'),
-                    ]
+
+ipreass_cfg_field = [('ipreass_decode', 'ipreass_decode_enable'),
+                     ]
 ipreass_cfg_dict = dict(ipreass_cfg_field)
 
 
@@ -32,11 +34,12 @@ def cfg_value(ctx, args, incomplete):
     field = [('1-1200', 'timeout value')]
     return [c for c in field if c[0].startswith(incomplete)]
 
-@cli.command()# @cli, not @click!
+
+@cli.command()  # @cli, not @click!
 @click.argument("op", type=click.STRING, autocompletion=ipreass_operation)
 @click.argument("field", type=click.STRING, autocompletion=cfg_field, required=False)
 @click.argument("value", type=click.STRING, autocompletion=cfg_value, required=False)
-def ipreass_cfg(op, field=None, value =None):
+def ipreass_cfg(op, field=None, value=None):
     if op == 'show':
         data = hp.cpu_get('ip_reass/config')
         if field:
@@ -46,18 +49,18 @@ def ipreass_cfg(op, field=None, value =None):
         if not field or field not in ipreass_cfg_dict:
             print("{0} field is none".format(op))
             exit()
-        op_data = [{"op":"replace",
-                    "path":"/"+ipreass_cfg_dict[field],
+        op_data = [{"op": "replace",
+                    "path": "/"+ipreass_cfg_dict[field],
                     "value":SWITCH[op]}]
         data = hp.cpu_patch('ipreass/config', op_data)
         print(gen_table(data, tab="code"))
     elif op == "timeout":
-
-        op_data = [{"op":"replace",
-            "path":"/"+ipreass_cfg_dict[field],
-            "value":value}]
+        op_data = [{"op": "replace",
+                    "path": "/"+ipreass_cfg_dict[field],
+                    "value":value}]
         data = hp.cpu_patch('ipreass/config', op_data)
         print(gen_table(data, tab="code"))
+
 
 def ipreass_stat_operation(ctx, args, incomplete):
     colors = [('show', 'show stat'),
@@ -82,3 +85,6 @@ def ipreass_stat(op, filter):
     elif op == 'clean':
         data = hp.cpu_patch('ipreass/stat', general_clean_data)
         print(gen_table(data, tab="code"))
+
+
+sf_ipreass_finish = ''
