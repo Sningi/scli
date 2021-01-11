@@ -37,7 +37,7 @@ class Http:
             """sw"""
             self.auth = dumps({'username': uname, 'password': pwd})
             self.login_url = "https://" + addr + "/login"
-
+        self.session = None
         # ret = asyncio.run(self.login_may_use_cookie())
         # if ret not in [HTTP.OK, HTTP.CREATED]:
         #     pass

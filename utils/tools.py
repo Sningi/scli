@@ -186,7 +186,8 @@ def gen_table_intf(data, tab="item", filter=None):
                     pass
         else:
             row = [tab, *[item[2] for item in data]]
-            tb.add_row(row)
+            if len(tb.field_names) == len(row):
+                tb.add_row(row)
     tb.get_string(sortby=tab)
     return tb
 

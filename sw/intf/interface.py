@@ -94,7 +94,7 @@ def intf_sw(op, intf, filter=None):
                 tasks = [hp.loop.create_task(sw.get(surl))]
                 wait_task = asyncio.wait(tasks)
                 hp.loop.run_until_complete(wait_task)
-                data += [task.result() for task in tasks]
+                data += hp.data_from_tasks(tasks)
             tb = gen_table_intf(data, tab=sw.addr, filter=filter)
             click.echo(click.style(str(tb), fg='green',))
     elif op == 'set':
