@@ -51,7 +51,7 @@ def intf_cpu(op, intf, filter=None, value=None):
                 tasks = [hp.loop.create_task(cpu.get(surl))]
                 wait_task = asyncio.wait(tasks)
                 hp.loop.run_until_complete(wait_task)
-                data += [task.result() for task in tasks]
+                data += hp.data_from_tasks(tasks)
 
             tb = gen_table_intf_cpu(data, cpu.addr, filter=filter)
             click.echo(click.style(str(tb), fg='green'))
