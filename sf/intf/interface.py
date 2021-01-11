@@ -33,12 +33,61 @@ def cpu_intfs(ctx, args, incomplete):
         exit()
 
 
+def cpu_intf_field(ctx, args, incomplete):
+    if 'ingress_config'.startswith(args[-1]):
+        comp = [('default_action_id', ''),
+                ('rule_to_action', ''),
+                ('tuple_mode', ''), ]
+    elif 'tcp_reass_config'.startswith(args[-1]):
+        comp = []
+    elif 'ip_reass_config'.startswith(args[-1]):
+        comp = []
+    else:
+        comp = []
+    return [c for c in comp if c[0].startswith(incomplete)]
+
+
+def cpu_intf_value(ctx, args, incomplete):
+    comp = [('port_list', ''),
+            ('ingress_config', ''),
+            ('tcp_reass_config', ''),
+            ('ip_reass_config', ''),
+            ('deduplication_enable', '')]
+    return [c for c in comp if c[0].startswith(incomplete)]
+
+
+sf_intf_expect = {
+    "port_list":[
+        'port_list'
+    ],
+    "deduplication_enable": [
+        "deduplication_enable"
+    ],
+    "ingress_config": [
+        "acl_rule_group",
+        "default_action_id",
+        'rule_to_action',
+        "tuple_mode"
+    ],
+    "ip_reass_config": [
+        "ip_reass_output_enable",
+        "ip_reass_layers",
+        "ip_reass_cosourcing_drop"
+    ],
+    "tcp_reass_config": [
+        "inner_enable",
+        "outer_enable"
+    ]
+}
+
+
 @cli.command()
 @click.argument("op", type=click.STRING, autocompletion=cpu_intf_op)
 @click.argument("intf", type=click.STRING, autocompletion=cpu_intfs)
 @click.argument("filter", type=click.STRING, autocompletion=cpu_intf_filter)
-@click.argument("value", type=click.STRING, autocompletion=cpu_intf_filter, required=False)
-def intf_cpu(op, intf, filter=None, value=None):
+@click.argument("value", type=click.STRING, autocompletion=cpu_intf_field, required=False)
+@click.argument("value2", type=click.STRING, autocompletion=cpu_intf_value, required=False)
+def intf_cpu(op, intf, filter=None, value=None, value2=None):
     restid = gen_intfs_cpu(intf)
     if not restid:
         click.echo("PORT INDEX ERROR")
@@ -52,19 +101,50 @@ def intf_cpu(op, intf, filter=None, value=None):
                 wait_task = asyncio.wait(tasks)
                 hp.loop.run_until_complete(wait_task)
                 data += hp.data_from_tasks(tasks)
-
-            tb = gen_table_intf_cpu(data, cpu.addr, filter=filter)
+            tb = gen_table_sw(data, sf_intf_expect, cpu.addr, filter=filter)
             click.echo(click.style(str(tb), fg='green'))
     elif op == 'clean':
         data = hp.cpu_patch('interfaces/config', general_clean_data)
         click.echo(gen_table(data, tab="code"))
     elif op == "set":
-        plist = gen_intfs_sw(value)
         op_data = []
-        for idx in restid:
-            cfg = {"op": "replace",
-                   "path": "/{0}/{1}".format(idx, filter), "value": plist}
-            op_data.append(cfg)
+        if 'port_list'.startswith(filter):
+            plist = gen_intfs_sw(value)
+            for idx in restid:
+                cfg = {"op": "replace",
+                       "path": "/{0}/{1}".format(idx, filter), "value": plist}
+                op_data.append(cfg)
+            print(op_data)
+        elif 'ingress_config'.startswith(filter):
+            data = None
+            if 'default_action_id'.startswith(value):
+                data = {'default_action_id': value2}
+            elif "tuple_mode".startswith(value):
+                data = {'tuple_mode': value2}
+            else:
+                pass
+            if data:
+                for idx in restid:
+                    cfg = {"op": "replace",
+                           "path": "/{0}/{1}".format(idx, filter), "value": data}
+                    op_data.append(cfg)
+
+        elif 'tcp_reass_config'.startswith(filter):
+            for idx in restid:
+                cfg = {"op": "replace",
+                       "path": "/{0}/{1}".format(idx, filter), "value": value}
+                op_data.append(cfg)
+        elif 'ip_reass_config'.startswith(filter):
+            for idx in restid:
+                cfg = {"op": "replace",
+                       "path": "/{0}/{1}".format(idx, filter), "value": value}
+                op_data.append(cfg)
+        elif 'deduplication_enable'.startswith(filter):
+            for idx in restid:
+                cfg = {"op": "replace",
+                       "path": "/{0}/{1}".format(idx, filter), "value": value}
+                op_data.append(cfg)
+        print(op_data)
         data = hp.cpu_patch('interfaces/config', op_data)
         click.echo(gen_table(data, tab="code"))
 

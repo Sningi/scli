@@ -186,6 +186,7 @@ class Helper:
             except aiohttp.client_exceptions.ClientConnectorError as e:
                 data.append([111, '{0}:{1}'.format(e.host, e.port), "connect error"])
             except Exception as e:
+                print(e)
                 data.append([111, 'unknown addr', "connect error"])
         return data
 

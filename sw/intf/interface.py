@@ -3,7 +3,7 @@ import click
 
 from base import cli
 from utils.http_helper import hp
-from utils.tools import gen_table, gen_table_intf, INTF_MAP, INTF_MAP_REST
+from utils.tools import gen_table, gen_table_sw, INTF_MAP, INTF_MAP_REST
 
 
 def sw_intf_op(ctx, args, incomplete):
@@ -60,6 +60,31 @@ def sw_intfs(ctx, args, incomplete):
         click.echo("\nget sw interface error:{0}".format(e))
         exit()
 
+sw_intf_expect = {
+    "statistics": [
+        "rx_mbps",
+        "rx_kpps",
+        "rx_packets",
+        "rx_bytes",
+        # "rx_dropped",
+        "tx_mbps",
+        "tx_kpps",
+        "tx_packets",
+        "tx_bytes",
+        # "tx_dropped"
+    ],
+    "status": [
+        "connector",
+        "link_state",
+        "support_speeds"
+    ],
+    "configuration": [
+        "speed",
+        "mtu",
+        "enable",
+        "transceiver_mode",
+    ]
+}
 
 @cli.command()
 @click.argument("op", type=click.STRING, autocompletion=sw_intf_op)
@@ -95,7 +120,7 @@ def intf_sw(op, intf, filter=None):
                 wait_task = asyncio.wait(tasks)
                 hp.loop.run_until_complete(wait_task)
                 data += hp.data_from_tasks(tasks)
-            tb = gen_table_intf(data, tab=sw.addr, filter=filter)
+            tb = gen_table_sw(data, sw_intf_expect,tab=sw.addr, filter=filter)
             click.echo(click.style(str(tb), fg='green',))
     elif op == 'set':
         """

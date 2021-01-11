@@ -9,8 +9,11 @@ from utils.tools import create_custiom_table
 
 from sf.acl.acl import sf_acl_finish
 from sf.action.action import sf_action_finish
-from sw.intf.interface import sw_intf_finish
 from sf.intf.interface import sf_intf_finish
+
+from sw.intf.interface import sw_intf_finish
+from sw.acl import sw_acl_finish
+
 # module
 from sf.module.sctp import sf_sctp_finish
 from sf.module.http2 import sf_http2_finish

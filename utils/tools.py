@@ -141,34 +141,8 @@ def gen_table(data, tab="item", filter=None):
     tb.get_string(sortby=tab, reversesort=True)
     return tb
 
+def gen_table_sw(data, expect,tab="item", filter=None):
 
-def gen_table_intf(data, tab="item", filter=None):
-    expect = {
-        "statistics": [
-            "rx_mbps",
-            "rx_kpps",
-            "rx_packets",
-            "rx_bytes",
-            # "rx_dropped",
-            "tx_mbps",
-            "tx_kpps",
-            "tx_packets",
-            "tx_bytes",
-            # "tx_dropped"
-        ],
-        "status": [
-            "connector",
-            "link_state",
-            "support_speeds"
-        ],
-        "configuration": [
-            "speed",
-            "mtu",
-            "enable",
-            "transceiver_mode",
-        ]
-
-    }
     if not isinstance(data, list) or len(data) < 1:
         return
     tb = PrettyTable()
@@ -179,7 +153,7 @@ def gen_table_intf(data, tab="item", filter=None):
             for port in portinfo[2]:
                 if filter in portinfo[2][port]:
                     portstat = [portinfo[2][port][filter][stat] if stat in portinfo[2]
-                                [port][filter] else None for stat in expect[filter]]
+                                [port][filter] else portinfo[2][port][filter] for stat in expect[filter]]
                     row = [port, *portstat]
                     tb.add_row(row)
                 else:
@@ -210,5 +184,5 @@ def gen_table_intf_cpu(data, tab="item", filter=None):
         else:
             row = [tab, *[item[2] for item in data]]
             tb.add_row(row)
-    tb.get_string(sortby=tab)
+    # tb.get_string(sortby=tab)
     return tb
