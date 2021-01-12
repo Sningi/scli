@@ -3,11 +3,14 @@ import click
 from base import cli, SF_PRINT
 from utils.http_helper import hp
 from utils.tools import *
+from utils.static_data import *
 
 
 def action_op(ctx, args, incomplete):
     op = [('show', 'show action'),
           ('create', 'create action'),
+          ('enable', 'enable additional'),
+          ('disable', 'disable additional'),
           ('delete', 'delete action')]
     return [c for c in op if c[0].startswith(incomplete)]
 
@@ -15,11 +18,11 @@ def action_op(ctx, args, incomplete):
 def action_idx(ctx, args, incomplete):
     try:
         idxs = get_existed_action()
-        if args[-1] in ["show", "delete"]:
+        if args[-1] in ["show", "delete", "enable", "disable"]:
             comp = idxs
             if args[-1] == "show":
                 comp.append("all")
-            return [i for i in comp if incomplete in i]
+            return [i for i in comp if i.startswith(incomplete)]
         elif args[-1] in ["create"]:
             return [str(i) for i in range(1, 129) if str(i).startswith(incomplete) and str(i) not in idxs]
     except Exception as e:
@@ -27,33 +30,52 @@ def action_idx(ctx, args, incomplete):
         exit()
 
 
+additional_cfg = [
+    ("remove_tunnel_header_gtp", '...'),
+    ("remove_tunnel_header_vlan", "..."),
+    ("remove_tunnel_header_vxlan", "..."),
+    ("remove_tunnel_header_gre", '...'),
+    ("remove_tunnel_header_mpls", '...'),
+    ("g33_pad", '...'),
+]
+
+
 def action_type(ctx, args, incomplete):
-    if args[-2] in ("delete"):
-        return []
-    elif args[-2] in "show":
+    types = set()
+    if "show".startswith(args[-2]):
         types = [
             ('additional_actions', 'when has sw ignore basis action')]
-        return [c for c in types if c[0].startswith(incomplete)]
-    else:
+    elif "enable".startswith(args[-2]) or "disable".startswith(args[-2]):
+        return [c for c in additional_cfg if c[0].startswith(incomplete)]
+    elif "create".startswith(args[-2]):
         types = [
             # ('forward', 'forward interface'),  now not support
             # ('load_balance', 'load_balance interfaces'), now not support
             ('no_basis_action', 'when has sw ignore basis action')]
-        return [c for c in types if c[0].startswith(incomplete)]
+    elif "delete".startswith(args[-2]):
+        pass
+    return [c for c in types if c[0].startswith(incomplete)]
 
 
 def target_intf(ctx, args, incomplete):
-    intfs = set()
-    data = hp.sw_get("interfaces")
-    for d in data:
-        if isinstance(d[2], list):
-            for item in d[2]:
-                intfs.add(item.split('/')[-1])
-    return [i for i in intfs if incomplete in i]
+    comp = set()
+    if "disable".startswith(args[-3]) or "enable".startswith(args[-3]):
+        pass
+    elif "create".startswith(args[-3]):
+        data = hp.sw_get("interfaces")
+        for d in data:
+            if isinstance(d[2], list):
+                for item in d[2]:
+                    comp.add(item.split('/')[-1])
+    return [i for i in comp if i.startswith(incomplete)]
 
-action_expect ={
-    "additional_actions":[
-        "add_cpu_vlan",
+
+action_expect = {
+    "additional_actions": [
+        # "add_cpu_vlan",
+        "remove_tunnel_header_gre",
+        "remove_tunnel_header_gtp",
+        "g33_pad",
         # [
         #     "switch",
         #     "cpu_vlan_interfaces",
@@ -63,13 +85,14 @@ action_expect ={
     ]
 }
 
+
 @cli.command()  # @cli, not @click!
 @click.argument("op", type=click.STRING, autocompletion=action_op)
-@click.argument("idx", type=click.STRING, autocompletion=action_idx, required=False)
+@click.argument("idx", type=click.STRING, autocompletion=action_idx)
 @click.argument("type", type=click.STRING, autocompletion=action_type, required=False)
 @click.argument("intf", type=click.STRING, autocompletion=target_intf, required=False)
-def action_cpu(op, idx=None, type=None, intf=None):
-    if op == 'show':
+def action(op, idx=None, type=None, intf=None):
+    if 'show'.startswith(op):
         if intf:
             SF_PRINT("Invalid values input!!")
             return
@@ -79,8 +102,8 @@ def action_cpu(op, idx=None, type=None, intf=None):
         elif idx and idx.isdigit():
             url += "/{0}".format(idx)
         data = hp.cpu_get(url)
-        SF_PRINT(str(gen_table_sw(data, action_expect,filter=type)))
-    elif op == 'create':
+        SF_PRINT(str(gen_table_sw(data, action_expect, filter=type)))
+    elif 'create'.startswith(op):
         restid = gen_intfs_sw(intf)
         if not restid:
             SF_PRINT("PORT INDEX ERROR")
@@ -113,6 +136,18 @@ def action_cpu(op, idx=None, type=None, intf=None):
             SF_PRINT("Invalid values input!!")
             return
         SF_PRINT(str(gen_table(data,)))
-
+    elif op in ("disable", "enable"):
+        patch_data = [{
+            "op": "replace",
+            "path": "/additional_actions",
+            "value": {
+                type: {
+                    "switch": SWITCH[op]
+                }
+            }
+        }
+        ]
+        data = hp.cpu_patch('actions/{0}'.format(idx), patch_data)
+        print(gen_table(data))
 
 sf_action_finish = ''

@@ -9,11 +9,11 @@ from utils.static_data import *
 
 
 def sctp_operation(ctx, args, incomplete):
-    colors = [('show', 'show config'),
+    comp = [('show', 'show config'),
               ('enable', 'enable feature'),
               ('disable', 'disble feature'),
               ('set', 'set timeout')]
-    return [c for c in colors if incomplete in c[0]]
+    return [c for c in comp if c[0].startswith(incomplete)]
 
 
 sctp_cfg_field = [('sctp_decode', 'sctp_decode_enable'),
@@ -33,11 +33,11 @@ sctp_cfg_dict = dict(sctp_cfg_field)
 
 def cfg_field(ctx, args, incomplete):
     if args[-1] == "set":
-        return [i for i in sctp_cfg_field if incomplete in i[0] and "timeout" in i[0]]
+        return [i for i in sctp_cfg_field if i[0].startswith(incomplete) and "timeout" in i[0]]
     elif args[-1] in ["enable", "disable"]:
-        return [i for i in sctp_cfg_field if incomplete in i[0] and "timeout" not in i[0]]
+        return [i for i in sctp_cfg_field if i[0].startswith(incomplete) and "timeout" not in i[0]]
     elif args[-1] == "show":
-        return [i for i in sctp_cfg_field if incomplete in i[0]]
+        return [i for i in sctp_cfg_field if i[0].startswith(incomplete)]
 
 
 def cfg_value(ctx, args, incomplete):
@@ -73,29 +73,28 @@ def sctp_cfg(op, field=None, value=None):
 
 
 def sctp_stat_operation(ctx, args, incomplete):
-    colors = [('show', 'show stat'),
+    comp = [('show', 'show stat'),
               ('clean', 'clean stat')]
-    return [c for c in colors if incomplete in c[0]]
+    return [c for c in comp if c[0].startswith(incomplete)]
 
 
 def sctp_stat_filter(ctx, args, incomplete):
-    colors = [('chunk', 'chunk stat'),
+    comp = [('chunk', 'chunk stat'),
               ('error', 'error stat'),
               ('total', 'total stat')]
-    return [c for c in colors if incomplete in c[0]]
+    return [c for c in comp if c[0].startswith(incomplete)]
 
 
 @cli.command()
 @click.argument("op", type=click.STRING, autocompletion=sctp_stat_operation)
 @click.argument("filter", type=click.STRING, autocompletion=sctp_stat_filter, required=False)
 def sctp_stat(op, filter):
-    if op == 'show':
+    if 'show'.startswith(op):
         data = hp.cpu_get('sctp/stat')
         print(gen_table(data, tab="count", filter=filter))
-    elif op == 'clean':
+    elif 'clean'.startswith(op):
         data = hp.cpu_patch('sctp/stat', general_clean_data)
-        print(data)
-        # print(gen_table(data, tab="result"))
+        print(gen_table(data, tab="result"))
 
 
 ngap_type = {'small_cdr': ("small_cdr", 'ngap/small_cdr/stat'),

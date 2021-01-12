@@ -79,6 +79,7 @@ def get_existed_action():
 
 def gen_intfs_cpu(desc):
     restid = []
+
     def diss_a(child_str):
         intfs = child_str.split("-")
         if len(intfs) < 2 or intfs[0] not in INTF_CPU_MAP or intfs[-1] not in INTF_CPU_MAP:
@@ -97,6 +98,7 @@ def gen_intfs_cpu(desc):
 
 def gen_intfs_sw(desc):
     restid = []
+
     def diss_a(child_str):
         intfs = child_str.split("-")
         if len(intfs) < 2 or intfs[0] not in INTF_MAP or intfs[-1] not in INTF_MAP:
@@ -139,8 +141,8 @@ def gen_table(data, tab="item", filter=None):
     tb.get_string(sortby=tab, reversesort=True)
     return tb
 
-def gen_table_sw(data, expect,tab="item", filter=None):
 
+def gen_table_sw(data, expect, tab="item", filter=None):
     if not isinstance(data, list) or len(data) < 1:
         return
     tb = PrettyTable()
@@ -154,7 +156,8 @@ def gen_table_sw(data, expect,tab="item", filter=None):
                     for stat in expect[filter]:
                         if isinstance(portinfo[2][port][filter], dict):
                             if stat in portinfo[2][port][filter]:
-                                portstat.append(portinfo[2][port][filter][stat])
+                                portstat.append(
+                                    portinfo[2][port][filter][stat])
                             else:
                                 portstat.append(None)
                         else:
@@ -168,26 +171,4 @@ def gen_table_sw(data, expect,tab="item", filter=None):
             if len(tb.field_names) == len(row):
                 tb.add_row(row)
     tb.get_string(sortby=tab)
-    return tb
-
-
-def gen_table_intf_cpu(data, tab="item", filter=None):
-    if not isinstance(data, list) or len(data) < 1:
-        return
-    tb = PrettyTable()
-    tb.field_names = ["port", tab]
-    tb.align[tab] = "l"
-    for portinfo in data:
-        if isinstance(portinfo[2], dict):
-            for port in portinfo[2]:
-                if filter in portinfo[2][port]:
-                    # row = [port,  ",".join(portinfo[2][port][filter])]
-                    row = [port,  portinfo[2][port][filter]]
-                    tb.add_row(row)
-                else:
-                    pass
-        else:
-            row = [tab, *[item[2] for item in data]]
-            tb.add_row(row)
-    # tb.get_string(sortby=tab)
     return tb
