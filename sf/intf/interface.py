@@ -114,7 +114,6 @@ def intf_cpu(op, intf, filter=None, value=None, value2=None):
                 cfg = {"op": "replace",
                        "path": "/{0}/{1}".format(idx, filter), "value": plist}
                 op_data.append(cfg)
-            print(op_data)
         elif 'ingress_config'.startswith(filter):
             data = None
             if 'default_action_id'.startswith(value):
@@ -144,7 +143,6 @@ def intf_cpu(op, intf, filter=None, value=None, value2=None):
                 cfg = {"op": "replace",
                        "path": "/{0}/{1}".format(idx, filter), "value": value}
                 op_data.append(cfg)
-        print(op_data)
         data = hp.cpu_patch('interfaces/config', op_data)
         click.echo(gen_table(data, tab="code"))
 

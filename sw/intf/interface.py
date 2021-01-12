@@ -3,7 +3,7 @@ import click
 
 from base import cli
 from utils.http_helper import hp
-from utils.tools import gen_table, gen_table_sw, INTF_MAP, INTF_MAP_REST
+from utils.tools import *
 
 
 def sw_intf_op(ctx, args, incomplete):
@@ -91,21 +91,7 @@ sw_intf_expect = {
 @click.argument("intf", type=click.STRING, autocompletion=sw_intfs)
 @click.argument("filter", type=click.STRING, autocompletion=sw_intf_filter, required=False)
 def intf_sw(op, intf, filter=None):
-    restid = []
-    if "-" in intf:
-        intfs = intf.split("-")
-        if len(intfs) < 2 or intfs[0] not in INTF_MAP or intfs[-1] not in INTF_MAP:
-            click.echo("PORT INDEX ERROR")
-            exit()
-        for i in range(INTF_MAP[intfs[0]], INTF_MAP[intfs[-1]]+1):
-            restid.append(INTF_MAP_REST[i])
-    elif ',' in intf:
-        intfs = intf.split(",")
-        for i in intfs:
-            if i in INTF_MAP:
-                restid.append(i)
-    elif intf in INTF_MAP:
-        restid.append(intf)
+    restid = gen_intfs_sw(intf)
     if not restid and op != "clean":
         click.echo("PORT INDEX ERROR")
         exit()

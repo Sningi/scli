@@ -79,39 +79,37 @@ def get_existed_action():
 
 def gen_intfs_cpu(desc):
     restid = []
-    if "-" in desc:
-        intfs = desc.split("-")
+    def diss_a(child_str):
+        intfs = child_str.split("-")
         if len(intfs) < 2 or intfs[0] not in INTF_CPU_MAP or intfs[-1] not in INTF_CPU_MAP:
             print("PORT INDEX ERROR")
             exit()
         for i in range(INTF_CPU_MAP[intfs[0]], INTF_CPU_MAP[intfs[-1]]+1):
             restid.append(INTF_CPU_MAP_REST[i])
-    elif ',' in desc:
-        intfs = desc.split(",")
-        for i in intfs:
-            if i in INTF_CPU_MAP:
-                restid.append(i)
-    elif desc in INTF_CPU_MAP:
-        restid.append(desc)
+    childs = desc.split(",")
+    for c in childs:
+        if "-" in c:
+            diss_a(c)
+        elif c in INTF_CPU_MAP:
+            restid.append(c)
     return restid
 
 
 def gen_intfs_sw(desc):
     restid = []
-    if "-" in desc:
-        intfs = desc.split("-")
+    def diss_a(child_str):
+        intfs = child_str.split("-")
         if len(intfs) < 2 or intfs[0] not in INTF_MAP or intfs[-1] not in INTF_MAP:
             print("PORT INDEX ERROR")
             exit()
         for i in range(INTF_MAP[intfs[0]], INTF_MAP[intfs[-1]]+1):
             restid.append(INTF_MAP_REST[i])
-    elif ',' in desc:
-        intfs = desc.split(",")
-        for i in intfs:
-            if i in INTF_MAP:
-                restid.append(i)
-    elif desc in INTF_MAP:
-        restid.append(desc)
+    childs = desc.split(",")
+    for c in childs:
+        if "-" in c:
+            diss_a(c)
+        elif c in INTF_MAP:
+            restid.append(c)
     return restid
 
 
@@ -152,8 +150,15 @@ def gen_table_sw(data, expect,tab="item", filter=None):
         if isinstance(portinfo[2], dict):
             for port in portinfo[2]:
                 if filter in portinfo[2][port]:
-                    portstat = [portinfo[2][port][filter][stat] if stat in portinfo[2]
-                                [port][filter] else portinfo[2][port][filter] for stat in expect[filter]]
+                    portstat = []
+                    for stat in expect[filter]:
+                        if isinstance(portinfo[2][port][filter], dict):
+                            if stat in portinfo[2][port][filter]:
+                                portstat.append(portinfo[2][port][filter][stat])
+                            else:
+                                portstat.append(None)
+                        else:
+                            portstat.append(portinfo[2][port][filter])
                     row = [port, *portstat]
                     tb.add_row(row)
                 else:

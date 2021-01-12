@@ -28,8 +28,12 @@ def action_idx(ctx, args, incomplete):
 
 
 def action_type(ctx, args, incomplete):
-    if args[-2] in ("delete, show"):
+    if args[-2] in ("delete"):
         return []
+    elif args[-2] in "show":
+        types = [
+            ('additional_actions', 'when has sw ignore basis action')]
+        return [c for c in types if c[0].startswith(incomplete)]
     else:
         types = [
             # ('forward', 'forward interface'),  now not support
@@ -47,15 +51,26 @@ def target_intf(ctx, args, incomplete):
                 intfs.add(item.split('/')[-1])
     return [i for i in intfs if incomplete in i]
 
+action_expect ={
+    "additional_actions":[
+        "add_cpu_vlan",
+        # [
+        #     "switch",
+        #     "cpu_vlan_interfaces",
+        #     "cpu_vlan_load_balance_mode",
+        #     "cpu_vlan_load_balance_weight",
+        # ]
+    ]
+}
 
 @cli.command()  # @cli, not @click!
 @click.argument("op", type=click.STRING, autocompletion=action_op)
 @click.argument("idx", type=click.STRING, autocompletion=action_idx, required=False)
 @click.argument("type", type=click.STRING, autocompletion=action_type, required=False)
 @click.argument("intf", type=click.STRING, autocompletion=target_intf, required=False)
-def action(op, idx=None, type=None, intf=None):
+def action_cpu(op, idx=None, type=None, intf=None):
     if op == 'show':
-        if type or intf:
+        if intf:
             SF_PRINT("Invalid values input!!")
             return
         url = "actions"
@@ -64,28 +79,9 @@ def action(op, idx=None, type=None, intf=None):
         elif idx and idx.isdigit():
             url += "/{0}".format(idx)
         data = hp.cpu_get(url)
-        field_names = ["code",  "ipaddr", "body"]
-        SF_PRINT(str(create_custiom_table(data, field_names)))
+        SF_PRINT(str(gen_table_sw(data, action_expect,filter=type)))
     elif op == 'create':
-        restid = []
-        if "-" in intf:
-            intfs = intf.split("-")
-            intfs = [int(i) for i in intfs]
-            if len(intfs) < 2 or int(intfs[0]) not in INTF_MAP_REST or intfs[-1] not in INTF_MAP_REST:
-                SF_PRINT("PORT INDEX ERROR")
-                return
-            for i in intfs:
-                restid.append(INTF_MAP_REST[i])
-        elif ',' in intf:
-            intfs = intf.split(",")
-            intfs = [int(i) for i in intfs]
-            for i in intfs:
-                if i in INTF_MAP_REST:
-                    restid.append(INTF_MAP_REST[i])
-        elif intf.isdigit() and int(intf) in INTF_MAP_REST:
-            intf = int(intf)
-            print(intf)
-            restid.append(INTF_MAP_REST[intf])
+        restid = gen_intfs_sw(intf)
         if not restid:
             SF_PRINT("PORT INDEX ERROR")
             return
@@ -105,8 +101,7 @@ def action(op, idx=None, type=None, intf=None):
         }
         }
         data = hp.cpu_post('actions', data)
-        field_names = ["code",  "ipaddr", "body"]
-        SF_PRINT(str(create_custiom_table(data, field_names)))
+        SF_PRINT(str(gen_table(data,)))
     elif op == 'delete':
         if type or intf:
             SF_PRINT("Invalid values input!!")
@@ -117,7 +112,7 @@ def action(op, idx=None, type=None, intf=None):
         else:
             SF_PRINT("Invalid values input!!")
             return
-        SF_PRINT(str(create_custiom_table(data, field_names)))
+        SF_PRINT(str(gen_table(data,)))
 
 
 sf_action_finish = ''
