@@ -76,6 +76,15 @@ def get_existed_action():
                 idxs.append(item)
     return idxs
 
+def get_existed_acl():
+    acl_ids = set()
+    data = hp.cpu_get("acl/config/group_1")
+    for d in data:
+        if isinstance(d[2], dict) and "group_1" in d[2]:
+                for idx in d[2]["group_1"]:
+                    acl_ids.add(idx)
+    return acl_ids
+
 
 def gen_intfs_cpu(desc):
     restid = []
@@ -102,8 +111,7 @@ def gen_intfs_sw(desc):
     def diss_a(child_str):
         intfs = child_str.split("-")
         if len(intfs) < 2 or intfs[0] not in INTF_MAP or intfs[-1] not in INTF_MAP:
-            print("PORT INDEX ERROR")
-            exit()
+            print("range error")
         for i in range(INTF_MAP[intfs[0]], INTF_MAP[intfs[-1]]+1):
             restid.append(INTF_MAP_REST[i])
     childs = desc.split(",")
@@ -151,7 +159,7 @@ def gen_table_sw(data, expect, tab="item", filter=None):
     for portinfo in data:
         if isinstance(portinfo[2], dict):
             for port in portinfo[2]:
-                if filter in portinfo[2][port]:
+                if isinstance(portinfo[2][port],dict) and filter in portinfo[2][port]:
                     portstat = []
                     for stat in expect[filter]:
                         if isinstance(portinfo[2][port][filter], dict):

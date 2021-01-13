@@ -1,11 +1,11 @@
 import click
 import asyncio
+from json import loads
 
 from base import cli
 from sf.general_rest_api import general_clean_data
 from utils.http_helper import hp
 from utils.tools import *
-
 
 def cpu_intf_op(ctx, args, incomplete):
     comp = [('show', 'show stat'),
@@ -120,8 +120,8 @@ def intf_cpu(op, intf, filter=None, value=None, value2=None):
                 data = {'default_action_id': value2}
             elif "tuple_mode".startswith(value):
                 data = {'tuple_mode': value2}
-            else:
-                pass
+            elif 'rule_to_action'.startswith(value):
+                data = {'rule_to_action':eval(value2)}
             if data:
                 for idx in restid:
                     cfg = {"op": "replace",

@@ -44,12 +44,13 @@ def action_type(ctx, args, incomplete):
     types = set()
     if "show".startswith(args[-2]):
         types = [
+            ('basis_actions', 'when has sw ignore basis action'),
             ('additional_actions', 'when has sw ignore basis action')]
     elif "enable".startswith(args[-2]) or "disable".startswith(args[-2]):
         return [c for c in additional_cfg if c[0].startswith(incomplete)]
     elif "create".startswith(args[-2]):
         types = [
-            # ('forward', 'forward interface'),  now not support
+            ('forward', 'forward interface'),
             # ('load_balance', 'load_balance interfaces'), now not support
             ('no_basis_action', 'when has sw ignore basis action')]
     elif "delete".startswith(args[-2]):
@@ -71,6 +72,12 @@ def target_intf(ctx, args, incomplete):
 
 
 action_expect = {
+    "basis_actions":[
+        "type",
+        "interfaces",
+        "load_balance_weight",
+        "load_balance_mode",
+    ],
     "additional_actions": [
         # "add_cpu_vlan",
         "remove_tunnel_header_gre",
@@ -106,23 +113,40 @@ def action(op, idx=None, type=None, intf=None):
     elif 'create'.startswith(op):
         restid = gen_intfs_sw(intf)
         if not restid:
-            SF_PRINT("PORT INDEX ERROR")
-            return
-        data = {str(idx): {
-            "basis_actions":
-            {
-                "type": type,
-            },
-            "additional_actions": {
-                "add_cpu_vlan": {
-                    "switch": 1,
-                    "cpu_vlan_interfaces": restid,
-                    "cpu_vlan_load_balance_mode": "outer_src_dst_ip",
-                    "cpu_vlan_load_balance_weight": ""
+            restid = gen_intfs_cpu(intf)
+            if not restid:
+                SF_PRINT("PORT INDEX ERROR")
+                exit()
+
+        if "no_basis_action".startswith(type):
+            data = {
+                str(idx): {
+                    "basis_actions":
+                    {
+                        "type": 'no_basis_action',
+                    },
+                    "additional_actions": {
+                        "add_cpu_vlan": {
+                            "switch": 1,
+                            "cpu_vlan_interfaces": restid,
+                            "cpu_vlan_load_balance_mode": "outer_src_dst_ip",
+                            "cpu_vlan_load_balance_weight": ""
+                        }
+                    }
                 }
             }
-        }
-        }
+        elif "forward".startswith(type):
+            data = {
+                str(idx): {
+                    "basis_actions":
+                    {
+                        "type": 'forward',
+                        "interfaces": restid,
+                        "load_balance_weight": "",
+                        "load_balance_mode": "wrr"
+                    }
+                }
+            }
         data = hp.cpu_post('actions', data)
         SF_PRINT(str(gen_table(data,)))
     elif op == 'delete':
@@ -149,5 +173,6 @@ def action(op, idx=None, type=None, intf=None):
         ]
         data = hp.cpu_patch('actions/{0}'.format(idx), patch_data)
         print(gen_table(data))
+
 
 sf_action_finish = ''

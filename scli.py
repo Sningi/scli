@@ -22,6 +22,7 @@ from sf.module.ip_reass import sf_ipreass_finish
 from sf.module.sslcon import sf_sslcon_finish
 from sw.module.sslcon import sw_sslcon_finsh
 
+from syscfg import sf_sys_finish
 
 def dev_op(ctx, args, incomplete):
     comp = [('show', 'show stat')]

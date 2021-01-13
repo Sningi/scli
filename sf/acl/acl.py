@@ -3,77 +3,85 @@ import click
 from base import cli
 from sf.general_rest_api import general_clean_data
 from utils.http_helper import hp
-from utils.tools import gen_table
+from utils.tools import *
+
+sync_data = [{"op": "replace", "path": "/", "value": 1}]
 
 
-def acl_imsi_operation(ctx, args, incomplete):
+def acl_operation(ctx, args, incomplete):
     op = [('show', 'show acl'),
           ('create', 'create acl'),
-          ('delete', 'delete acl')]
+          ('delete', 'delete acl'),
+          ('sync', 'sync acl'),
+          ]
     return [c for c in op if c[0].startswith(incomplete)]
 
 
-def config_field(ctx, args, incomplete):
-    field = [('acl_imsi_decode', 'acl_imsi_decode_enable'),
-             ('acl_imsi_decode_upproto', 'acl_imsi_decode_upproto_enable'),
-             ('ngap_decode', 'ngap_decode_enable'),
-             ('ngap_skip_paging', 'ngap_decode_skip_paging_enable'),
-             ('ngap_cdr', 'ngap_cdr_enable'),
-             ('nas_decrypt', 'ngap_nas_decrypt_enable'),
-             ('nas_decrypted_output', 'ngap_nas_decrypted_output_enable'),
-
-             ('ngap_cdr_timeout', 'ngap_imsi_timeout_cycle'),
-             ('ngap_cdr_timeout', 'ngap_cdr_timeout'),
-             ('ngap_small_cdr_timeout', 'ngap_small_cdr_timeout'),
-             ('ngap_handover_cdr_timeout', 'ngap_handover_cdr_timeout'), ]
+def acl_types(ctx, args, incomplete):
+    field = []
+    if "create".startswith(args[-2]):
+        field = [('imsi', 'imsi'),
+                 ('ipset4', 'ipset4'),
+                 ('ipset6', 'ipset6'),
+                 ('tuple4', 'tuple4'),
+                 ('tuple6', 'tuple6'),
+                 ('packet_type', 'packet_type'),
+                 ('packet_len', 'packet_len'),
+                 ('l2', 'l2'),
+                 ('url', 'url'),
+                 ('regex', 'regex'),
+                 ('tcpflag', 'tcpflag'),
+                 ('combined', 'combined'),
+                 ]
+    elif "show".startswith(args[-2]):
+        field = [("stat", "acl hit count")
+                 ]
     return [i for i in field if incomplete in i[0]]
 
 
-def config_value(ctx, args, incomplete):
-    colors = [('enable', 'enable feature'),
-              ('disable', 'set config')]
-    return [c for c in colors if c[0].startswith(incomplete)]
+def acl_idx(ctx, args, incomplete):
+    idxs = get_existed_acl()
+    if "show".startswith(args[-1]) or "delete".startswith(args[-1]):
+        return [(idx, '') for idx in idxs if idx.startswith(incomplete)]
+    elif "create".startswith(args[-1]):
+        return [(str(idx), '') for idx in range(1, 101) if str(idx) not in idxs and str(idx).startswith(incomplete)]
+    else:
+        return []
 
 
 @cli.command()  # @cli, not @click!
-@click.argument("op", type=click.STRING, autocompletion=acl_imsi_operation)
-@click.argument("field", type=click.STRING, autocompletion=config_field, required=False)
-@click.argument("value", type=click.STRING, autocompletion=config_value, required=False)
-def acl(op, field=None, value=None):
-    if op == 'show':
-        data = hp.cpu_get('acl/config/group_1')
+@click.argument("op", type=click.STRING, autocompletion=acl_operation)
+@click.argument("idx", type=click.STRING, autocompletion=acl_idx, required=False)
+@click.argument("atype", type=click.STRING, autocompletion=acl_types, required=False)
+@click.argument("value", type=click.STRING, required=False)
+def acl(op, idx, atype, value):
+    if 'show'.startswith(op):
+        if "stat".startswith(atype):
+            data = hp.cpu_get('acl/stat?group=1&index={0}'.format(idx))
+        else:
+            data = hp.cpu_get('acl/config/group_1/{}'.format(idx))
         print(gen_table(data,))
-    elif op == 'enable' or op == 'disable':
-        if not field:
-            print("{0} field is none".format(op))
-            exit()
-        op_data = []
-        data = hp.cpu_put('acl_imsi/stat', )
-        print(gen_table(data, tab="code"))
+    elif "create".startswith(op):
+        postd = []
+        if "imsi".startswith(atype):
+            postd = {
+                "group_1": {
+                    idx: {
+                        "rule_type": atype,
+                        "rule_cfg": {
+                            "imsi": value,
+                        },
+                    },
+                }
+            }
+        data = hp.cpu_post('acl/config/group_1/{}'.format(idx), postd)
+        print(gen_table(data))
+    elif "delete".startswith(op):
+        data = hp.cpu_delete('acl/config?group=1&index={}'.format(idx))
+        print("del", gen_table(data))
+    elif "sync".startswith(op):
+        data2 = hp.cpu_patch('acl/sync', sync_data)
+        print("sync", gen_table(data2))
 
-
-# def acl_imsi_stat_operation(ctx, args, incomplete):
-#     colors = [('show', 'show stat'),
-#               ('clean', 'clean stat')]
-#     return [c for c in colors if incomplete in c[0]]
-
-
-# def acl_imsi_stat_filter(ctx, args, incomplete):
-#     colors = [('chunk', 'chunk stat'),
-#               ('error', 'error stat'),
-#               ('total', 'total stat')]
-#     return [c for c in colors if incomplete in c[0]]
-
-
-# @cli.command()
-# @click.argument("op", type=click.STRING, autocompletion=acl_imsi_stat_operation)
-# @click.argument("filter", type=click.STRING, autocompletion=acl_imsi_stat_filter, required=False)
-# def acl_imsi_stat(op, filter):
-#     if op == 'show':
-#         data = hp.cpu_get('acl_imsi/stat')
-#         print(gen_table(data, tab="count", filter=filter))
-#     elif op == 'clean':
-#         data = hp.cpu_patch('acl_imsi/stat', general_clean_data)
-#         print(gen_table(data, tab="code"))
 
 sf_acl_finish = ''

@@ -31,6 +31,7 @@ def sw_acl_idx(ctx, args, incomplete):
         for one in data:
             comp += [(aid.split("/")[-1], "acl id")
                      for aid in one[2][args[-1]]['acl_entries']]
+            comp.append(("all","all acl"))
     elif "create":
         comp = ["acl_{0}".format(idx) for idx in range(1, 11)]
     return [c for c in comp if c[0].startswith(incomplete)]
@@ -68,9 +69,10 @@ sw_acl_expect = {
         "dst_ip",
         'dst_port',
         'protocol',
-        "en_count",
+        "outer_vlan",
         'vlanid',
         "vlan_cmd",
+        "en_count",
         # "slice",
         # "delete_ipinip_tunnel",
         # "comment",
@@ -79,14 +81,17 @@ sw_acl_expect = {
 
 @cli.command()
 @click.argument("op", type=click.STRING, autocompletion=sw_acl_op)
-@click.argument("group", type=click.STRING, autocompletion=sw_acl_group)
-@click.argument("idx", type=click.STRING, autocompletion=sw_acl_idx)
-@click.argument("filter", type=click.STRING, autocompletion=sw_acl_filter)
+@click.argument("group", type=click.STRING, autocompletion=sw_acl_group, required=False)
+@click.argument("idx", type=click.STRING, autocompletion=sw_acl_idx,required= False)
+@click.argument("filter", type=click.STRING, autocompletion=sw_acl_filter,required= False)
 def acl_sw(op, group, idx, filter):
     if 'show'.startswith(op):
+        if not filter:
+            filter = "configuration"
         url = "acls/{0}/acl_entries".format(group)
-        if idx:
+        if idx and idx !="all":
             url += "/"+idx
+        url += "?depth=1"
         data = hp.sw_get(url)
         tb = gen_table_sw(data, sw_acl_expect,tab="id", filter=filter)
         click.echo(click.style(str(tb), fg='green',))
