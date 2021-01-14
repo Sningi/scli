@@ -41,14 +41,15 @@ def syscfg(op, dev):
             data = hp.cpu_patch("system/config", sync_data)
             print(gen_table(data, tab="cpu"))
         elif "sw".startswith(dev):
-            data_to_reset = {"action": "reset"}
-            import json
-            data = hp.sw_post("reset", data=json.dumps(data_to_reset))
-            print(data)
+            data = hp.sw_delete("forward_policies")
             print(gen_table(data))
+            data = hp.sw_delete("elags/128")
         elif "all".startswith(dev):
             data = hp.cpu_patch("system/config", sync_data)
             print(gen_table(data, tab="cpu"))
+            data = hp.sw_delete("forward_policies")
+            print(gen_table(data,tab="switch"))
+            data = hp.sw_delete("elags/128")
     elif "download".startswith(op):
         pass
     elif "upload".startswith(op):

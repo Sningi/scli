@@ -7,17 +7,18 @@ from base import cli
 from utils.http_helper import hp
 from utils.tools import create_custiom_table
 
-from sf.acl.acl import sf_acl_finish
-from sf.action.action import sf_action_finish
-from sf.intf.interface import sf_intf_finish
+from sf.acl import sf_acl_finish
+from sf.action import sf_action_finish
+from sf.interface import sf_intf_finish
 
-from sw.intf.interface import sw_intf_finish
+from sw.interface import sw_intf_finish
 from sw.acl import sw_acl_finish
 
 # module
 from sf.module.sctp import sf_sctp_finish
 from sf.module.http2 import sf_http2_finish
 from sf.module.gtpu import sf_gtpu_finish
+from sf.module.gtpv2 import sf_gtpv2_finish
 from sf.module.ip_reass import sf_ipreass_finish
 from sf.module.sslcon import sf_sslcon_finish
 from sw.module.sslcon import sw_sslcon_finsh
