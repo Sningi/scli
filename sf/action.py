@@ -63,11 +63,15 @@ def target_intf(ctx, args, incomplete):
     if "disable".startswith(args[-3]) or "enable".startswith(args[-3]):
         pass
     elif "create".startswith(args[-3]):
-        data = hp.sw_get("interfaces")
-        for d in data:
-            if isinstance(d[2], list):
-                for item in d[2]:
-                    comp.add(item.split('/')[-1])
+        if "no_basis_action".startswith(args[-1]):
+            data = hp.sw_get("interfaces")
+            for d in data:
+                if isinstance(d[2], list):
+                    for item in d[2]:
+                        comp.add(item.split('/')[-1])
+        elif "forward".startswith(args[-1]):
+            for it in get_intfs_from_rest():
+                comp.add(it)
     return [i for i in comp if i.startswith(incomplete)]
 
 
@@ -96,7 +100,7 @@ action_expect = {
 @cli.command()  # @cli, not @click!
 @click.argument("op", type=click.STRING, autocompletion=action_op)
 @click.argument("idx", type=click.STRING, autocompletion=action_idx)
-@click.argument("type", type=click.STRING, autocompletion=action_type, required=False)
+@click.argument("type", type=click.STRING, autocompletion=action_type,default="basis_actions", required=False)
 @click.argument("intf", type=click.STRING, autocompletion=target_intf, required=False)
 def action(op, idx=None, type=None, intf=None):
     if 'show'.startswith(op):
@@ -112,8 +116,8 @@ def action(op, idx=None, type=None, intf=None):
         SF_PRINT(str(gen_table_sw(data, action_expect, filter=type)))
     elif 'create'.startswith(op):
         restid = gen_intfs_sw(intf)
+        restid += gen_intfs_cpu(intf)
         if not restid:
-            restid = gen_intfs_cpu(intf)
             if not restid:
                 SF_PRINT("PORT INDEX ERROR")
                 exit()

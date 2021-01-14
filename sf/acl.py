@@ -34,7 +34,7 @@ def acl_types(ctx, args, incomplete):
                  ('combined', 'combined'),
                  ]
     elif "show".startswith(args[-2]):
-        field = [("stat", "acl hit count")
+        field = [("stat", "acl hit count"),("cfg", "acl cfg")
                  ]
     return [i for i in field if incomplete in i[0]]
 
@@ -49,11 +49,29 @@ def acl_idx(ctx, args, incomplete):
         return []
 
 
+packet_types = (
+    'error', 'vlan', 'mpls', 'gre', 'vxlan', 'ssl_tls',
+    'ipip', 'ipip6', 'ip6ip', 'ip6ip6', 'teredo', 'ipsec_ah', 'ipsec_esp',
+    'gtpu', 'gtpv0', 'gtpv1', 'gtpv2', 'http', 'http2', 'sip', 'rtp',
+    'rtcp', 'diameter', 'sgs_ap', 's1ap', 'ngap', 'ftp', 'pop3', 'smtp', 'dns',
+    'radius', 'coap', 'pptp', 'l2tp', 'https', 'icmp', 'bgp', 'ospf', 'isis', 'gtp', 'sctp',
+    'gtpv2_cdr',
+)
+
+
+def acl_values(ctx, args, incomplete):
+    field = []
+    if "create".startswith(args[-3]):
+        if "packet_type".startswith(args[-1]):
+            return [(ptype, ptype) for ptype in packet_types if ptype.startswith(incomplete)]
+    return [i for i in field if incomplete in i[0]]
+
+
 @cli.command()  # @cli, not @click!
 @click.argument("op", type=click.STRING, autocompletion=acl_operation)
 @click.argument("idx", type=click.STRING, autocompletion=acl_idx, required=False)
-@click.argument("atype", type=click.STRING, autocompletion=acl_types, required=False)
-@click.argument("value", type=click.STRING, required=False)
+@click.argument("atype", type=click.STRING, autocompletion=acl_types, default="cfg", required=False)
+@click.argument("value", type=click.STRING, autocompletion=acl_values,  required=False)
 def acl(op, idx, atype, value):
     if 'show'.startswith(op):
         if "stat".startswith(atype):
@@ -70,6 +88,17 @@ def acl(op, idx, atype, value):
                         "rule_type": atype,
                         "rule_cfg": {
                             "imsi": value,
+                        },
+                    },
+                }
+            }
+        elif "packet_type".startswith(atype):
+            postd = {
+                "group_1": {
+                    idx: {
+                        "rule_type": atype,
+                        "rule_cfg": {
+                            "packet_type": value,
                         },
                     },
                 }
