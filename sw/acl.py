@@ -9,12 +9,13 @@ from utils.tools import gen_table, gen_table_sw, INTF_MAP, INTF_MAP_REST
 def sw_acl_op(ctx, args, incomplete):
     comp = [('show', 'show aco'),
             ('create', 'create acl'),
+            ('add', 'add acl'),
             ('delete', 'deletw acl')]
     return [c for c in comp if c[0].startswith(incomplete)]
 
 
 def sw_acl_group(ctx, args, incomplete):
-    if "show".startswith(args[-1]) or "delete".startswith(args[-1]):
+    if "show".startswith(args[-1]) or "delete".startswith(args[-1]) or "add".startswith(args[-1]):
         data = hp.sw_get("acls")
         # data = hp.sw_get("forward_policies") sample as acls
         comp = []
@@ -28,7 +29,7 @@ def sw_acl_group(ctx, args, incomplete):
 
 
 def sw_acl_idx(ctx, args, incomplete):
-    if "show".startswith(args[-2]) or "delete".startswith(args[-2]):
+    if "show".startswith(args[-2]) or "delete".startswith(args[-2]) or "add".startswith(args[-2]):
         data = hp.sw_get("acls/{0}".format(args[-1]))
         comp = []
         for one in data:
@@ -99,22 +100,23 @@ sw_acl_expect = {
 @click.option('--protocol', type=click.STRING, required=False)
 @click.option('--vlanid', type=click.STRING, required=False)
 @click.option('--vlan_cmd', type=click.STRING, required=False)
-@click.option('--en_count', type=click.Choice(['ture', 'false']),required=False)
+@click.option('--en_count', type=click.Choice(['ture', 'false']), required=False)
 @ click.option('--action', type=click.Choice(['forward', 'copy'], case_sensitive=False))
 @ click.option('--evif_name', type=click.STRING)
 def acl_sw(op, group, idx, filter, type, vlan, sip, dip, sport, dport, protocol, action, evif_name, vlanid, vlan_cmd, en_count):
     if 'show'.startswith(op):
         if not filter:
-            filter="configuration"
-        url="acls/{0}/acl_entries".format(group)
+            filter = "configuration"
+        url = "acls/{0}/acl_entries".format(group)
         if idx and idx != "all":
             url += "/"+idx
         url += "?depth=1"
-        data=hp.sw_get(url)
-        tb=gen_table_sw(data, sw_acl_expect, tab="id", filter=filter)
-        click.echo(click.style(tb.get_string(sortby="id", reversesort=True), fg='green',))
+        data = hp.sw_get(url)
+        tb = gen_table_sw(data, sw_acl_expect, tab="id", filter=filter)
+        click.echo(click.style(tb.get_string(
+            sortby="id", reversesort=True), fg='green',))
     elif 'create'.startswith(op):
-        op_data={
+        op_data = {
             group: {
                 "configuration": {
                     "acl_type": "ip"
@@ -140,14 +142,37 @@ def acl_sw(op, group, idx, filter, type, vlan, sip, dip, sport, dport, protocol,
                 }
             }
         }
-        data=hp.sw_post('acls', op_data)
+        data = hp.sw_post('acls', op_data)
+        click.echo(gen_table(data, tab="port"))
+    elif 'add'.startswith(op):
+        op_data = {
+                    idx: {
+                        "configuration":
+                        {
+                            "ace_type": type,
+                            "src_ip": sip,
+                            "src_port": sport,
+                            "dst_ip": dip,
+                            "dst_port": dport,
+                            "action": action,
+                            "evif_name": evif_name,
+                            'protocol': protocol,
+                            'outer_vlan': vlan,
+                            "en_count": en_count,
+                            'vlanid': vlanid,
+                            "vlan_cmd": vlan_cmd,
+                        }
+                    }
+                }
+        url = "acls/{0}/acl_entries".format(group)
+        data = hp.sw_post(url, op_data)
         click.echo(gen_table(data, tab="port"))
     elif op == "delete":
         if "all".startswith(group):
-            data=hp.sw_delete("forward_policies")
+            data = hp.sw_delete("forward_policies")
         else:
             # sample as forward_policies
-            data=hp.sw_delete("forward_policies/{0}".format(group))
+            data = hp.sw_delete("forward_policies/{0}".format(group))
         click.echo(gen_table(data, tab="switch"))
 
-sw_acl_finish=''
+sw_acl_finish = ''

@@ -15,4 +15,4 @@ scli acl sync
 scli intf-cpu set IG1 port_list X48
 scli intf-cpu set IG1 ingress_config rule_to_action {1:1}
 
-scli gtpv2-stat cleanp
+scli gtpv2-stat clean
