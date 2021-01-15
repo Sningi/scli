@@ -1,6 +1,6 @@
 import click
 from json import dumps
-from base import cli, SF_PRINT
+from base import cli, sprint
 from utils.http_helper import hp
 from utils.tools import *
 from utils.static_data import *
@@ -44,26 +44,26 @@ def sslcon_config_value(ctx, args, incomplete):
     comp = []
     try:
         if args[-1] == "concaten_interfaces" and args[-2] != "show":
-            SF_PRINT("\nPlease input First interface\n")
+            sprint("\nPlease input First interface\n")
             comp = set()
             try:
                 comp = get_intfs_from_rest()
             except Exception as e:
-                SF_PRINT("\nget sw interface error:{0}".format(e), fg="red")
+                sprint("\nget sw interface error:{0}".format(e), fg="red")
         elif args[-2] == "concaten_interfaces" and args[-3] != "show":
-            SF_PRINT("\nPlease input Second interface\n")
+            sprint("\nPlease input Second interface\n")
             comp = set()
             try:
                 comp = get_intfs_from_rest()
             except Exception as e:
-                SF_PRINT("\nget sw interface error:{0}".format(e))
+                sprint("\nget sw interface error:{0}".format(e))
         elif args[-1] == "use_server_info_flag":
             comp = [('enable', 'open user server_info'),
                     ('disable', 'open user server_info')]
         elif args[-3] == "concaten_interfaces" and args[-4] != "show":
             comp = [('decrypto_output', 'decrypto_output config (action id)')]
         elif "decrypto_output" in args[4:]:
-            SF_PRINT("\nPlease input output action id\n")
+            sprint("\nPlease input output action id\n")
             comp = set()
             try:
                 data = hp.cpu_get("actions")
@@ -71,12 +71,12 @@ def sslcon_config_value(ctx, args, incomplete):
                     if isinstance(d[2], dict):
                         comp = list(d[2].keys())
             except Exception as e:
-                SF_PRINT("\nget cpu actions error:{0}".format(e), fg="red")
+                sprint("\nget cpu actions error:{0}".format(e), fg="red")
         else:
             return []
         return [c for c in comp if incomplete in c[0]]
     except:
-        SF_PRINT("Invalid values input!!")
+        sprint("Invalid values input!!")
 
 
 def sslcon_config_show(config):
@@ -84,29 +84,29 @@ def sslcon_config_show(config):
     data = hp.cpu_get('ssl_concatenation/config')
     if config == "all":
         for d in data:
-            SF_PRINT("\nCode : {0}  Ipaddr : {1}".format(d[0], d[1]))
-            SF_PRINT("\ncurrent use_server_info_flag : {0}\n".format(
+            sprint("\nCode : {0}  Ipaddr : {1}".format(d[0], d[1]))
+            sprint("\ncurrent use_server_info_flag : {0}\n".format(
                 "enable" if d[2]["use_server_info_flag"] == 1 else "disable"))
             field_names = ["concaten_interfaces", "decrypted_output"]
             for info in d[2]["concatenation_interfaces_info"]:
                 tb_data.append([info['interfaces_array'],
                                 info["decrypted_output"]])
-        SF_PRINT(str(create_custiom_table(tb_data, field_names)))
+        sprint(str(create_custiom_table(tb_data, field_names)))
     elif config == "concaten_interfaces":
         for d in data:
-            SF_PRINT("\nCode : {0}  Ipaddr : {1}".format(d[0], d[1]))
+            sprint("\nCode : {0}  Ipaddr : {1}".format(d[0], d[1]))
             field_names = ["concaten_interfaces", "decrypted_output"]
             for info in d[2]["concatenation_interfaces_info"]:
                 tb_data.append([info['interfaces_array'],
                                 info["decrypted_output"]])
-        SF_PRINT(str(create_custiom_table(tb_data, field_names)))
+        sprint(str(create_custiom_table(tb_data, field_names)))
     elif config == "use_server_info_flag":
         for d in data:
-            SF_PRINT("\nCode : {0}  Ipaddr : {1}".format(d[0], d[1]))
-            SF_PRINT("\ncurrent use_server_info_flag : {0}\n".format(
+            sprint("\nCode : {0}  Ipaddr : {1}".format(d[0], d[1]))
+            sprint("\ncurrent use_server_info_flag : {0}\n".format(
                 "enable" if d[2]["use_server_info_flag"] == 1 else "disable"))
     else:
-        SF_PRINT("Invalid values input!!")
+        sprint("Invalid values input!!")
 
 
 def sslcon_config_set(config, value):
@@ -116,16 +116,16 @@ def sslcon_config_set(config, value):
             patch_data = [
                 {"op": "replace", "path": "/use_server_info_flag", "value": 1}]
             data = hp.cpu_patch('ssl_concatenation/config', patch_data)
-            SF_PRINT(str(create_custiom_table(data, field_names)))
+            sprint(str(create_custiom_table(data, field_names)))
         elif value[0] == "disable":
             patch_data = [
                 {"op": "replace", "path": "/use_server_info_flag", "value": 0}]
             data = hp.cpu_patch('ssl_concatenation/config', patch_data)
-            SF_PRINT(str(create_custiom_table(data, field_names)))
+            sprint(str(create_custiom_table(data, field_names)))
         else:
-            SF_PRINT("Invalid values input!!")
+            sprint("Invalid values input!!")
     else:
-        SF_PRINT("Invalid values input!!")
+        sprint("Invalid values input!!")
 
 
 def sslcon_config_add(config, value):
@@ -135,11 +135,11 @@ def sslcon_config_add(config, value):
             patch_data = [{"op": "add", "path": "/concatenation_interfaces_info", "value": [
                 {"interfaces_array": [value[0], value[1]], "decrypted_output":int(value[3])}]}]
             data = hp.cpu_patch('ssl_concatenation/config', patch_data)
-            SF_PRINT(str(create_custiom_table(data, field_names)))
+            sprint(str(create_custiom_table(data, field_names)))
         except:
-            SF_PRINT("Invalid values input!!")
+            sprint("Invalid values input!!")
     else:
-        SF_PRINT("Invalid values input!!")
+        sprint("Invalid values input!!")
 
 
 def sslcon_config_delete(config, value):
@@ -149,11 +149,11 @@ def sslcon_config_delete(config, value):
             patch_data = [{"op": "remove", "path": "/concatenation_interfaces_info", "value": [
                 {"interfaces_array": [value[0], value[1]], "decrypted_output":int(value[3])}]}]
             data = hp.cpu_patch('ssl_concatenation/config', patch_data)
-            SF_PRINT(str(create_custiom_table(data, field_names)))
+            sprint(str(create_custiom_table(data, field_names)))
         except:
-            SF_PRINT("Invalid values input!!")
+            sprint("Invalid values input!!")
     else:
-        SF_PRINT("Invalid values input!!")
+        sprint("Invalid values input!!")
 
 
 def sslcon_config_clean(config, value):
@@ -162,9 +162,9 @@ def sslcon_config_clean(config, value):
         patch_data = [
             {"op": "replace", "path": "/concatenation_interfaces_info", "value": []}]
         data = hp.cpu_patch('ssl_concatenation/config', patch_data)
-        SF_PRINT(str(create_custiom_table(data, field_names)))
+        sprint(str(create_custiom_table(data, field_names)))
     else:
-        SF_PRINT("Invalid values input!!")
+        sprint("Invalid values input!!")
 
 
 @cli.command()
@@ -183,7 +183,7 @@ def sslcon_config(op, config, value):
     elif op == "clean":
         sslcon_config_clean(config, value)
     else:
-        SF_PRINT("Invalid values input!!")
+        sprint("Invalid values input!!")
 
 ################################STAT ####################################
 
@@ -218,7 +218,7 @@ def sslcon_stat(op, filter):
         elif filter == "server_info":
             data = hp.cpu_get('ssl_concatenation/stat/server_info')
         else:
-            SF_PRINT("Invalid values input!!")
+            sprint("Invalid values input!!")
             return
         data = [[d[0], d[1], d[2]] for d in data]
         click.echo_via_pager(str(gen_table(data, tab="count", filter=None)))
@@ -234,13 +234,13 @@ def sslcon_stat(op, filter):
             clean_data.append(
                 {"op": "remove", "path": "/server_info", "value": ""})
         else:
-            SF_PRINT("Invalid values input!!")
+            sprint("Invalid values input!!")
             return
         data = hp.cpu_patch('ssl_concatenation/stat', clean_data)
         field_names = ["code",  "ipaddr", "body"]
-        SF_PRINT(str(create_custiom_table(data, field_names)))
+        sprint(str(create_custiom_table(data, field_names)))
     else:
-        SF_PRINT("Invalid values input!!")
+        sprint("Invalid values input!!")
 
 ################################ passthrough_ip  ####################################
 
@@ -273,9 +273,9 @@ def sslcon_passthrough_ip(op, filter, value):
             data = hp.cpu_get('ssl_concatenation/passthrough_ip')
             field_names = ["code", "ipaddr", "passthrough_ip"]
             data = [[d[0], d[1], d[2]["passthrough_ip_list"]] for d in data]
-            SF_PRINT(str(create_custiom_table(data, field_names)))
+            sprint(str(create_custiom_table(data, field_names)))
         else:
-            SF_PRINT("Invalid values input!!")
+            sprint("Invalid values input!!")
     elif op == 'delete':
         field_names = ["code",  "ipaddr", "body"]
         clean_data = []
@@ -290,20 +290,20 @@ def sslcon_passthrough_ip(op, filter, value):
             if len(clean_data) > 0:
                 data = hp.cpu_patch(
                     'ssl_concatenation/passthrough_ip', clean_data)
-                SF_PRINT(str(create_custiom_table(data, field_names)))
+                sprint(str(create_custiom_table(data, field_names)))
             else:
-                SF_PRINT("no passthrough_ip need delete!!")
+                sprint("no passthrough_ip need delete!!")
         elif filter == "IPv4":
             if is_valid_ipv4_address(value):
                 clean_data.append(
                     {"op": "remove", "path": "/passthrough_ip_list", "value": value})
                 data = hp.cpu_patch(
                     'ssl_concatenation/passthrough_ip', clean_data)
-                SF_PRINT(str(create_custiom_table(data, field_names)))
+                sprint(str(create_custiom_table(data, field_names)))
             else:
-                SF_PRINT("Invalid values input!!")
+                sprint("Invalid values input!!")
         else:
-            SF_PRINT("Invalid values input!!")
+            sprint("Invalid values input!!")
     elif op == 'add':
         if filter == "IPv4":
             if is_valid_ipv4_address(value):
@@ -311,13 +311,13 @@ def sslcon_passthrough_ip(op, filter, value):
                     {"op": "add", "path": "/passthrough_ip_list", "value": value}]
                 data = hp.cpu_patch('ssl_concatenation/passthrough_ip', data)
                 field_names = ["code",  "ipaddr", "body"]
-                SF_PRINT(str(create_custiom_table(data, field_names)))
+                sprint(str(create_custiom_table(data, field_names)))
             else:
-                SF_PRINT("Invalid values input!!")
+                sprint("Invalid values input!!")
         else:
-            SF_PRINT("Invalid values input!!")
+            sprint("Invalid values input!!")
     else:
-        SF_PRINT("Invalid values input!!")
+        sprint("Invalid values input!!")
 
 
 ################################ SERVER CONFIG  ####################################
@@ -349,7 +349,7 @@ def sslcon_serverip_info(ctx, args, incomplete):
     elif args[-1] == "sync":
         return []
     else:
-        SF_PRINT("Invalid values input!!")
+        sprint("Invalid values input!!")
     return [c for c in comp if incomplete in c[0]]
 
 
@@ -401,24 +401,24 @@ def sslcon_server_config_show(info):
         data = hp.cpu_get('ssl_concatenation/server_config?depth=3')
         for d in data:
             if isinstance(d[2], dict):
-                SF_PRINT("\nCode : {0}  Ipaddr : {1}".format(d[0], d[1]))
+                sprint("\nCode : {0}  Ipaddr : {1}".format(d[0], d[1]))
                 for key in d[2].keys():
                     tb_data.append([d[2][key]["server_index"], d[2][key]["ip_type"], d[2][key]["srv_ip"],
                                     d[2][key]["srv_port"], d[2][key]["modify_port"], d[2][key]["server_name"],
                                     d[2][key]["key_filename"], d[2][key]["cert_filename"], d[2][key]["chain_filename"]])
-                SF_PRINT(str(create_custiom_table(tb_data, field_names)))
+                sprint(str(create_custiom_table(tb_data, field_names)))
     elif info.isdigit():
         data = hp.cpu_get('ssl_concatenation/server_config/{0}'.format(info))
         for d in data:
             if isinstance(d[2], dict):
-                SF_PRINT("\nCode : {0}  Ipaddr : {1}".format(d[0], d[1]))
+                sprint("\nCode : {0}  Ipaddr : {1}".format(d[0], d[1]))
                 for key in d[2].keys():
                     tb_data.append([d[2][key]["server_index"], d[2][key]["ip_type"], d[2][key]["srv_ip"],
                                     d[2][key]["srv_port"], d[2][key]["modify_port"], d[2][key]["server_name"],
                                     d[2][key]["key_filename"], d[2][key]["cert_filename"], d[2][key]["chain_filename"]])
-                SF_PRINT(str(create_custiom_table(tb_data, field_names)))
+                sprint(str(create_custiom_table(tb_data, field_names)))
     else:
-        SF_PRINT("Invalid values input!!")
+        sprint("Invalid values input!!")
 
 
 def sslcon_server_config_delete(info):
@@ -433,15 +433,15 @@ def sslcon_server_config_delete(info):
                         'ssl_concatenation/server_config/{0}'.format(key))
         for http in hp.cpus:
             tb_data.append([200, http.addr, ""])
-        SF_PRINT(str(create_custiom_table(tb_data, field_names)))
-        SF_PRINT("NEED SYNC!!!!")
+        sprint(str(create_custiom_table(tb_data, field_names)))
+        sprint("NEED SYNC!!!!")
     elif info.isdigit():
         tb_data = hp.cpu_delete(
             'ssl_concatenation/server_config/{0}'.format(info))
-        SF_PRINT(str(create_custiom_table(tb_data, field_names)))
-        SF_PRINT("NEED SYNC!!!!")
+        sprint(str(create_custiom_table(tb_data, field_names)))
+        sprint("NEED SYNC!!!!")
     else:
-        SF_PRINT("Invalid values input!!")
+        sprint("Invalid values input!!")
 
 
 def sslcon_server_config_add(info,
@@ -458,7 +458,7 @@ def sslcon_server_config_add(info,
        not is_valid_ipv4_address(server_ip) or \
        not server_port.isdigit() or \
        not decrypted_server_port.isdigit():
-        SF_PRINT("Invalid values input!!")
+        sprint("Invalid values input!!")
         return
 
     fields = {
@@ -487,8 +487,8 @@ def sslcon_server_config_add(info,
     field_names = ["code",  "ipaddr", "body"]
     tb_data = hp.cpu_raw_post(
         'ssl_concatenation/server_config', data=fields, files=files)
-    SF_PRINT(str(create_custiom_table(tb_data, field_names)))
-    SF_PRINT("NEED SYNC!!!!")
+    sprint(str(create_custiom_table(tb_data, field_names)))
+    sprint("NEED SYNC!!!!")
 
 
 @cli.command()
@@ -510,7 +510,7 @@ def sslcon_server_config(op, info,
         patch_data = [{"op": "replace", "path": "/sync", "value": ""}]
         data = hp.cpu_patch('ssl_concatenation/server_config', patch_data)
         field_names = ["code",  "ipaddr", "body"]
-        SF_PRINT(str(create_custiom_table(data, field_names)))
+        sprint(str(create_custiom_table(data, field_names)))
     elif op == "show":
         sslcon_server_config_show(info)
     elif op == "add":
@@ -520,7 +520,7 @@ def sslcon_server_config(op, info,
     elif op == "delete":
         sslcon_server_config_delete(info)
     else:
-        SF_PRINT("Invalid values input!!")
+        sprint("Invalid values input!!")
 
 
 sf_sslcon_finish = ''

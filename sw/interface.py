@@ -1,7 +1,7 @@
 import asyncio
 import click
 
-from base import cli
+from base import cli, sprint
 from utils.http_helper import hp
 from utils.tools import *
 
@@ -11,8 +11,10 @@ def sw_intf_op(ctx, args, incomplete):
             ('clean', 'clean stat'),
             ('set', 'set feature'),
             ('enable', 'enable featrue'),
-            ('disable', 'disable feature')]
-    return [c for c in comp if incomplete in c[0]]
+            ('disable', 'disable feature'),
+            ('bind', 'bind acl'),
+            ('unbind', 'unbind acl'), ]
+    return [c for c in comp if c[0].startswith(incomplete)]
 
 
 show_comp = {'statistics': ('statistics', 'port stat'),
@@ -38,6 +40,12 @@ def sw_intf_filter(ctx, args, incomplete):
         comp = speed_comp
     elif args[-2] in ("enable", "disable"):
         comp = feature_comp
+    elif args[-2] == "bind":
+        data = hp.sw_get("acls")
+        comp = []
+        for one in data:
+            comp += [(acl.split("/")[-1], "acl existed") for acl in one[2]]
+        return [c for c in comp if c[0].startswith(incomplete)]
     else:
         comp = []
     return [comp[c] for c in comp if comp[c][0].startswith(incomplete)]
@@ -59,6 +67,7 @@ def sw_intfs(ctx, args, incomplete):
     except Exception as e:
         click.echo("\nget sw interface error:{0}".format(e))
         exit()
+
 
 sw_intf_expect = {
     "statistics": [
@@ -82,15 +91,17 @@ sw_intf_expect = {
         "speed",
         "mtu",
         "enable",
+        'iacl_name',
         "transceiver_mode",
     ]
 }
+
 
 @cli.command()
 @click.argument("op", type=click.STRING, autocompletion=sw_intf_op)
 @click.argument("intf", type=click.STRING, autocompletion=sw_intfs)
 @click.argument("filter", type=click.STRING, autocompletion=sw_intf_filter, required=False)
-def intf_sw(op, intf, filter=None):
+def intf_sw(op, intf, filter):
     restid = gen_intfs_sw(intf)
     if not restid and op != "clean":
         click.echo("PORT INDEX ERROR")
@@ -100,13 +111,13 @@ def intf_sw(op, intf, filter=None):
             data = []
             for idx in restid:
                 surl = 'interfaces/{0}'.format(idx)
-                if filter:
-                    surl += "?keys={}".format(filter)
+                if not filter:
+                    filter = 'configuration'
                 tasks = [hp.loop.create_task(sw.get(surl))]
                 wait_task = asyncio.wait(tasks)
                 hp.loop.run_until_complete(wait_task)
                 data += hp.data_from_tasks(tasks)
-            tb = gen_table_sw(data, sw_intf_expect,tab=sw.addr, filter=filter)
+            tb = gen_table_sw(data, sw_intf_expect, tab=sw.addr, filter=filter)
             click.echo(click.style(str(tb), fg='green',))
     elif op == 'set':
         """
@@ -148,6 +159,37 @@ def intf_sw(op, intf, filter=None):
         op_data = [{"op": "remove", "path": "/statistics"}]
         data = hp.sw_patch('interfaces', op_data)
         click.echo(gen_table(data, tab="all"))
+    elif op == 'bind':
+        '''
+        {"op": "add", "path": "/configuration/iacl_name", "value": "acl1"}
+        '''
+        data = []
+        op_data = [
+            {"op": "add", "path": "/configuration/iacl_name", "value": filter}]
+        for idx in restid:
+            temp = hp.sw_patch('interfaces/{0}'.format(idx), op_data)
+            for i in temp:
+                i[1] += " "+idx
+                i[1] = i[1].split(".")[-1]
+                data.append(i)
+        click.echo(gen_table(data, tab="bind"))
+    elif op == "unbind":
+        data = []
+        op_data = [
+            {"op": "remove", "path": "/configuration/iacl_name"}]
+        for idx in restid:
+            temp = hp.sw_patch('interfaces/{0}'.format(idx), op_data)
+            for i in temp:
+                i[1] += " "+idx
+                i[1] = i[1].split(".")[-1]
+                data.append(i)
+        click.echo(gen_table(data, tab="bind"))
+
+
+@cli.command()
+def policies():
+    data = hp.sw_get('forward_policies/group_2')
+    sprint(str(gen_table(data, tab="bind")))
 
 
 sw_intf_finish = ''

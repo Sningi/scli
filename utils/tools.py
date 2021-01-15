@@ -137,9 +137,15 @@ def gen_table(data, tab="item", filter=None):
         if isinstance(one[2], dict):
             for key in sorted(one[2]):
                 if (filter and filter in key) or not filter:
-                    row = [
-                        key, *[item[2][key] if isinstance(item[2], dict) else item[2] for item in data]]
-                    # if(len(row)==len(tb.field_names)):
+                    row = [key]
+                    for item in data:
+                        if isinstance(item[2], dict):
+                            if key in item[2]:
+                                row.append(item[2][key])
+                            else:
+                                row.append(None)
+                        else:
+                            row.append(item[2])
                     tb.add_row(row)
             break
     if len(tb._rows) == 0:
@@ -178,5 +184,4 @@ def gen_table_sw(data, expect, tab="item", filter=None):
             row = [tab, *[item[2] for item in data]]
             if len(tb.field_names) == len(row):
                 tb.add_row(row)
-    tb.get_string(sortby=tab)
     return tb

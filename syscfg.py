@@ -42,7 +42,7 @@ def syscfg(op, dev):
             print(gen_table(data, tab="cpu"))
         elif "sw".startswith(dev):
             data = hp.sw_delete("forward_policies")
-            print(gen_table(data))
+            print(gen_table(data,tab="switch"))
             data = hp.sw_delete("elags/128")
         elif "all".startswith(dev):
             data = hp.cpu_patch("system/config", sync_data)

@@ -1,6 +1,6 @@
 import click
 
-from base import cli, SF_PRINT
+from base import cli, sprint
 from utils.http_helper import hp
 from utils.tools import *
 from utils.static_data import *
@@ -26,7 +26,7 @@ def action_idx(ctx, args, incomplete):
         elif args[-1] in ["create"]:
             return [str(i) for i in range(1, 129) if str(i).startswith(incomplete) and str(i) not in idxs]
     except Exception as e:
-        SF_PRINT("\ngetcpu interface error:{0}".format(e))
+        sprint("\ngetcpu interface error:{0}".format(e))
         exit()
 
 
@@ -105,7 +105,7 @@ action_expect = {
 def action(op, idx=None, type=None, intf=None):
     if 'show'.startswith(op):
         if intf:
-            SF_PRINT("Invalid values input!!")
+            sprint("Invalid values input!!")
             return
         url = "actions"
         if idx and idx == "all":
@@ -113,13 +113,13 @@ def action(op, idx=None, type=None, intf=None):
         elif idx and idx.isdigit():
             url += "/{0}".format(idx)
         data = hp.cpu_get(url)
-        SF_PRINT(str(gen_table_sw(data, action_expect, filter=type)))
+        sprint(str(gen_table_sw(data, action_expect, filter=type)))
     elif 'create'.startswith(op):
         restid = gen_intfs_sw(intf)
         restid += gen_intfs_cpu(intf)
         if not restid:
             if not restid:
-                SF_PRINT("PORT INDEX ERROR")
+                sprint("PORT INDEX ERROR")
                 exit()
 
         if "no_basis_action".startswith(type):
@@ -152,18 +152,18 @@ def action(op, idx=None, type=None, intf=None):
                 }
             }
         data = hp.cpu_post('actions', data)
-        SF_PRINT(str(gen_table(data,)))
+        sprint(str(gen_table(data,)))
     elif op == 'delete':
         if type or intf:
-            SF_PRINT("Invalid values input!!")
+            sprint("Invalid values input!!")
             return
         field_names = ["code",  "ipaddr", "body"]
         if idx.isdigit():
             data = hp.cpu_delete('actions/{0}'.format(idx))
         else:
-            SF_PRINT("Invalid values input!!")
+            sprint("Invalid values input!!")
             return
-        SF_PRINT(str(gen_table(data,)))
+        sprint(str(gen_table(data,)))
     elif op in ("disable", "enable"):
         patch_data = [{
             "op": "replace",

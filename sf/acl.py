@@ -110,7 +110,7 @@ def acl(op, idx, atype, value):
         print("del", gen_table(data))
     elif "sync".startswith(op):
         data2 = hp.cpu_patch('acl/sync', sync_data)
-        print("sync", gen_table(data2))
+        print(gen_table(data2))
 
 
 sf_acl_finish = ''

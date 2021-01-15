@@ -1,6 +1,6 @@
 import click
 from json import dumps
-from base import cli, SF_PRINT
+from base import cli, sprint
 from utils.http_helper import hp
 from utils.tools import *
 from utils.static_data import *
@@ -31,14 +31,14 @@ def sslcon_sw_base_configuration_show():
     data = hp.sw_get('openflowconf?type=flow')
     field_names = ["flows"]
     for i in data:
-        SF_PRINT("Code : {0}   Ipaddr : {1}".format(i[0], i[1]))
+        sprint("Code : {0}   Ipaddr : {1}".format(i[0], i[1]))
         tb = PrettyTable()
         tb.field_names = field_names
         tb.align[field_names[0]] = "l"
         tb.padding_width = 1
         for ab in i[2]:
             tb.add_row([ab.strip()])
-        SF_PRINT(str(tb))
+        sprint(str(tb))
 
 
 def sslcon_sw_base_configuration_remove():
@@ -92,8 +92,8 @@ def sslcon_sw_base_configuration_create():
         }
     }
     tb_data = hp.sw_post('bridges', of_instance_data)
-    SF_PRINT("Openflow instance:")
-    SF_PRINT(str(create_custiom_table(tb_data, field_names)))
+    sprint("Openflow instance:")
+    sprint(str(create_custiom_table(tb_data, field_names)))
 
     # create vlan
     vlan_data = {
@@ -121,8 +121,8 @@ def sslcon_sw_base_configuration_create():
                 "l3_enable": "false"
             }}
     tb_data = hp.sw_post('vlans', vlan_data)
-    SF_PRINT("Vlans:")
-    SF_PRINT(str(create_custiom_table(tb_data, field_names)))
+    sprint("Vlans:")
+    sprint(str(create_custiom_table(tb_data, field_names)))
 
     # Modify the interfaces
     interface_base_data = [
@@ -151,8 +151,8 @@ def sslcon_sw_base_configuration_create():
             tb = create_custiom_table(tb_data, field_intf_names)
         else:
             table_add_row(tb, tb_data.append(str(intf)))
-    SF_PRINT("Interfaces:")
-    SF_PRINT(str(tb))
+    sprint("Interfaces:")
+    sprint(str(tb))
 
 
 @cli.command()
@@ -165,7 +165,7 @@ def sslcon_sw_base_configuration(op):
     elif op == 'create':
         sslcon_sw_base_configuration_create()
     else:
-        SF_PRINT("Invalid values input!!")
+        sprint("Invalid values input!!")
 
 
 sw_sslcon_finsh = ''
