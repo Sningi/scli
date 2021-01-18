@@ -17,6 +17,7 @@ def gtpu_operation(ctx, args, incomplete):
 
 
 gtpu_cfg_field = [('gtpu_decode', 'gtpu_bear_dec_enable'),
+                  ('gtpu_inner_decode', 'gtpu_inner_decode'),
                   ('device_number', 'device_number'),
                   ('bear_timeout_mul', 'gtpu_bear_tab_timeout_mul'),
                   ('bear_timeout_sec', 'gtpu_bear_tab_timeout_sec'),
