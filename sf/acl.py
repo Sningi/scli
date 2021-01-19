@@ -21,6 +21,8 @@ def acl_types(ctx, args, incomplete):
     field = []
     if "create".startswith(args[-2]):
         field = [('imsi', 'imsi'),
+                 ('imei', 'imei'),
+                 ('msisdn', 'msisdn'),
                  ('ipset4', 'ipset4'),
                  ('ipset6', 'ipset6'),
                  ('tuple4', 'tuple4'),
@@ -34,7 +36,7 @@ def acl_types(ctx, args, incomplete):
                  ('combined', 'combined'),
                  ]
     elif "show".startswith(args[-2]):
-        field = [("stat", "acl hit count"),("cfg", "acl cfg")
+        field = [("stat", "acl hit count"), ("cfg", "acl cfg")
                  ]
     return [i for i in field if incomplete in i[0]]
 
@@ -92,6 +94,28 @@ def acl(op, idx, atype, value):
                     },
                 }
             }
+        elif "imei".startswith(atype):
+            postd = {
+                "group_1": {
+                    idx: {
+                        "rule_type": atype,
+                        "rule_cfg": {
+                            "imei": value,
+                        },
+                    },
+                }
+            }
+        elif "msisdn".startswith(atype):
+            postd = {
+                "group_1": {
+                    idx: {
+                        "rule_type": atype,
+                        "rule_cfg": {
+                            "msisdn": value,
+                        },
+                    },
+                }
+            }
         elif "packet_type".startswith(atype):
             postd = {
                 "group_1": {
@@ -104,7 +128,7 @@ def acl(op, idx, atype, value):
                 }
             }
         data = hp.cpu_post('acl/config/group_1/{}'.format(idx), postd)
-        print(gen_table(data))
+        print(gen_table(data, tab="acl"))
     elif "delete".startswith(op):
         data = hp.cpu_delete('acl/config?group=1&index={}'.format(idx))
         print("del", gen_table(data))
