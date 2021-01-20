@@ -23,6 +23,7 @@ sctp_cfg_field = [('sctp_decode', 'sctp_decode_enable'),
                   ('ngap_cdr', 'ngap_cdr_enable'),
                   ('nas_decrypt', 'ngap_nas_decrypt_enable'),
                   ('nas_decrypted_output', 'ngap_nas_decrypted_output_enable'),
+                  ('learn_ip', 'learn_ip'),
 
                   ('ngap_imsi_timeout', 'ngap_imsi_timeout_cycle'),
                   ('ngap_cdr_timeout', 'ngap_cdr_timeout'),
