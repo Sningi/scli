@@ -7,6 +7,7 @@ from sf.general_rest_api import general_clean_data
 from utils.http_helper import hp
 from utils.tools import *
 
+
 def cpu_intf_op(ctx, args, incomplete):
     comp = [('show', 'show stat'),
             ('clean', 'clean stat'),
@@ -19,7 +20,9 @@ def cpu_intf_filter(ctx, args, incomplete):
             ('ingress_config', ''),
             ('tcp_reass_config', ''),
             ('ip_reass_config', ''),
-            ('deduplication_enable', '')]
+            ('deduplication_enable', ''),
+            ('deduplication_config', ''),
+            ]
     return [c for c in comp if c[0].startswith(incomplete)]
 
 
@@ -42,6 +45,18 @@ def cpu_intf_field(ctx, args, incomplete):
         comp = []
     elif 'ip_reass_config'.startswith(args[-1]):
         comp = []
+    elif 'deduplication_config'.startswith(args[-1]):
+        comp = [
+            # "deduplication_no_care_dscp",
+            ("deduplication_no_care_interface",""),
+            ("deduplication_no_care_ipid",""),
+            ("deduplication_no_care_l2",""),
+            ("deduplication_no_care_mac",""),
+            ("deduplication_no_care_tcp_flag",""),
+            ("deduplication_no_care_ttl",""),
+            ("depth_bytes",""),
+            ("depth_offset","")
+        ]
     else:
         comp = []
     return [c for c in comp if c[0].startswith(incomplete)]
@@ -52,12 +67,14 @@ def cpu_intf_value(ctx, args, incomplete):
             ('ingress_config', ''),
             ('tcp_reass_config', ''),
             ('ip_reass_config', ''),
-            ('deduplication_enable', '')]
+            ('deduplication_enable', ''),
+            ('deduplication_config', '')
+            ]
     return [c for c in comp if c[0].startswith(incomplete)]
 
 
 sf_intf_expect = {
-    "port_list":[
+    "port_list": [
         'port_list'
     ],
     "deduplication_enable": [
@@ -77,6 +94,17 @@ sf_intf_expect = {
     "tcp_reass_config": [
         "inner_enable",
         "outer_enable"
+    ],
+    "deduplication_config": [
+        "deduplication_no_care_dscp",
+        "deduplication_no_care_interface",
+        "deduplication_no_care_ipid",
+        "deduplication_no_care_l2",
+        "deduplication_no_care_mac",
+        "deduplication_no_care_tcp_flag",
+        "deduplication_no_care_ttl",
+        # "depth_bytes",
+        # "depth_offset"
     ]
 }
 
@@ -121,7 +149,7 @@ def intf_cpu(op, intf, filter=None, value=None, value2=None):
             elif "tuple_mode".startswith(value):
                 data = {'tuple_mode': value2}
             elif 'rule_to_action'.startswith(value):
-                data = {'rule_to_action':eval(value2)}
+                data = {'rule_to_action': eval(value2)}
             if data:
                 for idx in restid:
                     cfg = {"op": "replace",
@@ -143,6 +171,17 @@ def intf_cpu(op, intf, filter=None, value=None, value2=None):
                 cfg = {"op": "replace",
                        "path": "/{0}/{1}".format(idx, filter), "value": value}
                 op_data.append(cfg)
+        elif 'deduplication_config'.startswith(filter):
+            data = None
+            if 'deduplication_no_care_l2'.startswith(value):
+                data = {'deduplication_no_care_l2': value2}
+            else:
+                data = {value: value2}
+            if data:
+                for idx in restid:
+                    cfg = {"op": "replace",
+                           "path": "/{0}/{1}".format(idx, filter), "value": data}
+                    op_data.append(cfg)
         data = hp.cpu_patch('interfaces/config', op_data)
         click.echo(gen_table(data, tab="code"))
 

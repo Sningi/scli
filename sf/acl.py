@@ -57,7 +57,7 @@ packet_types = (
     'gtpu', 'gtpv0', 'gtpv1', 'gtpv2', 'http', 'http2', 'sip', 'rtp',
     'rtcp', 'diameter', 'sgs_ap', 's1ap', 'ngap', 'ftp', 'pop3', 'smtp', 'dns',
     'radius', 'coap', 'pptp', 'l2tp', 'https', 'icmp', 'bgp', 'ospf', 'isis', 'gtp', 'sctp',
-    'gtpv2_cdr',
+    'gtpv2_cdr','n2_cdr','gtpu_bear',
 )
 
 

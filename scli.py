@@ -1,3 +1,4 @@
+import json
 import os
 import click
 from itertools import zip_longest
@@ -5,7 +6,7 @@ from itertools import zip_longest
 from config import Config
 from base import cli
 from utils.http_helper import hp
-from utils.tools import create_custiom_table
+from utils.tools import *
 
 from sf.acl import sf_acl_finish
 from sf.action import sf_action_finish
@@ -24,6 +25,7 @@ from sf.module.sslcon import sf_sslcon_finish
 from sw.module.sslcon import sw_sslcon_finsh
 
 from syscfg import sf_sys_finish
+
 
 def dev_op(ctx, args, incomplete):
     comp = [('show', 'show stat')]
@@ -61,6 +63,18 @@ def dev_ip(op, dev):
                 data.append([index + 1, group])
             tb = create_custiom_table(data, field_names)
             click.echo(tb)
+
+
+@cli.command()
+@click.argument("dev", type=click.STRING, autocompletion=dev_type)
+@click.argument("url", type=click.STRING, autocompletion=dev_type)
+def get(dev, url):
+    if 'cpu'.startswith(dev):
+        data = hp.cpu_get(url)
+        click.echo(json.dumps(data,indent=2))
+    elif "switch".startswith(dev):
+        data = hp.sw_get(url)
+        click.echo(json.dumps(data,indent=2))
 
 
 if __name__ == '__main__':

@@ -96,38 +96,4 @@ def gtpv2_stat(op, filter):
         data = hp.cpu_patch('gtpv2/stat', general_clean_data)
         print(gen_table(data, tab="result"))
 
-
-ngap_type = {'small_cdr': ("small_cdr", 'ngap/small_cdr/stat'),
-             'nas_dec': ('nas_dec', "ngap/nas_dec/stat"),
-             'sig': ("sig", 'ngap/sig/stat'),
-             'ngap': ("ngap", 'ngap/stat'),
-             "sync": ("sync", 'sig/sync'),
-             '5gs': ("5gs", 'sig/5gs_arch'),
-             }
-
-
-def ngap_type_comp(ctx, args, incomplete):
-    return [ngap_type[key] for key in ngap_type if ngap_type[key][0].startswith(incomplete)]
-
-
-def ngap_stat_filter(ctx, args, incomplete):
-    comp = [('create', 'chunk stat'),
-            ('failed', 'error stat'),
-            ('total', 'total stat')]
-    return [c for c in comp if c[0].startswith(incomplete)]
-
-
-@cli.command()
-@click.argument("op", type=click.STRING, autocompletion=gtpv2_stat_operation)
-@click.argument("type", type=click.STRING, autocompletion=ngap_type_comp)
-@click.argument("filter", type=click.STRING, autocompletion=ngap_stat_filter, required=False)
-def ngap_stat(op, type, filter):
-    if op == 'show':
-        data = hp.cpu_get('gtpv2/{0}'.format(ngap_type[type][1]))
-        print(gen_table(data, tab="count", filter=filter))
-    elif op == 'clean':
-        data = hp.cpu_patch('gtpv2/stat', general_clean_data)
-        print(gen_table(data, tab="result"))
-
-
 sf_gtpv2_finish = ''
