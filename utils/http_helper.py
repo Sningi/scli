@@ -83,7 +83,7 @@ class Http:
     async def get(self, short_url, data=None, params=None, loop=0):
         loop += 1
         if loop > 5:
-            return [400, self.addr, "login failed may error passwd"]
+            return [400, self.addr, "login failed may error passwd or error date"]
         async with self.session.get(url=self.base_url + short_url, params=params, timeout=self.timeout) as res:
             data = await res.json()
             if res.status == HTTP.UNAUTHORIZED:
@@ -95,7 +95,7 @@ class Http:
     async def post(self, short_url, data, params=None, loop=0):
         loop += 1
         if loop > 5:
-            return [400, self.addr, "login failed may error passwd"]
+            return [400, self.addr, "login failed may error passwd or error date"]
         async with self.session.post(url=self.base_url + short_url, json=data, params=params, timeout=self.timeout) as res:
             data = await res.text()
             if res.status == HTTP.UNAUTHORIZED:
@@ -107,7 +107,7 @@ class Http:
     async def raw_post(self, short_url, raw_data, header=None, params=None, files=None, loop=0):
         loop += 1
         if loop > 5:
-            return [400, self.addr, "login failed may error passwd"]
+            return [400, self.addr, "login failed may error passwd or error date"]
         async with self.session.post(url=self.base_url + short_url, data=raw_data, headers=header, params=params, files=files, timeout=self.timeout) as res:
             data = await res.text()
             if res.status == HTTP.UNAUTHORIZED:
@@ -119,7 +119,7 @@ class Http:
     async def delete(self, short_url, data=None, params=None, loop=0):
         loop += 1
         if loop > 5:
-            return [400, self.addr, "login failed may error passwd"]
+            return [400, self.addr, "login failed may error passwd or error date"]
         async with self.session.delete(url=self.base_url+short_url, params=params, timeout=self.timeout) as res:
             data = await res.text()
             if res.status == HTTP.UNAUTHORIZED:
@@ -131,7 +131,7 @@ class Http:
     async def put(self, short_url, data, params=None, loop=0):
         loop += 1
         if loop > 5:
-            return [400, self.addr, "login failed may error passwd"]
+            return [400, self.addr, "login failed may error passwd or error date"]
         async with self.session.put(url=self.base_url+short_url, json=data, params=params, timeout=self.timeout) as res:
             data = await res.text()
             if res.status == HTTP.UNAUTHORIZED:
@@ -143,7 +143,7 @@ class Http:
     async def patch(self, short_url, data, params=None, loop=0):
         loop += 1
         if loop > 5:
-            return [400, self.addr, "login failed may error passwd"]
+            return [400, self.addr, "login failed may error passwd or error date"]
         async with self.session.patch(url=self.base_url + short_url, json=data, params=params, timeout=self.timeout) as res:
             data = await res.text()
             if res.status == HTTP.UNAUTHORIZED:

@@ -30,10 +30,10 @@ def sys_dev(ctx, args, incomplete):
 @click.argument("op", type=click.STRING, autocompletion=sys_op)
 @click.argument("dev", type=click.STRING, autocompletion=sys_dev)
 def syscfg(op, dev):
-    '''
-    CPU PATCH https://192.168.1.200:2020/rest/v1/system/config
-    {"op": "replace", "path": "/", "value":1}
-    '''
+    # '''
+    # CPU PATCH https://192.168.1.200:2020/rest/v1/system/config
+    # {"op": "replace", "path": "/", "value":1}
+    # '''
     if 'save'.startswith(op):
         pass
     elif "reset".startswith(op):
