@@ -12,13 +12,15 @@ def http2_operation(ctx, args, incomplete):
     colors = [('show', 'show config'),
               ('enable', 'enable feature'),
               ('disable', 'disble feature'),
+              ('set', 'set feature'),
               ('timeout', 'set timeout')]
     return [c for c in colors if c[0].startswith(incomplete)]
 
 
 http2_cfg_field = [('http2_decode', 'enable'),
                    ('n11_decode', 'enable_N11_decode'),
-
+                   ('n11_cache','enable_N11_cache'),                  
+                   ('N11_cache_limit','N11_cache_limit'),                  
                    ('n11_timeout', 'N11_table_time'),
                    ('stream_timeout', 'stream_time'),
                    ('connect_timeout', 'connect_time')]
@@ -30,6 +32,8 @@ def cfg_field(ctx, args, incomplete):
         return [i for i in http2_cfg_field if incomplete in i[0] and "timeout" in i[0]]
     elif args[-1] in ["enable", "disable"]:
         return [i for i in http2_cfg_field if incomplete in i[0] and "timeout" not in i[0]]
+    elif args[-1] == "set":
+        return [i for i in http2_cfg_field if incomplete in i[0] and "limit" in i[0]]
     elif args[-1] == "show":
         return [i for i in http2_cfg_field if incomplete in i[0]]
 
@@ -60,6 +64,12 @@ def http2_cfg(op, field=None, value=None):
         print(gen_table(data, tab="code"))
     elif op == "timeout":
 
+        op_data = [{"op": "replace",
+                    "path": "/"+http2_cfg_dict[field],
+                    "value":int(value)}]
+        data = hp.cpu_patch('http2/config', op_data)
+        print(gen_table(data, tab="code"))
+    elif op == "set":
         op_data = [{"op": "replace",
                     "path": "/"+http2_cfg_dict[field],
                     "value":int(value)}]
