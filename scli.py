@@ -78,4 +78,4 @@ def get(dev, url):
 
 
 if __name__ == '__main__':
-    pass
+    cli()
