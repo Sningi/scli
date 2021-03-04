@@ -154,7 +154,7 @@ def action(op, idx=None, type=None, intf=None):
         data = hp.cpu_post('actions', data)
         sprint(str(gen_table(data,)))
     elif op == 'delete':
-        if type or intf:
+        if intf:
             sprint("Invalid values input!!")
             return
         field_names = ["code",  "ipaddr", "body"]

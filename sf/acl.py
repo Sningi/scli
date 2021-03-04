@@ -131,7 +131,7 @@ def acl(op, idx, atype, value):
         print(gen_table(data, tab="acl"))
     elif "delete".startswith(op):
         data = hp.cpu_delete('acl/config?group=1&index={}'.format(idx))
-        print("del", gen_table(data))
+        print(gen_table(data))
     elif "sync".startswith(op):
         data2 = hp.cpu_patch('acl/sync', sync_data)
         print(gen_table(data2))
