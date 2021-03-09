@@ -19,8 +19,8 @@ def http2_operation(ctx, args, incomplete):
 
 http2_cfg_field = [('http2_decode', 'enable'),
                    ('n11_decode', 'enable_N11_decode'),
-                   ('n11_cache','enable_N11_cache'),                  
-                   ('N11_cache_limit','N11_cache_limit'),                  
+                   ('nx_cache','enable_Nx_cache'),
+                   ('nx_cache_limit','Nx_cache_limit'),
                    ('n11_timeout', 'N11_table_time'),
                    ('stream_timeout', 'stream_time'),
                    ('connect_timeout', 'connect_time')]
