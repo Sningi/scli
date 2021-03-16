@@ -1,10 +1,13 @@
+INPUT=X21
+CPU=C6
+
 scli syscfg reset all
 
-scli acl-sw create group_1 100 --action forward --evif_name C5 --type ipv4 --vlanid 4084 --vlan_cmd add_vlan
-scli acl-sw add group_1 101 --action forward --evif_name C5 --type ipv6 --vlanid 4084 --vlan_cmd add_vlan
-scli intf-sw bind X1 group_1
+scli acl-sw create group_1 100 --action forward --evif_name $CPU --type ipv4 --vlanid 4084 --vlan_cmd add_vlan
+scli acl-sw add group_1 101 --action forward --evif_name $CPU --type ipv6 --vlanid 4084 --vlan_cmd add_vlan
+scli intf-sw bind $INPUT group_1
 
-scli intf-sw enable X1,C5 rx
+scli intf-sw enable $INPUT,$CPU rx
 
 #cpu config
 scli acl create 1 packet_type n2_cdr
