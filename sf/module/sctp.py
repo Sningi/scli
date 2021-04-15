@@ -28,7 +28,20 @@ sctp_cfg_field = [('sctp_decode', 'sctp_decode_enable'),
                   ('ngap_imsi_timeout', 'ngap_imsi_timeout_cycle'),
                   ('ngap_cdr_timeout', 'ngap_cdr_timeout'),
                   ('ngap_small_cdr_timeout', 'ngap_small_cdr_timeout'),
-                  ('ngap_handover_cdr_timeout', 'ngap_handover_cdr_timeout')]
+                  ('ngap_handover_cdr_timeout', 'ngap_handover_cdr_timeout'),
+                    ("sctp_frag_assemble", "sctp_frag_assemble"),
+                    ("s1ap_decode_enable", "s1ap_decode_enable"),
+                    ("s1ap_decode_skip_paging_enable", "s1ap_decode_skip_paging_enable"),
+                    ("s1ap_cdr_enable", "s1ap_cdr_enable"),
+                    ("s1ap_cdr_output_enable", "s1ap_cdr_output_enable"),
+                    ("s1ap_nas_decrypt_enable", "s1ap_nas_decrypt_enable"),
+                    ("s1ap_nas_decrypted_output_enable", "s1ap_nas_decrypted_output_enable"),
+                    ("s1ap_learn_lte_enable", "s1ap_learn_lte_enable"),
+                    ("s1ap_cdr_timeout", "s1ap_cdr_timeout"),
+                    ("s1ap_small_cdr_timeout", "s1ap_small_cdr_timeout"),
+                    ("s1ap_handover_cdr_timeout", "s1ap_handover_cdr_timeout"),
+                    ("s1ap_imsi_timeout_cycle", "s1ap_imsi_timeout_cycle"),
+                  ]
 sctp_cfg_dict = dict(sctp_cfg_field)
 
 
