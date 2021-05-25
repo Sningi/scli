@@ -45,7 +45,7 @@ import textwrap
 import pkg_resources
 import wcwidth
 
-__version__ = pkg_resources.get_distribution(__name__).version
+__version__ = 1.9
 py3k = sys.version_info[0] >= 3
 if py3k:
     unicode = str
