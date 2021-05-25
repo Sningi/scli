@@ -18,16 +18,9 @@ def gtpv2_op(ctx, args, incomplete):
 
 gtpv2_cfg_field = [('gtpv2_decode', 'gtpv2_decode_enable'),
                   ('gtpv2_decode_upproto', 'gtpv2_decode_upproto_enable'),
-                  ('ngap_decode', 'ngap_decode_enable'),
-                  ('ngap_skip_paging', 'ngap_decode_skip_paging_enable'),
-                  ('ngap_cdr', 'ngap_cdr_enable'),
-                  ('nas_decrypt', 'ngap_nas_decrypt_enable'),
-                  ('nas_decrypted_output', 'ngap_nas_decrypted_output_enable'),
-
-                  ('ngap_imsi_timeout', 'ngap_imsi_timeout_cycle'),
-                  ('ngap_cdr_timeout', 'ngap_cdr_timeout'),
-                  ('ngap_small_cdr_timeout', 'ngap_small_cdr_timeout'),
-                  ('ngap_handover_cdr_timeout', 'ngap_handover_cdr_timeout')]
+                  ('gtpv2_cache', 'gtpv2_cache_enable'),
+                  
+                  ]
 gtpv2_cfg_dict = dict(gtpv2_cfg_field)
 
 
