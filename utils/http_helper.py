@@ -85,7 +85,10 @@ class Http:
         if loop > 5:
             return [400, self.addr, "login failed may error passwd or error date"]
         async with self.session.get(url=self.base_url + short_url, params=params, timeout=self.timeout) as res:
-            data = await res.json()
+            try:
+                data = await res.json()
+            except:
+                data = await res.text()
             if res.status == HTTP.UNAUTHORIZED:
                 await self.login_may_use_cookie(clear_cookie=True)
                 return await self.get(short_url, data, params, loop=loop)
@@ -186,7 +189,7 @@ class Helper:
             except aiohttp.client_exceptions.ClientConnectorError as e:
                 data.append([111, '{0}:{1}'.format(e.host, e.port), "connect error"])
             except Exception as e:
-                print(e)
+                print('error:',e)
                 data.append([111, 'unknown addr', "connect error"])
         return data
 
