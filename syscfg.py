@@ -35,7 +35,22 @@ def syscfg(op, dev):
     # {"op": "replace", "path": "/", "value":1}
     # '''
     if 'save'.startswith(op):
-        pass
+        if "cpu".startswith(dev):
+            data = hp.cpu_patch("system/config/sync", sync_data)
+            print(gen_table(data, tab="cpu"))
+        elif "sw".startswith(dev):
+            pass
+            # data = hp.sw_delete("forward_policies")
+            # print(gen_table(data,tab="switch"))
+            # data = hp.sw_delete("elags/128")
+        elif "all".startswith(dev):
+            pass
+            # data = hp.cpu_patch("system/config", sync_data)
+            # print(gen_table(data, tab="cpu"))
+            # data = hp.sw_delete("forward_policies")
+            # print(gen_table(data,tab="switch"))
+            # data = hp.sw_delete("elags/128")
+
     elif "reset".startswith(op):
         if "cpu".startswith(dev):
             data = hp.cpu_patch("system/config", sync_data)
@@ -51,9 +66,13 @@ def syscfg(op, dev):
             print(gen_table(data,tab="switch"))
             data = hp.sw_delete("elags/128")
     elif "download".startswith(op):
-        pass
+        if "cpu".startswith(dev):
+            data = hp.cpu_get_file("system/config",filename='config')
+            print(gen_table(data, tab='cpu'))
     elif "upload".startswith(op):
-        pass
+        if "cpu".startswith(dev):
+            data = hp.cpu_upload_file("system/config",filename='config')
+            print(gen_table(data, tab='cpu'))
 
 
 sf_sys_finish = ''

@@ -4,6 +4,7 @@ import asyncio
 import aiohttp
 from json import dumps
 from aiohttp import TCPConnector
+from click.types import File
 from utils.http_code import HTTP
 from config import Config
 
@@ -94,6 +95,31 @@ class Http:
                 return await self.get(short_url, data, params, loop=loop)
             return [res.status, self.addr, data]
 
+    
+    async def get_file(self, short_url, filename=None, params=None, loop=0):
+        def save_file(fd , data):
+            fd.write(data)
+        loop += 1
+        if loop > 5:
+            return [400, self.addr, "login failed may error passwd or error date"]
+        async with self.session.get(url=self.base_url + short_url, params=params, timeout=self.timeout) as res:
+            fd = open(filename, 'wb')
+            #获取loop 
+            lp = asyncio.get_event_loop()
+            while True:
+                #异步等待结果 , Chunk_size 每个分片大小
+                data = await res.content.read(512)
+                if not data:
+                    break
+                #等待写入，在线程池中写入
+                # run_in_executor 返回一个future，因此可等待
+                await lp.run_in_executor(None,save_file,fd,data)
+
+            if res.status == HTTP.UNAUTHORIZED:
+                await self.login_may_use_cookie(clear_cookie=True)
+                return await self.get(short_url, filename, params, loop=loop)
+            return [res.status, self.addr, 'success']
+
     # @SCLI_HTTP_REQUEST
     async def post(self, short_url, data, params=None, loop=0):
         loop += 1
@@ -107,16 +133,23 @@ class Http:
             return [res.status, self.addr, data]
 
     # @SCLI_HTTP_REQUEST
-    async def raw_post(self, short_url, raw_data, header=None, params=None, files=None, loop=0):
+    async def post_file(self, short_url, filename=None,  params=None, loop=4):
         loop += 1
         if loop > 5:
             return [400, self.addr, "login failed may error passwd or error date"]
-        async with self.session.post(url=self.base_url + short_url, data=raw_data, headers=header, params=params, files=files, timeout=self.timeout) as res:
+        from aiohttp import FormData
+        data = FormData()  
+        data.add_field('shm_config',
+                    open(filename, 'rb'),
+                    filename=filename,
+                    content_type='application/gzip')
+    
+        async with self.session.post(url=self.base_url + short_url, data=data, timeout=self.timeout) as res:
             data = await res.text()
             if res.status == HTTP.UNAUTHORIZED:
                 await self.login_may_use_cookie(clear_cookie=True)
-            return await self.raw_post(short_url, raw_data, header, params, files=files, loop=loop)
-        return [res.status, self.addr, data]
+                return await self.post_file(short_url, filename, params, loop=loop)
+        return [res.status, self.addr, 'success']
 
     # @SCLI_HTTP_REQUEST
     async def delete(self, short_url, data=None, params=None, loop=0):
@@ -198,6 +231,24 @@ class Helper:
             return None
         tasks = [self.loop.create_task(
             rest.get(url, data, params)) for rest in self.cpus]
+        get = asyncio.wait(tasks)
+        self.loop.run_until_complete(get)
+        return self.data_from_tasks(tasks)
+
+    def cpu_get_file(self, url, filename=None, params=None):
+        if not self.cpus:
+            return None
+        tasks = [self.loop.create_task(
+            rest.get_file(url, rest.addr.replace(':','_')+"_"+filename, params)) for rest in self.cpus]
+        get = asyncio.wait(tasks)
+        self.loop.run_until_complete(get)
+        return self.data_from_tasks(tasks)
+
+    def cpu_upload_file(self, url, filename=None, params=None):
+        if not self.cpus:
+            return None
+        tasks = [self.loop.create_task(
+            rest.post_file(url, rest.addr.replace(':','_')+"_"+filename, params)) for rest in self.cpus]
         get = asyncio.wait(tasks)
         self.loop.run_until_complete(get)
         return self.data_from_tasks(tasks)
