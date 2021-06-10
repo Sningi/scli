@@ -46,9 +46,17 @@ if scli_config.has_section(devControl):
         elif option == "sw_restv":
             Config.sw_restv = scli_config.get(devControl, option)
         elif option == "cpu_addrs":
-            Config.cpu_addrs = json.loads(scli_config.get(devControl, option))
+            try:
+                Config.cpu_addrs = json.loads(scli_config.get(devControl, option))
+            except:
+                print("Config: CPU addrs error")
+                exit()
         elif option == "sw_addrs":
-            Config.sw_addrs = json.loads(scli_config.get(devControl, option))
+            try:
+                Config.sw_addrs = json.loads(scli_config.get(devControl, option))
+            except:
+                print("Config: SWITCH addrs error")
+                exit()
 
 if __name__ == "__main__":
     print("TEST IP:", Config.cpu_addrs, " type:", type(Config.cpu_addrs))
