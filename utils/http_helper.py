@@ -146,7 +146,7 @@ class Http:
                     content_type='application/gzip')
     
 
-        async with self.session.post(url=self.base_url + short_url, data=file_sender(file_name=filename), headers=headers, timeout=self.timeout) as res:
+        async with self.session.post(url=self.base_url + short_url, data=data, timeout=self.timeout) as res:
             data = await res.text()
             if res.status == HTTP.UNAUTHORIZED:
                 await self.login_may_use_cookie(clear_cookie=True)
