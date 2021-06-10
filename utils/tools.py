@@ -1,5 +1,5 @@
 from json import dumps
-from prettytable import PrettyTable
+from mprettytable import PrettyTable
 from utils.http_code import HTTP
 from utils.http_helper import hp
 
