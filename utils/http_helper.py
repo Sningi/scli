@@ -103,17 +103,18 @@ class Http:
         if loop > 5:
             return [400, self.addr, "login failed may error passwd or error date"]
         async with self.session.get(url=self.base_url + short_url, params=params, timeout=self.timeout) as res:
-            fd = open(filename, 'wb')
-            #获取loop 
-            lp = asyncio.get_event_loop()
-            while True:
-                #异步等待结果 , Chunk_size 每个分片大小
-                data = await res.content.read(512)
-                if not data:
-                    break
-                #等待写入，在线程池中写入
-                # run_in_executor 返回一个future，因此可等待
-                await lp.run_in_executor(None,save_file,fd,data)
+            if res.status== HTTP.OK:
+                fd = open(filename, 'wb')
+                #获取loop 
+                lp = asyncio.get_event_loop()
+                while True:
+                    #异步等待结果 , Chunk_size 每个分片大小
+                    data = await res.content.read(512)
+                    if not data:
+                        break
+                    #等待写入，在线程池中写入
+                    # run_in_executor 返回一个future，因此可等待
+                    await lp.run_in_executor(None,save_file,fd,data)
 
             if res.status == HTTP.UNAUTHORIZED:
                 await self.login_may_use_cookie(clear_cookie=True)
@@ -144,7 +145,8 @@ class Http:
                     filename=filename,
                     content_type='application/gzip')
     
-        async with self.session.post(url=self.base_url + short_url, data=data, timeout=self.timeout) as res:
+
+        async with self.session.post(url=self.base_url + short_url, data=file_sender(file_name=filename), headers=headers, timeout=self.timeout) as res:
             data = await res.text()
             if res.status == HTTP.UNAUTHORIZED:
                 await self.login_may_use_cookie(clear_cookie=True)
