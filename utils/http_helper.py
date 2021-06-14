@@ -241,7 +241,7 @@ class Helper:
         if not self.cpus:
             return None
         tasks = [self.loop.create_task(
-            rest.get_file(url, rest.addr.replace(':','_')+"_"+filename, params)) for rest in self.cpus]
+            rest.get_file(url, './syscfgf/'+rest.addr.replace(':','_')+"_"+filename, params)) for rest in self.cpus]
         get = asyncio.wait(tasks)
         self.loop.run_until_complete(get)
         return self.data_from_tasks(tasks)
@@ -250,7 +250,7 @@ class Helper:
         if not self.cpus:
             return None
         tasks = [self.loop.create_task(
-            rest.post_file(url, rest.addr.replace(':','_')+"_"+filename, params)) for rest in self.cpus]
+            rest.post_file(url, './syscfgf/'+rest.addr.replace(':','_')+"_"+filename, params)) for rest in self.cpus]
         get = asyncio.wait(tasks)
         self.loop.run_until_complete(get)
         return self.data_from_tasks(tasks)
