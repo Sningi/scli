@@ -15,17 +15,60 @@ read_each_line(){
         echo "line[$2] syntax error in reading, len is ${#arr[@]}:">>$errlog;echo $1>>$errlog;
     else
         #add line
-        echo [line]: $2
+        # echo [line]: $2
         Lines=("${Lines[@]}" "${1}")
     fi
 }
 
-rpcc_service_do(){
+clear_cmdfile(){
+    :>rule_add
+    :>rule_del
+    :>rule_bind
+    :>rule_unbind
+}
+
+gen_cmd(){
+    # echo ${*}
+    if [[ ${*} =~ "set" ]];then
+        echo ${*} >> rule_add
+    else
+        if [[ ${*} =~ "unbind" ]];then
+            echo ${*} >> rule_unbind
+        else
+            if [[ ${*} =~ "bind" ]];then
+                echo ${*} >> rule_bind
+            else
+                if [[ ${*} =~ "delete" ]];then
+                    echo ${*} >> rule_del
+                fi
+            fi
+        fi
+    fi
+}
+
+rpcc_do_file(){
+    # echo cmd is : "${*}"
+    while read line || [[ -n ${line} ]]
+    do
+        for dev in ${dev_ips[@]}
+        do
+            result=`./rpcc-static $dev 9090 2 "${line}" 10`
+            if [[ $result =~ "uccess" ]];then
+                :
+            else
+                echo [$dev] [errcmd] ${line} >>$errlog;echo [$dev] $result >>$errlog
+            fi
+        done
+    done < $1
+}
+
+
+rpcc_do_cmd(){
     # echo cmd is : "${*}"
     for dev in ${dev_ips[@]}
     do
         result=`./rpcc-static $dev 9090 2 "${*}" 10`
-        if [[ $result =~ "ccess" ]];then
+        if [[ $result =~ "uccess" ]];then
             :
         else
             echo [$dev] [errcmd] ${*} >>$errlog;echo [$dev] $result >>$errlog
@@ -33,34 +76,38 @@ rpcc_service_do(){
     done
 }
 
-
 ruleType=("unuse" "hyper" "hyper6" "user" "user" "user" "user" "both")
 delete_rule(){
     # $srcRuleType $dstRuletype $idx
-    if [ "$1" -ne "0" ];then
-            # src rule
-            unbind="unbind ingress-interface ${ingress} access-list ${ruleType[${1}]} rule ${3}"
-            cmd="delete access-list ${ruleType[${1}]} rule ${3}"
-    else
-        unbind="unbind ingress-interface ${ingress} access-list ${ruleType[${2}]} rule ${3}"
-        cmd="delete access-list ${ruleType[${2}]} rule ${3}"
+    if [ "$1" -eq "7" ] || [ "$2" -eq "7" ];then
+        gen_cmd "unbind ingress-interface ${ingress} access-list ipset rule $(($3*2))"
+        gen_cmd "unbind ingress-interface ${ingress} access-list ipset rule $(($3*2+1))"
+        gen_cmd "unbind ingress-interface ${ingress} access-list ipsetv6 rule $(($3*2))"
+        gen_cmd "unbind ingress-interface ${ingress} access-list ipsetv6 rule $(($3*2+1))"
+        gen_cmd "delete access-list ipset rule $(($3*2))"
+        gen_cmd "delete access-list ipset rule $(($3*2+1))"
+        gen_cmd "delete access-list ipsetv6 rule $(($3*2))"
+        gen_cmd "delete access-list ipsetv6 rule $(($3*2+1))"
     fi
 
-    rpcc_service_do $unbind
-    rpcc_service_do $cmd
-    rpcc_service_do 'sync'
+    if [ "$1" -ne "0" ];then
+            # src rule
+            gen_cmd "unbind ingress-interface ${ingress} access-list ${ruleType[${1}]} rule ${3}"
+            gen_cmd "delete access-list ${ruleType[${1}]} rule ${3}"
+    else
+        # dst rule 
+        gen_cmd "unbind ingress-interface ${ingress} access-list ${ruleType[${2}]} rule ${3}"
+        gen_cmd "delete access-list ${ruleType[${2}]} rule ${3}"
+    fi
 }
 
 userType=("unuse" "unuse" "unuse" "imsi" "msisdn" "imei" "cell_id")
 create_user_rule(){
     # create_user_rule $idx $srcRuleType $srcRule $wtype
-    create="set access-list user rule ${1} ${userType[${2}]} ${3}"
-    rpcc_service_do $create
-    rpcc_service_do 'sync'
+   gen_cmd "set access-list user rule ${1} ${userType[${2}]} ${3}"
     # if drop
     if [ "$4" -eq "0" ];then
-        bind="bind ingress-interface ${ingress} access-list user rule ${1} action ${drop_id}"
-        rpcc_service_do $bind
+        gen_cmd "bind ingress-interface ${ingress} access-list user rule ${1} action ${drop_id}"
     fi
 }
 
@@ -74,14 +121,11 @@ create_src_ip(){
     if [ "$5" -ne "0" ];then
         protocol=$5
     fi
-    create="set access-list ${ruleType[${2}]} rule ${1} sip ${3}/${4} dip any sp $sport dp any proto $proto priority 255"
+    gen_cmd "set access-list ${ruleType[${2}]} rule ${1} sip ${3}/${4} dip any sp $sport dp any proto $proto priority 255"
     # echo debug tuplev4 $create
-    rpcc_service_do $create
-    rpcc_service_do 'sync'
     # if drop
     if [ "$7" -eq "0" ];then
-        bind="bind ingress-interface ${ingress} access-list ${ruleType[${2}]} rule ${1} action ${drop_id}"
-        rpcc_service_do $bind
+        gen_cmd  "bind ingress-interface ${ingress} access-list ${ruleType[${2}]} rule ${1} action ${drop_id}"
     fi
 }
 
@@ -95,18 +139,41 @@ create_dst_ip(){
     if [ "$5" -ne "0" ];then
         protocol=$5
     fi
-    create="set access-list ${ruleType[${2}]} rule ${1} sip any dip ${3}/${4} sp any dp ${dport} proto ${proto} priority 255"
+    gen_cmd "set access-list ${ruleType[${2}]} rule ${1} sip any dip ${3}/${4} sp any dp ${dport} proto ${proto} priority 255"
     # echo debug hyper $create
-    rpcc_service_do $create
-    rpcc_service_do 'sync'
     # if drop
     if [ "$7" -eq "0" ];then
-        bind="bind ingress-interface ${ingress} access-list ${ruleType[${2}]} rule ${1} action ${drop_id}"
-        rpcc_service_do $bind
+        gen_cmd "bind ingress-interface ${ingress} access-list ${ruleType[${2}]} rule ${1} action ${drop_id}"
     fi
 }
 
-patch_each_line(){
+create_port(){
+    #create_port 2 $idx $dstPort $wtype
+    port=""
+    if [ "${1}" -eq "1" ];then
+        port="sport"
+    else
+        if [ "${1}" -eq "2" ];then
+            port="dport"
+        else
+            echo "[error] port rule ${2} $1 $3 $4" >> $errlog
+        fi
+    fi
+
+    gen_cmd "set access-list ipset rule $(($2*2)) ${port} ${3} protocol 17"
+    gen_cmd "set access-list ipset rule $(($2*2+1)) ${port} ${3} protocol 6"
+    gen_cmd "set access-list ipsetv6 rule $(($2*2)) ${port} ${3} protocol 17"
+    gen_cmd "set access-list ipsetv6 rule $(($2*2+1)) ${port} ${3} protocol 6"
+    # if drop
+    if [ "$4" -eq "0" ];then
+        gen_cmd "bind ingress-interface ${ingress} access-list ipset rule $(($2*2)) action ${drop_id}"
+        gen_cmd "bind ingress-interface ${ingress} access-list ipset rule $(($2*2+1)) action ${drop_id}"
+        gen_cmd "bind ingress-interface ${ingress} access-list ipsetv6 rule $(($2*2)) action ${drop_id}"
+        gen_cmd "bind ingress-interface ${ingress} access-list ipsetv6 rule $(($2*2+1)) action ${drop_id}"
+    fi
+}
+
+gen_cmd_each_line(){
     for line in ${Lines[@]}
     do
         rule_field=(`echo ${line}|awk '{len=split($0,a,",");for(i=1;i<=len;i++) print a[i]}'`)   
@@ -151,12 +218,11 @@ patch_each_line(){
                 ;;
                 7)
                     #only port
-                    :
-                    echo $dstRuletype
+                    create_port 2 $idx $dstPort $wtype
                 ;;
                 *)
                 #3,4,5,6 user rule
-                    create_user_rule $idx $srcRuleType $srcRule $wtype
+                    create_user_rule $idx $dstRuletype $dstRule $wtype
                 esac
                 ;;
             1)
@@ -169,8 +235,7 @@ patch_each_line(){
                 ;;
             7)
                 #only port
-                :
-                echo $dstRuletype
+                create_port 1 $idx $srcPort $wtype
                 ;;
             *)
                 #3,4,5,6 user rule
@@ -192,11 +257,21 @@ read_file(){
 }
 
 
+patch_config(){
+    rpcc_do_file rule_unbind
+    rpcc_do_file rule_del
+    rpcc_do_cmd "sync"
+    rpcc_do_file rule_add
+    rpcc_do_cmd "sync"
+    rpcc_do_file rule_bind
+}
+
+
 main(){
     
     # if [ "$1" = "do" ];then
     #     echo "${*}"
-    #     rpcc_service_do $2
+    #     gen_cmd $2
     #     exit 0
     # fi
     #STEP 1  assert file
@@ -206,10 +281,23 @@ main(){
         exit 1
     else
         #STEP 2 read file
-        echo ====[ `date` ]==== > $errlog
+        echo ====[ `date` start ]==== > $errlog
+        # start_time=$(date +%s)
         read_file $1
-        echo [ `date` ] load finish >> $errlog
-        patch_each_line
+        echo ====[ `date` read over ]==== >> $errlog
+        # end_time=$(date +%s)
+        # cost_time=$[ $end_time-$start_time ]
+        # echo "readfile time is $(($cost_time/60))min $(($cost_time%60))s"
+        #STEP 3 clear cmdfile
+        clear_cmdfile
+
+        gen_cmd_each_line
+        echo ====[ `date` gen finish ]==== >> $errlog
+
+        # patch cmd to dev
+        patch_config
+
+        echo ====[ `date` patch finish ]==== >> $errlog
     fi
 }
 
