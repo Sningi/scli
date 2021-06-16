@@ -113,19 +113,25 @@ def cut_line(rstr, step=120):
     row = len(lines)
     line_len = len(lines[0])
     clist = []
-
-    s_pos = 0
+    
+    first_end = 2
+    for index,char in enumerate(lines[0][3:]):
+        if char == "+":
+            first_end = index
+            break
+    step -= first_end
+    s_pos = first_end
     e_pos = 0
     while line_len > e_pos:
         e_pos = s_pos + step
         if line_len <= e_pos:
             for line in lines:
-                clist.append(line[s_pos:])
+                clist.append(line[:first_end]+line[s_pos:])
             break
         while lines[0][e_pos] != '+' and  lines[0][e_pos] != '|':
             e_pos -= 1
         for line in lines:
-            clist.append(line[s_pos:e_pos]+line[0])
+            clist.append(line[:first_end]+line[s_pos:e_pos]+line[0])
         s_pos = e_pos
 
     cstr = '\n'.join(clist)
