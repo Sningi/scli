@@ -16,11 +16,11 @@ def SCLI_HTTP_REQUEST(cls_func):
             return cls_func(self, *args, **kwargs)
         except Exception as e:
             if type(e) in aiohttp.http_exceptions.__all__:
-                return [111, self.addr, "connect error"]
+                return [111, self.addr, "E(2)"]
             if type(e).__name__ == "JSONDecodeError":
                 return [self.response.status, self.addr, self.response.text]
             else:
-                return [type(e).__name__, self.addr, "other error!!"]
+                return [type(e).__name__, self.addr, "E(3)!!"]
     return wrapper
 
 
@@ -84,7 +84,7 @@ class Http:
     async def get(self, short_url, data=None, params=None, loop=0):
         loop += 1
         if loop > 5:
-            return [400, self.addr, "login failed may error passwd or error date"]
+            return [400, self.addr, "E(1)"]
         async with self.session.get(url=self.base_url + short_url, params=params, timeout=self.timeout) as res:
             try:
                 data = await res.json()
@@ -101,7 +101,7 @@ class Http:
             fd.write(data)
         loop += 1
         if loop > 5:
-            return [400, self.addr, "login failed may error passwd or error date"]
+            return [400, self.addr, "E(1)"]
         async with self.session.get(url=self.base_url + short_url, params=params, timeout=self.timeout) as res:
             if res.status== HTTP.OK:
                 fd = open(filename, 'wb')
@@ -125,7 +125,7 @@ class Http:
     async def post(self, short_url, data, params=None, loop=0):
         loop += 1
         if loop > 5:
-            return [400, self.addr, "login failed may error passwd or error date"]
+            return [400, self.addr, "E(1)"]
         async with self.session.post(url=self.base_url + short_url, json=data, params=params, timeout=self.timeout) as res:
             data = await res.text()
             if res.status == HTTP.UNAUTHORIZED:
@@ -137,7 +137,7 @@ class Http:
     async def post_file(self, short_url, filename=None,  params=None, loop=4):
         loop += 1
         if loop > 5:
-            return [400, self.addr, "login failed may error passwd or error date"]
+            return [400, self.addr, "E(1)"]
         from aiohttp import FormData
         data = FormData()  
         data.add_field('shm_config',
@@ -157,7 +157,7 @@ class Http:
     async def delete(self, short_url, data=None, params=None, loop=0):
         loop += 1
         if loop > 5:
-            return [400, self.addr, "login failed may error passwd or error date"]
+            return [400, self.addr, "E(1)"]
         async with self.session.delete(url=self.base_url+short_url, params=params, timeout=self.timeout) as res:
             data = await res.text()
             if res.status == HTTP.UNAUTHORIZED:
@@ -169,7 +169,7 @@ class Http:
     async def put(self, short_url, data, params=None, loop=0):
         loop += 1
         if loop > 5:
-            return [400, self.addr, "login failed may error passwd or error date"]
+            return [400, self.addr, "E(1)"]
         async with self.session.put(url=self.base_url+short_url, json=data, params=params, timeout=self.timeout) as res:
             data = await res.text()
             if res.status == HTTP.UNAUTHORIZED:
@@ -181,7 +181,7 @@ class Http:
     async def patch(self, short_url, data, params=None, loop=0):
         loop += 1
         if loop > 5:
-            return [400, self.addr, "login failed may error passwd or error date"]
+            return [400, self.addr, "E(1)"]
         async with self.session.patch(url=self.base_url + short_url, json=data, params=params, timeout=self.timeout) as res:
             data = await res.text()
             if res.status == HTTP.UNAUTHORIZED:
@@ -222,10 +222,10 @@ class Helper:
             try:
                 data.append(task.result())
             except aiohttp.client_exceptions.ClientConnectorError as e:
-                data.append([111, '{0}:{1}'.format(e.host, e.port), "connect error"])
+                data.append([111, '{0}:{1}'.format(e.host, e.port), "E(2)"])
             except Exception as e:
                 print('error:',e)
-                data.append([111, 'unknown addr', "connect error"])
+                data.append([111, 'unknown addr', "E(2)"])
         return data
 
     def cpu_get(self, url, data=None, params=None):

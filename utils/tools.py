@@ -1,4 +1,8 @@
+from base import cli
 from json import dumps
+from re import split
+
+from click.testing import Result
 from mprettytable import PrettyTable
 from utils.http_code import HTTP
 from utils.http_helper import hp
@@ -12,24 +16,6 @@ INTF_CPU_MAP.update(dict((["G%d" % (i-64), i] for i in range(65, 86))))
 INTF_CPU_MAP_REST = dict(([INTF_CPU_MAP[k], k] for k in INTF_CPU_MAP))
 
 # General operation interface
-
-
-def create_custiom_table(data, field_names, filter=None, padding_width=1):
-    if not isinstance(field_names, list) or len(field_names) < 1:
-        return
-    if not isinstance(data, list) or len(data) < 1:
-        return
-    tb = PrettyTable()
-    tb.field_names = field_names
-    tb.align[field_names[0]] = "l"
-    tb.padding_width = padding_width
-    for body in data:
-        if not isinstance(body, list) or len(body) < 1:
-            print("You need to use list")
-            continue
-        tb.add_row(body)
-    return tb
-
 
 '''
 [value1, value2, value3 .... , valueX]
@@ -122,6 +108,27 @@ def gen_intfs_sw(desc):
             restid.append(c)
     return restid
 
+def cut_line(rstr, step=120):
+    lines = rstr.split('\n')
+    row = len(lines)
+    line_len = len(lines[0])
+    clist = []
+
+    s_pos = 0
+    e_pos = step
+    while line_len > e_pos:
+        while lines[0][e_pos] != '+' and  lines[0][e_pos] != '|':
+            e_pos -= 1
+        for line in lines:
+            clist.append(line[s_pos:e_pos]+line[0])
+        s_pos = e_pos
+        e_pos = s_pos + step
+
+        if line_len < e_pos:
+            for line in lines:
+                clist.append(line[s_pos:])
+    cstr = '\n'.join(clist)
+    return cstr
 
 def gen_table(data, tab="item", filter=None):
     if not isinstance(data, list) or len(data) < 1:
@@ -145,15 +152,18 @@ def gen_table(data, tab="item", filter=None):
                             else:
                                 row.append(None)
                         else:
-                            row.append(item[2])
+                            if '404' not in item[2]:
+                                row.append(item[2])
+                            else:
+                                row.append("E(4)")
                     tb.add_row(row)
             break
     if len(tb._rows) == 0:
         row = ["status", *[HTTP.STATUS[item[0]][0] if item[0]
                            in HTTP.STATUS else item[0] for item in data]]
         tb.add_row(row)
-    tb.get_string(sortby=tab, reversesort=True)
-    return tb
+    rstr = tb.get_string(sortby=tab, reversesort=True)
+    return cut_line(rstr)
 
 
 def gen_table_sw(data, expect, tab="item", filter=None):
@@ -184,4 +194,22 @@ def gen_table_sw(data, expect, tab="item", filter=None):
             row = [tab, *[item[2] for item in data]]
             if len(tb.field_names) == len(row):
                 tb.add_row(row)
-    return tb
+    rstr = tb.get_string(sortby=tab, reversesort=True)
+    return cut_line(rstr)
+
+def create_custiom_table(data, field_names, filter=None, padding_width=1):
+    if not isinstance(field_names, list) or len(field_names) < 1:
+        return
+    if not isinstance(data, list) or len(data) < 1:
+        return
+    tb = PrettyTable()
+    tb.field_names = field_names
+    tb.align[field_names[0]] = "l"
+    tb.padding_width = padding_width
+    for body in data:
+        if not isinstance(body, list) or len(body) < 1:
+            print("You need to use list")
+            continue
+        tb.add_row(body)
+    rstr = tb.get_string(reversesort=True)
+    return cut_line(rstr)
