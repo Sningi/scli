@@ -108,7 +108,7 @@ def gen_intfs_sw(desc):
             restid.append(c)
     return restid
 
-def cut_line(rstr, step=60):
+def cut_line(rstr, step=120):
     lines = rstr.split('\n')
     row = len(lines)
     line_len = len(lines[0])
