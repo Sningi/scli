@@ -108,25 +108,26 @@ def gen_intfs_sw(desc):
             restid.append(c)
     return restid
 
-def cut_line(rstr, step=120):
+def cut_line(rstr, step=60):
     lines = rstr.split('\n')
     row = len(lines)
     line_len = len(lines[0])
     clist = []
 
     s_pos = 0
-    e_pos = step
+    e_pos = 0
     while line_len > e_pos:
+        e_pos = s_pos + step
+        if line_len < e_pos:
+            for line in lines:
+                clist.append(line[s_pos:])
+            break
         while lines[0][e_pos] != '+' and  lines[0][e_pos] != '|':
             e_pos -= 1
         for line in lines:
             clist.append(line[s_pos:e_pos]+line[0])
         s_pos = e_pos
-        e_pos = s_pos + step
 
-        if line_len < e_pos:
-            for line in lines:
-                clist.append(line[s_pos:])
     cstr = '\n'.join(clist)
     return cstr
 
