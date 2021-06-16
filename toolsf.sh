@@ -1,11 +1,17 @@
 
 
 ####!!! config !!!####
-dev_ips=("192.168.1.201")
+dev_ips=("192.168.1.201" "192.168.1.202")
 drop_id=128
 ingress=1
 errlog='./err.log'
 ####!!! config !!!####
+
+# tmp file
+rule_add=/tmp/rule_add
+rule_del=/tmp/rule_del
+rule_bind=/tmp/rule_bind
+rule_unbind=/tmp/rule_unbind
 
 Lines=()
 read_each_line(){
@@ -21,47 +27,30 @@ read_each_line(){
 }
 
 clear_cmdfile(){
-    :>rule_add
-    :>rule_del
-    :>rule_bind
-    :>rule_unbind
+    :>$rule_add
+    :>$rule_del
+    :>$rule_bind
+    :>$rule_unbind
 }
 
 gen_cmd(){
     # echo ${*}
     if [[ ${*} =~ "set" ]];then
-        echo ${*} >> rule_add
+        echo ${*} >> $rule_add
     else
         if [[ ${*} =~ "unbind" ]];then
-            echo ${*} >> rule_unbind
+            echo ${*} >> $rule_unbind
         else
             if [[ ${*} =~ "bind" ]];then
-                echo ${*} >> rule_bind
+                echo ${*} >> $rule_bind
             else
                 if [[ ${*} =~ "delete" ]];then
-                    echo ${*} >> rule_del
+                    echo ${*} >> $rule_del
                 fi
             fi
         fi
     fi
 }
-
-rpcc_do_file(){
-    # echo cmd is : "${*}"
-    while read line || [[ -n ${line} ]]
-    do
-        for dev in ${dev_ips[@]}
-        do
-            result=`./rpcc-static $dev 9090 2 "${line}" 10`
-            if [[ $result =~ "uccess" ]];then
-                :
-            else
-                echo [$dev] [errcmd] ${line} >>$errlog;echo [$dev] $result >>$errlog
-            fi
-        done
-    done < $1
-}
-
 
 rpcc_do_cmd(){
     # echo cmd is : "${*}"
@@ -256,16 +245,27 @@ read_file(){
     done < $1
 }
 
-
-patch_config(){
-    rpcc_do_file rule_unbind
-    rpcc_do_file rule_del
-    rpcc_do_cmd "sync"
-    rpcc_do_file rule_add
-    rpcc_do_cmd "sync"
-    rpcc_do_file rule_bind
+rpcc_do_file(){
+    dev=$2
+    # echo cmd is : "${*}"
+    while read line || [[ -n ${line} ]]
+    do
+        result=`./rpcc-static $dev 9090 2 "${line}" 10 2>&1`
+        if [[ $result =~ "uccess" ]];then
+            :
+        else
+            echo [$dev] [errcmd] ${line} >>$errlog;echo [$dev] $result >>$errlog
+        fi
+    done < $1
 }
 
+patch_config(){
+    echo start IP: $1
+    rpcc_do_file $rule_unbind $1
+    rpcc_do_file $rule_del  $1
+    rpcc_do_file $rule_add  $1
+    rpcc_do_file $rule_bind $1
+}
 
 main(){
     
@@ -293,10 +293,15 @@ main(){
 
         gen_cmd_each_line
         echo ====[ `date` gen finish ]==== >> $errlog
+        echo "sync" >>$rule_del
+        echo "sync" >>$rule_add
 
         # patch cmd to dev
-        patch_config
-
+        for dev in ${dev_ips[@]}
+        do
+            patch_config $dev &
+        done
+        wait
         echo ====[ `date` patch finish ]==== >> $errlog
     fi
 }
