@@ -118,7 +118,7 @@ def cut_line(rstr, step=120):
     e_pos = 0
     while line_len > e_pos:
         e_pos = s_pos + step
-        if line_len < e_pos:
+        if line_len <= e_pos:
             for line in lines:
                 clist.append(line[s_pos:])
             break
