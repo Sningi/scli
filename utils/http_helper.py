@@ -229,7 +229,6 @@ class Helper:
             except aiohttp.client_exceptions.ClientConnectorError as e:
                 data.append([111, '{0}:{1}'.format(e.host, e.port), "E(2)"])
             except Exception as e:
-                print('error:',e)
                 data.append([111, e.__dict__.items(), "E(2)"])
         return data
 

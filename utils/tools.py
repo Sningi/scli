@@ -164,7 +164,7 @@ def gen_table(data, tab="item", filter=None):
                             else:
                                 row.append(None)
                         else:
-                            if '404' not in item[2]:
+                            if '404' not in str(item[2]):
                                 row.append(item[2])
                             else:
                                 row.append("E(4)")
