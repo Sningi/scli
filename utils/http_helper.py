@@ -25,7 +25,8 @@ def SCLI_HTTP_REQUEST(cls_func):
 
 
 class Http:
-    timeout = 30
+    timeout = 3
+    long_timeout = 30
 
     def __init__(self, uname, pwd, addr, restv, dev_rest_type="switch"):
         self.addr = addr
@@ -53,7 +54,7 @@ class Http:
 
         async def login():
             try:
-                async with self.session.post(self.login_url, timeout=1, data=self.auth) as res:
+                async with self.session.post(self.login_url, timeout=self.timeout, data=self.auth) as res:
                     await res.read()
                     code = res.status
                     if code in [HTTP.OK, HTTP.CREATED]:
@@ -102,7 +103,7 @@ class Http:
         loop += 1
         if loop > 5:
             return [400, self.addr, "E(1)"]
-        async with self.session.get(url=self.base_url + short_url, params=params, timeout=self.timeout) as res:
+        async with self.session.get(url=self.base_url + short_url, params=params, timeout=self.long_timeout) as res:
             if res.status== HTTP.OK:
                 fd = open(filename, 'wb')
                 #获取loop 
