@@ -75,7 +75,10 @@ def get(dev, url):
         click.echo(json.dumps(data,indent=2))
     elif "switch".startswith(dev):
         data = hp.sw_get(url)
-        click.echo(json.dumps(data,indent=2))
+        try:
+            click.echo(json.dumps(data,indent=2))
+        except:
+            click.echo(data)
 
 
 if __name__ == '__main__':

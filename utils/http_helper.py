@@ -9,22 +9,6 @@ from click.types import File
 from utils.http_code import HTTP
 from config import Config
 
-
-def SCLI_HTTP_REQUEST(cls_func):
-    """this Decorators may need not"""
-    def wrapper(self, *args, **kwargs):
-        try:
-            return cls_func(self, *args, **kwargs)
-        except Exception as e:
-            if type(e) in aiohttp.http_exceptions.__all__:
-                return [111, self.addr, "E(2)"]
-            if type(e).__name__ == "JSONDecodeError":
-                return [self.response.status, self.addr, self.response.text]
-            else:
-                return [type(e).__name__, self.addr, "E(3)!!"]
-    return wrapper
-
-
 class Http:
     timeout = 3
     long_timeout = 30
@@ -85,7 +69,6 @@ class Http:
             self.active = True
             return HTTP.OK
 
-    # @SCLI_HTTP_REQUEST
     async def get(self, short_url, data=None, params=None, loop=0):
         loop += 1
         if loop > 5:
@@ -95,6 +78,7 @@ class Http:
                 data = await res.json()
             except:
                 data = await res.text()
+            print("data:",data)
             if res.status == HTTP.UNAUTHORIZED:
                 await self.login_may_use_cookie(clear_cookie=True)
                 return await self.get(short_url, data, params, loop=loop)
@@ -126,7 +110,6 @@ class Http:
                 return await self.get(short_url, filename, params, loop=loop)
             return [res.status, self.addr, 'success']
 
-    # @SCLI_HTTP_REQUEST
     async def post(self, short_url, data, params=None, loop=0):
         loop += 1
         if loop > 5:
@@ -138,7 +121,6 @@ class Http:
                 return await self.post(short_url, data, params, loop=loop)
             return [res.status, self.addr, data]
 
-    # @SCLI_HTTP_REQUEST
     async def post_file(self, short_url, filename=None,  params=None, loop=4):
         loop += 1
         if loop > 5:
@@ -158,7 +140,6 @@ class Http:
                 return await self.post_file(short_url, filename, params, loop=loop)
         return [res.status, self.addr, 'success']
 
-    # @SCLI_HTTP_REQUEST
     async def delete(self, short_url, data=None, params=None, loop=0):
         loop += 1
         if loop > 5:
@@ -170,7 +151,6 @@ class Http:
                 return await self.delete(short_url, data, params, loop=loop)
         return [res.status, self.addr, data]
 
-    # @SCLI_HTTP_REQUEST
     async def put(self, short_url, data, params=None, loop=0):
         loop += 1
         if loop > 5:
@@ -182,7 +162,6 @@ class Http:
                 return await self.put(short_url, data, params, loop=loop)
             return [res.status, self.addr, data]
 
-    # @SCLI_HTTP_REQUEST
     async def patch(self, short_url, data, params=None, loop=0):
         loop += 1
         if loop > 5:
@@ -229,7 +208,7 @@ class Helper:
             except aiohttp.client_exceptions.ClientConnectorError as e:
                 data.append([111, '{0}:{1}'.format(e.host, e.port), "E(2)"])
             except Exception as e:
-                data.append([111, e.__dict__.items(), "E(2)"])
+                data.append([111, e, "E(5)"])
         return data
 
     def cpu_get(self, url, data=None, params=None):
@@ -310,7 +289,7 @@ class Helper:
         if not self.sws:
             return []
         tasks = [self.loop.create_task(
-            rest.get(url, data, params)) for rest in self.sws if rest.active]
+            rest.get(url, data, params)) for rest in self.sws]
         get = asyncio.wait(tasks)
         self.loop.run_until_complete(get)
         return self.data_from_tasks(tasks)
