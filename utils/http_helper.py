@@ -78,7 +78,6 @@ class Http:
                 data = await res.json()
             except:
                 data = await res.text()
-            print("data:",data)
             if res.status == HTTP.UNAUTHORIZED:
                 await self.login_may_use_cookie(clear_cookie=True)
                 return await self.get(short_url, data, params, loop=loop)
@@ -289,7 +288,7 @@ class Helper:
         if not self.sws:
             return []
         tasks = [self.loop.create_task(
-            rest.get(url, data, params)) for rest in self.sws]
+            rest.get(url, data, params)) for rest in self.sws if rest.active]
         get = asyncio.wait(tasks)
         self.loop.run_until_complete(get)
         return self.data_from_tasks(tasks)
