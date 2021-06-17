@@ -53,7 +53,7 @@ class Http:
 
         async def login():
             try:
-                async with self.session.post(self.login_url, timeout=self.timeout, data=self.auth) as res:
+                async with self.session.post(self.login_url, timeout=1, data=self.auth) as res:
                     await res.read()
                     code = res.status
                     if code in [HTTP.OK, HTTP.CREATED]:
