@@ -48,15 +48,16 @@ if scli_config.has_section(devControl):
         elif option == "cpu_addrs":
             try:
                 Config.cpu_addrs = json.loads(scli_config.get(devControl, option))
-            except:
-                print("Config: CPU addrs error")
-                exit()
+            except Exception as e:
+                print("Config: CPU addrs error",e)
+                import sys
+                sys.exit()
         elif option == "sw_addrs":
             try:
                 Config.sw_addrs = json.loads(scli_config.get(devControl, option))
             except:
                 print("Config: SWITCH addrs error")
-                exit()
+                sys.exit()
 
 if __name__ == "__main__":
     print("TEST IP:", Config.cpu_addrs, " type:", type(Config.cpu_addrs))
