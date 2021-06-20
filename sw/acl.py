@@ -101,8 +101,8 @@ sw_acl_expect = {
 @click.option('--vlanid', type=click.STRING, required=False)
 @click.option('--vlan_cmd', type=click.STRING, required=False)
 @click.option('--en_count', type=click.Choice(['ture', 'false']), required=False)
-@ click.option('--action', type=click.Choice(['forward', 'copy'], case_sensitive=False))
-@ click.option('--evif_name', type=click.STRING)
+@click.option('--action', type=click.Choice(['forward', 'copy'], case_sensitive=False))
+@click.option('--evif_name', type=click.STRING)
 def acl_sw(op, group, idx, filter, type, vlan, sip, dip, sport, dport, protocol, action, evif_name, vlanid, vlan_cmd, en_count):
     if 'show'.startswith(op):
         if not filter:

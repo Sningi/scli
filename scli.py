@@ -31,14 +31,13 @@ from syscfg import sf_sys_finish
 
 def dev_op(ctx, args, incomplete):
     comp = [('show', 'show stat')]
-    return [c for c in comp if incomplete in c[0]]
-
+    return [c for c in comp if c[0].startswith(incomplete)]
 
 def dev_type(ctx, args, incomplete):
     comp = [('cpu', 'cpu ip'),
             ('switch', 'switch ip'),
             ('all', 'all ip')]
-    return [c for c in comp if incomplete in c[0]]
+    return [c for c in comp if c[0].startswith(incomplete)]
 
 
 @cli.command()
@@ -69,15 +68,26 @@ def dev_ip(op, dev):
 
 @cli.command()
 @click.argument("dev", type=click.STRING, autocompletion=dev_type)
-@click.argument("url", type=click.STRING, autocompletion=dev_type)
-def get(dev, url):
+@click.argument("url", type=click.STRING)
+@click.option('--format','-f', type=click.Choice(['json', 'table']), default="json", required=False)
+def get(dev, url, format):
     if 'cpu'.startswith(dev):
         data = hp.cpu_get(url)
-        sprint(json.dumps(data,indent=2))
+        if format == 'table':
+            sprint(gen_table(data))
+        elif format == 'json':
+            sprint(json.dumps(data,indent=2))
+        else:
+            sprint(data)
     elif "switch".startswith(dev):
         data = hp.sw_get(url)
         try:
-            sprint(json.dumps(data,indent=2))
+            if format == 'table':
+                sprint(gen_table(data))
+            elif format == 'json':
+                sprint(json.dumps(data,indent=2))
+            else:
+                sprint(data)
         except:
             sprint(data)
 

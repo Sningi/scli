@@ -18,7 +18,8 @@ def dpdk_stat_operation(ctx, args, incomplete):
 def dpdk_stat(op):
     if op == 'show':
         data = hp.cpu_get('vpp/dpdk')
-        sprint(data)
+        import json
+        sprint(json.dumps(data,indent=2))
     elif op == 'clean':
         pd = [ {'op': 'replace', 'path': "/" , "value": ""}]
         data = hp.cpu_patch('vpp/dpdk', pd)
