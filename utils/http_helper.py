@@ -1,11 +1,11 @@
 import os
 import time
 import asyncio
-from typing import Tuple
+
+import click
 import aiohttp
 from json import dumps
 from aiohttp import TCPConnector
-from click.types import File
 from utils.http_code import HTTP
 from config import Config
 
@@ -346,6 +346,9 @@ class Helper:
         wait_login = asyncio.wait(tasks)
         self.loop.run_until_complete(wait_login)
         self.loop.close()
-
-
-hp = Helper(Config)
+hp = None
+def init_hp():
+    hp = Helper(Config)
+    return hp
+if click.get_os_args():
+    hp = init_hp()

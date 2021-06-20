@@ -32,7 +32,7 @@ def cpu_intfs(ctx, args, incomplete):
         return [i for i in intfs if incomplete in i]
 
     except Exception as e:
-        sprint("\ngetcpu interface error:{0}".format(e))
+        sprint("\nget cpu interface error:{0}".format(e))
         exit()
 
 

@@ -26,7 +26,7 @@ def action_idx(ctx, args, incomplete):
         elif args[-1] in ["create"]:
             return [str(i) for i in range(1, 129) if str(i).startswith(incomplete) and str(i) not in idxs]
     except Exception as e:
-        sprint("\ngetcpu interface error:{0}".format(e))
+        sprint("\nget cpu action error:{0}".format(e))
         exit()
 
 
