@@ -3,7 +3,7 @@ import click
 from itertools import zip_longest
 
 from config import Config
-from base import cli
+from base import cli,sprint
 from utils.http_helper import hp
 from utils.tools import *
 
@@ -19,6 +19,7 @@ from sf.module.sctp import sf_sctp_finish
 from sf.module.http2 import sf_http2_finish
 from sf.module.gtpu import sf_gtpu_finish
 from sf.module.gtpv2 import sf_gtpv2_finish
+from sf.module.gtpv1 import sf_gtpv1_finish
 from sf.module.sig import sf_sig_finish
 from sf.module.ip_reass import sf_ipreass_finish
 from sf.module.sslcon import sf_sslcon_finish
