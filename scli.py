@@ -1,5 +1,4 @@
 import json
-import os
 import click
 from itertools import zip_longest
 
@@ -52,19 +51,19 @@ def dev_ip(op, dev):
             for index, group in enumerate(zip_longest(Config.cpu_addrs, Config.sw_addrs)):
                 data.append([index + 1, group[0], group[1]])
             tb = create_custiom_table(data, field_names)
-            click.echo(tb)
+            sprint(tb)
         elif dev == "cpu":
             field_names = ["index",  "CPU"]
             for index, group in enumerate(Config.cpu_addrs):
                 data.append([index + 1, group])
             tb = create_custiom_table(data, field_names)
-            click.echo(tb)
+            sprint(tb)
         elif dev == "switch":
             field_names = ["index",  "SWITCH"]
             for index, group in enumerate(Config.sw_addrs):
                 data.append([index + 1, group])
             tb = create_custiom_table(data, field_names)
-            click.echo(tb)
+            sprint(tb)
 
 
 @cli.command()
@@ -73,13 +72,13 @@ def dev_ip(op, dev):
 def get(dev, url):
     if 'cpu'.startswith(dev):
         data = hp.cpu_get(url)
-        click.echo(json.dumps(data,indent=2))
+        sprint(json.dumps(data,indent=2))
     elif "switch".startswith(dev):
         data = hp.sw_get(url)
         try:
-            click.echo(json.dumps(data,indent=2))
+            sprint(json.dumps(data,indent=2))
         except:
-            click.echo(data)
+            sprint(data)
 
 
 if __name__ == '__main__':

@@ -113,7 +113,7 @@ def acl_sw(op, group, idx, filter, type, vlan, sip, dip, sport, dport, protocol,
         url += "?depth=1"
         data = hp.sw_get(url)
         tb = gen_table_sw(data, sw_acl_expect, tab="id", filter=filter)
-        click.echo(click.style(tb.get_string(
+        sprint(click.style(tb.get_string(
             sortby="id", reversesort=True), fg='green',))
     elif 'create'.startswith(op):
         op_data = {
@@ -143,7 +143,7 @@ def acl_sw(op, group, idx, filter, type, vlan, sip, dip, sport, dport, protocol,
             }
         }
         data = hp.sw_post('acls', op_data)
-        click.echo(gen_table(data, tab="port"))
+        sprint(gen_table(data, tab="port"))
     elif 'add'.startswith(op):
         op_data = {
                     idx: {
@@ -166,13 +166,13 @@ def acl_sw(op, group, idx, filter, type, vlan, sip, dip, sport, dport, protocol,
                 }
         url = "acls/{0}/acl_entries".format(group)
         data = hp.sw_post(url, op_data)
-        click.echo(gen_table(data, tab="port"))
+        sprint(gen_table(data, tab="port"))
     elif op == "delete":
         if "all".startswith(group):
             data = hp.sw_delete("forward_policies")
         else:
             # sample as forward_policies
             data = hp.sw_delete("forward_policies/{0}".format(group))
-        click.echo(gen_table(data, tab="switch"))
+        sprint(gen_table(data, tab="switch"))
 
 sw_acl_finish = ''

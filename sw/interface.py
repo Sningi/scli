@@ -65,7 +65,7 @@ def sw_intfs(ctx, args, incomplete):
         return [i for i in intfs if incomplete in i]
 
     except Exception as e:
-        click.echo("\nget sw interface error:{0}".format(e))
+        sprint("\nget sw interface error:{0}".format(e))
         exit()
 
 
@@ -104,7 +104,7 @@ sw_intf_expect = {
 def intf_sw(op, intf, filter):
     restid = gen_intfs_sw(intf)
     if not restid and op != "clean":
-        click.echo("PORT INDEX ERROR")
+        sprint("PORT INDEX ERROR")
         exit()
     if op == 'show':
         for sw in hp.sws:
@@ -118,7 +118,7 @@ def intf_sw(op, intf, filter):
                 hp.loop.run_until_complete(wait_task)
                 data += hp.data_from_tasks(tasks)
             tb = gen_table_sw(data, sw_intf_expect, tab=sw.addr, filter=filter)
-            click.echo(click.style(str(tb), fg='green',))
+            sprint(click.style(str(tb), fg='green',))
     elif op == 'set':
         """
         {"op": "add", "path": "/configuration/speed", "value": "10000"},
@@ -132,7 +132,7 @@ def intf_sw(op, intf, filter):
                 i[1] += " "+idx
                 i[1] = i[1].split(".")[-1]
                 data.append(i)
-        click.echo(gen_table(data, tab="port"))
+        sprint(gen_table(data, tab="port"))
     elif op == "enable":
         data = []
         op_data = [
@@ -143,7 +143,7 @@ def intf_sw(op, intf, filter):
                 i[1] += " "+idx
                 i[1] = i[1].split(".")[-1]
                 data.append(i)
-        click.echo(gen_table(data, tab="port"))
+        sprint(gen_table(data, tab="port"))
     elif op == "disable":
         data = []
         op_data = [
@@ -154,11 +154,11 @@ def intf_sw(op, intf, filter):
                 i[1] += " "+idx
                 i[1] = i[1].split(".")[-1]
                 data.append(i)
-        click.echo(gen_table(data, tab="port"))
+        sprint(gen_table(data, tab="port"))
     elif op == 'clean':
         op_data = [{"op": "remove", "path": "/statistics"}]
         data = hp.sw_patch('interfaces', op_data)
-        click.echo(gen_table(data, tab="all"))
+        sprint(gen_table(data, tab="all"))
     elif op == 'bind':
         '''
         {"op": "add", "path": "/configuration/iacl_name", "value": "acl1"}
@@ -172,7 +172,7 @@ def intf_sw(op, intf, filter):
                 i[1] += " "+idx
                 i[1] = i[1].split(".")[-1]
                 data.append(i)
-        click.echo(gen_table(data, tab="bind"))
+        sprint(gen_table(data, tab="bind"))
     elif op == "unbind":
         data = []
         op_data = [
@@ -183,7 +183,7 @@ def intf_sw(op, intf, filter):
                 i[1] += " "+idx
                 i[1] = i[1].split(".")[-1]
                 data.append(i)
-        click.echo(gen_table(data, tab="bind"))
+        sprint(gen_table(data, tab="bind"))
 
 
 @cli.command()

@@ -1,7 +1,6 @@
 import click
 
-from base import cli
-from sf.general_rest_api import general_clean_data
+from base import cli,sprint
 from utils.http_helper import hp
 from utils.tools import *
 
@@ -37,42 +36,42 @@ def syscfg(op, dev):
     if 'save'.startswith(op):
         if "cpu".startswith(dev):
             data = hp.cpu_patch("system/config/sync", sync_data)
-            print(gen_table(data, tab="cpu"))
+            sprint(gen_table(data, tab="cpu"))
         elif "sw".startswith(dev):
             pass
             # data = hp.sw_delete("forward_policies")
-            # print(gen_table(data,tab="switch"))
+            # sprint(gen_table(data,tab="switch"))
             # data = hp.sw_delete("elags/128")
         elif "all".startswith(dev):
             pass
             # data = hp.cpu_patch("system/config", sync_data)
-            # print(gen_table(data, tab="cpu"))
+            # sprint(gen_table(data, tab="cpu"))
             # data = hp.sw_delete("forward_policies")
-            # print(gen_table(data,tab="switch"))
+            # sprint(gen_table(data,tab="switch"))
             # data = hp.sw_delete("elags/128")
 
     elif "reset".startswith(op):
         if "cpu".startswith(dev):
             data = hp.cpu_patch("system/config", sync_data)
-            print(gen_table(data, tab="cpu"))
+            sprint(gen_table(data, tab="cpu"))
         elif "sw".startswith(dev):
             data = hp.sw_delete("forward_policies")
-            print(gen_table(data,tab="switch"))
+            sprint(gen_table(data,tab="switch"))
             data = hp.sw_delete("elags/128")
         elif "all".startswith(dev):
             data = hp.cpu_patch("system/config", sync_data)
-            print(gen_table(data, tab="cpu"))
+            sprint(gen_table(data, tab="cpu"))
             data = hp.sw_delete("forward_policies")
-            print(gen_table(data,tab="switch"))
+            sprint(gen_table(data,tab="switch"))
             data = hp.sw_delete("elags/128")
     elif "download".startswith(op):
         if "cpu".startswith(dev):
             data = hp.cpu_get_file("system/config",filename='config')
-            print(gen_table(data, tab='cpu'))
+            sprint(gen_table(data, tab='cpu'))
     elif "upload".startswith(op):
         if "cpu".startswith(dev):
             data = hp.cpu_upload_file("system/config",filename='config')
-            print(gen_table(data, tab='cpu'))
+            sprint(gen_table(data, tab='cpu'))
 
 
 sf_sys_finish = ''

@@ -119,12 +119,6 @@ def trans_mac_to_bytes(dst, mac_addr):
         temp = "0x" + hex_bytes[i]
         value = int(temp, 16)
         dst[i] = value
-        # print("-------------")
-        # print(i)
-        # print(value)
-        # print(test_mac.mac[i])
-
-    # print( test_mac.mac )
 
 
 def trans_ubytes_to_mac_addr(mac_bytes):
