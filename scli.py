@@ -23,6 +23,7 @@ from sf.module.gtpv2 import sf_gtpv2_finish
 from sf.module.sig import sf_sig_finish
 from sf.module.ip_reass import sf_ipreass_finish
 from sf.module.sslcon import sf_sslcon_finish
+from sf.module.dpdk import sf_dpdk_finish
 from sw.module.sslcon import sw_sslcon_finsh
 
 from syscfg import sf_sys_finish

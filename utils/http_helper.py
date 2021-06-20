@@ -14,7 +14,7 @@ class Http:
     long_timeout = 30
 
     def __init__(self, uname, pwd, addr, restv, dev_rest_type="switch"):
-        self.addr = addr
+        self.addr = addr.split(".")[-1]
         self.base_url = "https://" + addr + restv
         if dev_rest_type == "cpu":
             """cpu"""
