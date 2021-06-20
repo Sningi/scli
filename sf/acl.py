@@ -1,6 +1,6 @@
 import click
 
-from base import cli
+from base import cli, sprint
 from sf.general_rest_api import general_clean_data
 from utils.http_helper import hp
 from utils.tools import *
@@ -80,7 +80,7 @@ def acl(op, idx, atype, value):
             data = hp.cpu_get('acl/stat?group=1&index={0}'.format(idx))
         else:
             data = hp.cpu_get('acl/config/group_1/{}'.format(idx))
-        print(gen_table(data,))
+        sprint(gen_table(data,))
     elif "create".startswith(op):
         postd = []
         if "imsi".startswith(atype):
@@ -128,13 +128,13 @@ def acl(op, idx, atype, value):
                 }
             }
         data = hp.cpu_post('acl/config/group_1/{}'.format(idx), postd)
-        print(gen_table(data, tab="acl"))
+        sprint(gen_table(data, tab="acl"))
     elif "delete".startswith(op):
         data = hp.cpu_delete('acl/config?group=1&index={}'.format(idx))
-        print(gen_table(data))
+        sprint(gen_table(data))
     elif "sync".startswith(op):
         data2 = hp.cpu_patch('acl/sync', sync_data)
-        print(gen_table(data2))
+        sprint(gen_table(data2))
 
 
 sf_acl_finish = ''

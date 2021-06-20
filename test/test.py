@@ -1,5 +1,3 @@
-import pytest
-import click
 from click.testing import CliRunner
 from sf.module.gtpu import gtpu_stat, gtpu_cfg
 
@@ -18,7 +16,8 @@ def test_gtpu_cfg():
         assert result.exit_code == 0
 
     switch = {
-        "gtpu_decode": '0'
+        "gtpu_decode": '0',
+        'gtpu_inner_decode':'0'
     }
 
     for key in switch:

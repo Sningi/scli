@@ -176,7 +176,7 @@ def action(op, idx=None, type=None, intf=None):
         }
         ]
         data = hp.cpu_patch('actions/{0}'.format(idx), patch_data)
-        print(gen_table(data))
+        sprint(gen_table(data))
 
 
 sf_action_finish = ''

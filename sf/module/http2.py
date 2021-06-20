@@ -1,7 +1,6 @@
 import click
-from json import dumps
 
-from base import cli
+from base import cli, sprint
 from sf.general_rest_api import general_clean_data
 from utils.http_helper import hp
 from utils.tools import gen_table
@@ -52,29 +51,29 @@ def http2_cfg(op, field=None, value=None):
         data = hp.cpu_get('http2/config')
         if field:
             field = http2_cfg_dict[field]
-        print(gen_table(data, filter=field))
+        sprint(gen_table(data, filter=field))
     elif op == 'enable' or op == 'disable':
         if not field or field not in http2_cfg_dict:
-            print("{0} field is none".format(op))
+            sprint("{0} field is none".format(op))
             exit()
         op_data = [{"op": "replace",
                     "path": "/"+http2_cfg_dict[field],
                     "value":SWITCH[op]}]
         data = hp.cpu_patch('http2/config', op_data)
-        print(gen_table(data, tab="code"))
+        sprint(gen_table(data, tab="code"))
     elif op == "timeout":
 
         op_data = [{"op": "replace",
                     "path": "/"+http2_cfg_dict[field],
                     "value":int(value)}]
         data = hp.cpu_patch('http2/config', op_data)
-        print(gen_table(data, tab="code"))
+        sprint(gen_table(data, tab="code"))
     elif op == "set":
         op_data = [{"op": "replace",
                     "path": "/"+http2_cfg_dict[field],
                     "value":int(value)}]
         data = hp.cpu_patch('http2/config', op_data)
-        print(gen_table(data, tab="code"))
+        sprint(gen_table(data, tab="code"))
 
 
 def http2_stat_operation(ctx, args, incomplete):
@@ -103,10 +102,10 @@ def http2_stat(op, filter):
             d[2], dict) else [d[0], d[1], d[2]] for d in data]
         if filter == "all":
             filter = None
-        print(gen_table(data, tab="count", filter=filter))
+        sprint(gen_table(data, tab="count", filter=filter))
     elif op == 'clean':
         data = hp.cpu_patch('http2/stat', general_clean_data)
-        print(gen_table(data, tab="code"))
+        sprint(gen_table(data, tab="code"))
 
 
 sf_http2_finish = ''

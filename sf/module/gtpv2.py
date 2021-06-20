@@ -1,7 +1,6 @@
 import click
-from json import dumps
 
-from base import cli
+from base import cli,sprint
 from sf.general_rest_api import general_clean_data
 from utils.http_helper import hp
 from utils.tools import gen_table
@@ -47,22 +46,22 @@ def gtpv2_cfg(op, field=None, value=None):
         data = hp.cpu_get('gtpv2/config')
         if field:
             field = gtpv2_cfg_dict[field]
-        print(gen_table(data, filter=field))
+        sprint(gen_table(data, filter=field))
     elif op == 'enable' or op == 'disable':
         if not field or field not in gtpv2_cfg_dict:
-            print("{0} field is none".format(op))
+            sprint("{0} field is none".format(op))
             exit()
         op_data = [{"op": "replace",
                     "path": "/"+gtpv2_cfg_dict[field],
                     "value":SWITCH[op]}]
         data = hp.cpu_patch('gtpv2/config', op_data)
-        print(gen_table(data, tab="code"))
+        sprint(gen_table(data, tab="code"))
     elif op == "set":
         op_data = [{"op": "replace",
                     "path": "/"+gtpv2_cfg_dict[field],
                     "value":value}]
         data = hp.cpu_patch('gtpv2/config', op_data)
-        print(gen_table(data, tab="code"))
+        sprint(gen_table(data, tab="code"))
 
 
 def gtpv2_stat_operation(ctx, args, incomplete):
@@ -84,9 +83,9 @@ def gtpv2_stat_filter(ctx, args, incomplete):
 def gtpv2_stat(op, filter):
     if 'show'.startswith(op):
         data = hp.cpu_get('gtpv2/stat')
-        print(gen_table(data, tab="count", filter=filter))
+        sprint(gen_table(data, tab="count", filter=filter))
     elif 'clean'.startswith(op):
         data = hp.cpu_patch('gtpv2/stat', general_clean_data)
-        print(gen_table(data, tab="result"))
+        sprint(gen_table(data, tab="result"))
 
 sf_gtpv2_finish = ''

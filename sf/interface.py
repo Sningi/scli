@@ -2,7 +2,7 @@ import click
 import asyncio
 from json import loads
 
-from base import cli
+from base import cli, sprint
 from sf.general_rest_api import general_clean_data
 from utils.http_helper import hp
 from utils.tools import *

@@ -1,7 +1,6 @@
 import click
-from json import dumps
 
-from base import cli
+from base import cli, sprint
 from sf.general_rest_api import general_clean_data
 from utils.http_helper import hp
 from utils.tools import gen_table
@@ -44,22 +43,22 @@ def sig_cfg(op, field=None, value=None):
         data = hp.cpu_get('sig/config')
         if field:
             field = sig_cfg_dict[field]
-        print(gen_table(data, filter=field))
+        sprint(gen_table(data, filter=field))
     elif op == 'enable' or op == 'disable':
         if not field or field not in sig_cfg_dict:
-            print("{0} field is none".format(op))
+            sprint("{0} field is none".format(op))
             exit()
         op_data = [{"op": "replace",
                     "path": "/"+sig_cfg_dict[field],
                     "value":SWITCH[op]}]
         data = hp.cpu_patch('sig/config', op_data)
-        print(gen_table(data, tab="code"))
+        sprint(gen_table(data, tab="code"))
     elif op == "set":
         op_data = [{"op": "replace",
                     "path": "/"+sig_cfg_dict[field],
                     "value":int(value)}]
         data = hp.cpu_patch('sig/config', op_data)
-        print(gen_table(data, tab="code"))
+        sprint(gen_table(data, tab="code"))
 
 
 def sig_stat_operation(ctx, args, incomplete):
@@ -85,10 +84,10 @@ def sig_stat(op, filter):
         data = hp.cpu_get('sig/stat')
         if filter == "all":
             filter = None
-        print(gen_table(data, tab="count", filter=filter))
+        sprint(gen_table(data, tab="count", filter=filter))
     elif op == 'clean':
         data = hp.cpu_patch('sig/stat', general_clean_data)
-        print(gen_table(data, tab="code"))
+        sprint(gen_table(data, tab="code"))
 
 
 sf_sig_finish = ''

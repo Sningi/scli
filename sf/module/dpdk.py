@@ -1,7 +1,7 @@
 import click
 from json import dumps
 
-from base import cli
+from base import cli, sprint
 from sf.general_rest_api import general_clean_data
 from utils.http_helper import hp
 from utils.tools import gen_table
@@ -18,11 +18,11 @@ def dpdk_stat_operation(ctx, args, incomplete):
 def dpdk_stat(op):
     if op == 'show':
         data = hp.cpu_get('vpp/dpdk')
-        print(data)
+        sprint(data)
     elif op == 'clean':
         pd = [ {'op': 'replace', 'path': "/" , "value": ""}]
         data = hp.cpu_patch('vpp/dpdk', pd)
-        print(gen_table(data, tab="code"))
+        sprint(gen_table(data, tab="code"))
 
 
 sf_dpdk_finish = ''

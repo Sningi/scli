@@ -1,8 +1,3 @@
-from base import cli
-from json import dumps
-from re import split
-
-from click.testing import Result
 from mprettytable import PrettyTable
 from utils.http_code import HTTP
 from utils.http_helper import hp
