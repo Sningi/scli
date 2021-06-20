@@ -32,7 +32,7 @@ def cpu_intfs(ctx, args, incomplete):
         return [i for i in intfs if incomplete in i]
 
     except Exception as e:
-        click.echo("\ngetcpu interface error:{0}".format(e))
+        sprint(("\ngetcpu interface error:{0}".format(e))
         exit()
 
 
@@ -118,7 +118,7 @@ sf_intf_expect = {
 def intf_cpu(op, intf, filter=None, value=None, value2=None):
     restid = gen_intfs_cpu(intf)
     if not restid:
-        click.echo("PORT INDEX ERROR")
+        sprint(("PORT INDEX ERROR")
         exit()
     if op == 'show':
         for cpu in hp.cpus:
@@ -130,10 +130,10 @@ def intf_cpu(op, intf, filter=None, value=None, value2=None):
                 hp.loop.run_until_complete(wait_task)
                 data += hp.data_from_tasks(tasks)
             tb = gen_table_sw(data, sf_intf_expect, cpu.addr, filter=filter)
-            click.echo(click.style(str(tb), fg='green'))
+            sprint((click.style(str(tb), fg='green'))
     elif op == 'clean':
         data = hp.cpu_patch('interfaces/config', general_clean_data)
-        click.echo(gen_table(data, tab="code"))
+        sprint((gen_table(data, tab="code"))
     elif op == "set":
         op_data = []
         if 'port_list'.startswith(filter):
@@ -183,7 +183,7 @@ def intf_cpu(op, intf, filter=None, value=None, value2=None):
                            "path": "/{0}/{1}".format(idx, filter), "value": data}
                     op_data.append(cfg)
         data = hp.cpu_patch('interfaces/config', op_data)
-        click.echo(gen_table(data, tab="code"))
+        sprint((gen_table(data, tab="code"))
 
 
 sf_intf_finish = ''

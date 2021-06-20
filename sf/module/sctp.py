@@ -164,7 +164,7 @@ def ngap_stat(op, type, filter):
             data = hp.cpu_get('sctp/{0}'.format(ngap_type[type][1]))
             if type == '5gs':
                 import json
-                click.echo(json.dumps(data,indent=2))
+                sprint((json.dumps(data,indent=2))
             else:
                 sprint(gen_table(data, tab="count", filter=filter))
     elif op == 'clean':
