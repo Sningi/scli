@@ -1,5 +1,6 @@
 import asyncio
 import click
+from sys import exit
 
 from base import cli, sprint
 from utils.http_helper import hp
@@ -66,8 +67,6 @@ def sw_intfs(ctx, args, incomplete):
 
     except Exception as e:
         sprint("\nget sw interface error:{0}".format(e))
-        exit()
-
 
 sw_intf_expect = {
     "statistics": [

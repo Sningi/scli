@@ -1,6 +1,6 @@
 import click
 import asyncio
-from json import loads
+from sys import exit
 
 from base import cli, sprint
 from sf.general_rest_api import general_clean_data

@@ -1,6 +1,6 @@
 import json
 import configparser
-
+from sys import exit
 
 class Config:
     cpu_user = None
@@ -50,14 +50,13 @@ if scli_config.has_section(devControl):
                 Config.cpu_addrs = json.loads(scli_config.get(devControl, option))
             except Exception as e:
                 print("Config: CPU addrs error",e)
-                import sys
-                sys.exit()
+                exit()
         elif option == "sw_addrs":
             try:
                 Config.sw_addrs = json.loads(scli_config.get(devControl, option))
             except:
                 print("Config: SWITCH addrs error")
-                sys.exit()
+                exit()
 
 if __name__ == "__main__":
     print("TEST IP:", Config.cpu_addrs, " type:", type(Config.cpu_addrs))

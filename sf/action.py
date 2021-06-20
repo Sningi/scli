@@ -1,4 +1,5 @@
 import click
+from sys import exit
 
 from base import cli, sprint
 from utils.http_helper import hp
