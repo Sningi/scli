@@ -42,6 +42,7 @@ def sw_intf_filter(ctx, args, incomplete):
     elif args[-2] in ("enable", "disable"):
         comp = feature_comp
     elif args[-2] == "bind":
+        hp = get_hp()
         data = hp.sw_get("acls")
         comp = []
         for one in data:
@@ -57,6 +58,7 @@ def sw_intfs(ctx, args, incomplete):
     try:
         if args[-1] == "clean":
             return [("all", "clean all")]
+        hp = get_hp()
         data = hp.sw_get("interfaces")
         for d in data:
             if isinstance(d[2], list):
@@ -111,7 +113,7 @@ def intf_sw(op, intf, filter):
             for idx in restid:
                 surl = 'interfaces/{0}'.format(idx)
                 if not filter:
-                    filter = 'configuration'
+                    filter = 'statistics'
                 tasks = [hp.loop.create_task(sw.get(surl))]
                 wait_task = asyncio.wait(tasks)
                 hp.loop.run_until_complete(wait_task)

@@ -2,7 +2,7 @@ from sys import exit
 
 from utils.mprettytable import PrettyTable
 from utils.http_code import HTTP
-from utils.http_helper import hp,init_hp
+from utils.http_helper import hp,get_hp
 
 INTF_MAP = dict((["X%d" % i, i] for i in range(1, 57)))
 INTF_MAP.update(dict((["C%d" % (i-56), i] for i in range(57, 63))))
@@ -41,9 +41,7 @@ def table_add_colum(tb, data):
 
 
 def get_intfs_from_rest():
-    global hp
-    if not hp:
-        hp = init_hp()
+    hp = get_hp()
     intfs = []
     data = hp.cpu_get("interfaces/config")
     for d in data:
@@ -54,9 +52,7 @@ def get_intfs_from_rest():
 
 
 def get_existed_action():
-    global hp
-    if not hp:
-        hp = init_hp()
+    hp = get_hp()
     idxs = []
     data = hp.cpu_get("actions")
     for d in data:
@@ -66,9 +62,7 @@ def get_existed_action():
     return idxs
 
 def get_existed_acl():
-    global hp
-    if not hp:
-        hp = init_hp()
+    hp = get_hp()
     acl_ids = set()
     data = hp.cpu_get("acl/config/group_1")
     for d in data:

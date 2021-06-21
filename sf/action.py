@@ -2,7 +2,7 @@ import click
 from sys import exit
 
 from base import cli, sprint
-from utils.http_helper import hp
+from utils.http_helper import hp, get_hp
 from utils.tools import *
 from utils.static_data import *
 
@@ -65,6 +65,7 @@ def target_intf(ctx, args, incomplete):
         pass
     elif "create".startswith(args[-3]):
         if "no_basis_action".startswith(args[-1]):
+            hp = get_hp()
             data = hp.sw_get("interfaces")
             for d in data:
                 if isinstance(d[2], list):

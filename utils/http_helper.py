@@ -347,8 +347,10 @@ class Helper:
         self.loop.run_until_complete(wait_login)
         self.loop.close()
 hp = None
-def init_hp():
-    hp = Helper(Config)
+def get_hp():
+    global hp
+    if not hp:
+        hp = Helper(Config)
     return hp
 if click.get_os_args():
-    hp = init_hp()
+    hp = get_hp()
