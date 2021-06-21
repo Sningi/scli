@@ -12,6 +12,7 @@ def acl_operation(ctx, args, incomplete):
     op = [('show', 'show acl'),
           ('create', 'create acl'),
           ('delete', 'delete acl'),
+          ('clean', 'clean acl stat'),
           ('sync', 'sync acl'),
           ]
     return [c for c in op if c[0].startswith(incomplete)]
@@ -38,12 +39,15 @@ def acl_types(ctx, args, incomplete):
     elif "show".startswith(args[-2]):
         field = [("stat", "acl hit count"), ("cfg", "acl cfg")
                  ]
+    elif "clean".startswith(args[-2]):
+        field = [("stat", "acl hit count"),
+                 ]
     return [i for i in field if incomplete in i[0]]
 
 
 def acl_idx(ctx, args, incomplete):
     idxs = get_existed_acl()
-    if "show".startswith(args[-1]) or "delete".startswith(args[-1]):
+    if "show".startswith(args[-1]) or "delete".startswith(args[-1]) or "clean".startswith(args[-1]):
         return [(idx, '') for idx in idxs if idx.startswith(incomplete)]
     elif "create".startswith(args[-1]):
         return [(str(idx), '') for idx in range(1, 101) if str(idx) not in idxs and str(idx).startswith(incomplete)]
@@ -77,10 +81,9 @@ def acl_values(ctx, args, incomplete):
 def acl(op, idx, atype, value):
     if 'show'.startswith(op):
         if "stat".startswith(atype):
-            data = hp.cpu_get('acl/stat?group=1&index={0}'.format(idx))
+            data2 = hp.cpu_get('acl/stat?group=1&index={0}'.format(idx))
         else:
-            data = hp.cpu_get('acl/config/group_1/{}'.format(idx))
-        sprint(gen_table(data,))
+            data2 = hp.cpu_get('acl/config/group_1/{}'.format(idx))
     elif "create".startswith(op):
         postd = []
         if "imsi".startswith(atype):
@@ -127,14 +130,16 @@ def acl(op, idx, atype, value):
                     },
                 }
             }
-        data = hp.cpu_post('acl/config/group_1/{}'.format(idx), postd)
-        sprint(gen_table(data, tab="acl"))
+        data2 = hp.cpu_post('acl/config/group_1/{}'.format(idx), postd)
     elif "delete".startswith(op):
-        data = hp.cpu_delete('acl/config?group=1&index={}'.format(idx))
-        sprint(gen_table(data))
+        data2 = hp.cpu_delete('acl/config?group=1&index={}'.format(idx))
+        sprint(gen_table(data2))
     elif "sync".startswith(op):
         data2 = hp.cpu_patch('acl/sync', sync_data)
-        sprint(gen_table(data2))
-
+    elif "clean".startswith(op):
+        data2 = hp.cpu_patch('acl/stat?group=1&index={0}'.format(idx), general_clean_data)
+    else:
+        return
+    sprint(gen_table(data2))
 
 sf_acl_finish = ''
