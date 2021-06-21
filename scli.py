@@ -1,3 +1,4 @@
+from genericpath import exists
 import json
 import click
 from itertools import zip_longest
@@ -42,13 +43,13 @@ def dev_type(ctx, args, incomplete):
 
 @cli.command()
 @click.argument("op", type=click.STRING, autocompletion=dev_op)
-@click.argument("dev", type=click.STRING, autocompletion=dev_type)
-def dev_ip(op, dev):
+@click.option('--dev','-d', type=click.Choice(['cpu', 'switch','all']), default="all", required=False)
+def dev_ip(op, dev='all'):
     data = []
     if op == "show":
         if dev == "all":
             field_names = ["index", "SWITCH", "CPU"]
-            for index, group in enumerate(zip_longest(Config.cpu_addrs, Config.sw_addrs)):
+            for index, group in enumerate(zip_longest(Config.sw_addrs,Config.cpu_addrs)):
                 data.append([index + 1, group[0], group[1]])
             tb = create_custiom_table(data, field_names)
             sprint(tb)
@@ -67,30 +68,105 @@ def dev_ip(op, dev):
 
 
 @cli.command()
-@click.argument("dev", type=click.STRING, autocompletion=dev_type)
+@click.argument("dev",  type=click.Choice(['cpu', 'switch']))
 @click.argument("url", type=click.STRING)
 @click.option('--format','-f', type=click.Choice(['json', 'table']), default="json", required=False)
 def get(dev, url, format):
     if 'cpu'.startswith(dev):
         data = hp.cpu_get(url)
+    elif "switch".startswith(dev):
+        data = hp.sw_get(url)
+    else:
+        return
+    try:
         if format == 'table':
             sprint(gen_table(data))
         elif format == 'json':
             sprint(json.dumps(data,indent=2))
         else:
             sprint(data)
-    elif "switch".startswith(dev):
-        data = hp.sw_get(url)
-        try:
-            if format == 'table':
-                sprint(gen_table(data))
-            elif format == 'json':
-                sprint(json.dumps(data,indent=2))
-            else:
-                sprint(data)
-        except:
-            sprint(data)
+    except:
+        sprint(data)
 
+
+@cli.command()
+@click.argument("dev",  type=click.Choice(['cpu', 'switch']))
+@click.argument("url", type=click.STRING)
+@click.argument("file", type=click.STRING)
+@click.option('--format','-f', type=click.Choice(['json', 'table']), default="json", required=False)
+def patch(dev, url, file, format):
+    import os
+    if not os.path.exists(file):
+        sprint("File Not Exists: {0}".format(file))
+        return
+    with open(file,'r') as f:
+        pd = json.load(f)
+    if 'cpu'.startswith(dev):
+        data = hp.cpu_patch(url,data=pd)
+    elif "switch".startswith(dev):
+        data = hp.sw_patch(url,data=pd)
+    else:
+        return
+    try:
+        if format == 'table':
+            sprint(gen_table(data))
+        elif format == 'json':
+            sprint(json.dumps(data,indent=2))
+        else:
+            sprint(data)
+    except:
+        sprint(data)
+
+
+@cli.command()
+@click.argument("dev", type=click.Choice(['cpu', 'switch']))
+@click.argument("url", type=click.STRING)
+@click.argument("file", type=click.STRING)
+@click.option('--format','-f', type=click.Choice(['json', 'table']), default="json", required=False)
+def post(dev, url,file, format):
+    import os
+    if not os.path.exists(file):
+        sprint("File Not Exists: {0}".format(file))
+        return
+    with open(file,'r') as f:
+        pd = json.load(f)
+    if 'cpu'.startswith(dev):
+        data = hp.cpu_post(url, data=pd)
+    elif "switch".startswith(dev):
+        data = hp.sw_post(url, data=pd)
+    else:
+        return
+    try:
+        if format == 'table':
+            sprint(gen_table(data))
+        elif format == 'json':
+            sprint(json.dumps(data,indent=2))
+        else:
+            sprint(data)
+    except:
+        sprint(data)
+
+
+@cli.command()
+@click.argument("dev", type=click.Choice(['cpu', 'switch']))
+@click.argument("url", type=click.STRING)
+@click.option('--format','-f', type=click.Choice(['json', 'table']), default="json", required=False)
+def delete(dev, url, format):
+    if 'cpu'.startswith(dev):
+        data = hp.cpu_delete(url)
+    elif "switch".startswith(dev):
+        data = hp.sw_delete(url)
+    else:
+        return
+    try:
+        if format == 'table':
+            sprint(gen_table(data))
+        elif format == 'json':
+            sprint(json.dumps(data,indent=2))
+        else:
+            sprint(data)
+    except:
+        sprint(data)
 
 if __name__ == '__main__':
     cli()
