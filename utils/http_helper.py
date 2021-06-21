@@ -1,3 +1,4 @@
+from base import sprint
 import os
 import time
 import asyncio
@@ -211,7 +212,8 @@ class Helper:
         return data
 
     def cpu_get(self, url, data=None, params=None):
-        if not self.cpus:
+        if not self.cpus or not [cpu for cpu in self.cpus if cpu.active]:
+            sprint("[CONFIG] has no active cpu rest")
             return None
         tasks = [self.loop.create_task(
             rest.get(url, data, params)) for rest in self.cpus if rest.active]
@@ -220,7 +222,8 @@ class Helper:
         return self.data_from_tasks(tasks)
 
     def cpu_get_file(self, url, filename=None, params=None):
-        if not self.cpus:
+        if not self.cpus or not [cpu for cpu in self.cpus if cpu.active]:
+            sprint("[CONFIG] has no active cpu rest")
             return None
         tasks = [self.loop.create_task(
             rest.get_file(url, './cfg_saved/'+rest.addr.replace(':','_')+"_"+filename, params)) 
@@ -230,7 +233,8 @@ class Helper:
         return self.data_from_tasks(tasks)
 
     def cpu_upload_file(self, url, filename=None, params=None):
-        if not self.cpus:
+        if not self.cpus or not [cpu for cpu in self.cpus if cpu.active]:
+            sprint("[CONFIG] has no active cpu rest")
             return None
         tasks = [self.loop.create_task(
             rest.post_file(url, './cfg_saved/'+rest.addr.replace(':','_')+"_"+filename, params))
@@ -240,7 +244,8 @@ class Helper:
         return self.data_from_tasks(tasks)
 
     def cpu_put(self, url, data=None, params=None):
-        if not self.cpus:
+        if not self.cpus or not [cpu for cpu in self.cpus if cpu.active]:
+            sprint("[CONFIG] has no active cpu rest")
             return None
         tasks = [self.loop.create_task(
             rest.put(url, data, params)) for rest in self.cpus if rest.active]
@@ -249,7 +254,8 @@ class Helper:
         return self.data_from_tasks(tasks)
 
     def cpu_post(self, url, data=None, params=None):
-        if not self.cpus:
+        if not self.cpus or not [cpu for cpu in self.cpus if cpu.active]:
+            sprint("[CONFIG] has no active cpu rest")
             return None
         tasks = [self.loop.create_task(
             rest.post(url, data, params)) for rest in self.cpus if rest.active]
@@ -258,7 +264,8 @@ class Helper:
         return self.data_from_tasks(tasks)
 
     def cpu_raw_post(self, url, data=None, header=None, params=None, files=None):
-        if not self.cpus:
+        if not self.cpus or not [cpu for cpu in self.cpus if cpu.active]:
+            sprint("[CONFIG] has no active cpu rest")
             return None
         tasks = [self.loop.create_task(
             rest.raw_post(url, data, header, params, files)) for rest in self.cpus if rest.active]
@@ -267,7 +274,8 @@ class Helper:
         return self.data_from_tasks(tasks)
 
     def cpu_patch(self, url, data=None, params=None):
-        if not self.cpus:
+        if not self.cpus or not [cpu for cpu in self.cpus if cpu.active]:
+            sprint("[CONFIG] has no active cpu rest")
             return None
         tasks = [self.loop.create_task(
             rest.patch(url, data, params)) for rest in self.cpus if rest.active]
@@ -276,7 +284,8 @@ class Helper:
         return self.data_from_tasks(tasks)
 
     def cpu_delete(self, url, data=None, params=None):
-        if not self.cpus:
+        if not self.cpus or not [cpu for cpu in self.cpus if cpu.active]:
+            sprint("[CONFIG] has no active cpu rest")
             return None
         tasks = [self.loop.create_task(
             rest.delete(url, data, params)) for rest in self.cpus if rest.active]
@@ -285,7 +294,8 @@ class Helper:
         return self.data_from_tasks(tasks)
 
     def sw_get(self, url, data=None, params=None):
-        if not self.sws:
+        if not self.sws or [sw for sw in self.sws if sw.active]:
+            sprint("[CONFIG] has no active switch rest")
             return []
         tasks = [self.loop.create_task(
             rest.get(url, data, params)) for rest in self.sws if rest.active]
@@ -294,7 +304,8 @@ class Helper:
         return self.data_from_tasks(tasks)
 
     def sw_put(self, url, data=None, params=None):
-        if not self.sws:
+        if not self.sws or [sw for sw in self.sws if sw.active]:
+            sprint("[CONFIG] has no active switch rest")
             return []
         tasks = [self.loop.create_task(
             rest.put(url, data, params)) for rest in self.sws if rest.active]
@@ -303,7 +314,8 @@ class Helper:
         return self.data_from_tasks(tasks)
 
     def sw_post(self, url, data=None, params=None):
-        if not self.sws:
+        if not self.sws or [sw for sw in self.sws if sw.active]:
+            sprint("[CONFIG] has no active switch rest")
             return []
         tasks = [self.loop.create_task(
             rest.post(url, data, params)) for rest in self.sws if rest.active]
@@ -312,7 +324,8 @@ class Helper:
         return self.data_from_tasks(tasks)
 
     def sw_raw_post(self, url, data=None, header=None, params=None, files=None):
-        if not self.sws:
+        if not self.sws or [sw for sw in self.sws if sw.active]:
+            sprint("[CONFIG] has no active switch rest")
             return []
         tasks = [self.loop.create_task(
             rest.raw_post(url, data, header, params, files))
@@ -322,7 +335,8 @@ class Helper:
         return self.data_from_tasks(tasks)
 
     def sw_patch(self, url, data=None, params=None):
-        if not self.sws:
+        if not self.sws or [sw for sw in self.sws if sw.active]:
+            sprint("[CONFIG] has no active switch rest")
             return []
         tasks = [self.loop.create_task(
             rest.patch(url, data, params)) for rest in self.sws if rest.active]
@@ -331,7 +345,8 @@ class Helper:
         return self.data_from_tasks(tasks)
 
     def sw_delete(self, url, data=None, params=None):
-        if not self.sws:
+        if not self.sws or [sw for sw in self.sws if sw.active]:
+            sprint("[CONFIG] has no active switch rest")
             return []
         tasks = [self.loop.create_task(
             rest.delete(url, data, params)) for rest in self.sws if rest.active]
