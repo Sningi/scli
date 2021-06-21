@@ -294,9 +294,9 @@ class Helper:
         return self.data_from_tasks(tasks)
 
     def sw_get(self, url, data=None, params=None):
-        if not self.sws or [sw for sw in self.sws if sw.active]:
+        if not self.sws or not [sw for sw in self.sws if sw.active]:
             sprint("[CONFIG] has no active switch rest")
-            return []
+            return
         tasks = [self.loop.create_task(
             rest.get(url, data, params)) for rest in self.sws if rest.active]
         get = asyncio.wait(tasks)
@@ -304,9 +304,9 @@ class Helper:
         return self.data_from_tasks(tasks)
 
     def sw_put(self, url, data=None, params=None):
-        if not self.sws or [sw for sw in self.sws if sw.active]:
+        if not self.sws or not [sw for sw in self.sws if sw.active]:
             sprint("[CONFIG] has no active switch rest")
-            return []
+            return
         tasks = [self.loop.create_task(
             rest.put(url, data, params)) for rest in self.sws if rest.active]
         put = asyncio.wait(tasks)
@@ -314,9 +314,9 @@ class Helper:
         return self.data_from_tasks(tasks)
 
     def sw_post(self, url, data=None, params=None):
-        if not self.sws or [sw for sw in self.sws if sw.active]:
+        if not self.sws or not [sw for sw in self.sws if sw.active]:
             sprint("[CONFIG] has no active switch rest")
-            return []
+            return
         tasks = [self.loop.create_task(
             rest.post(url, data, params)) for rest in self.sws if rest.active]
         post = asyncio.wait(tasks)
@@ -324,9 +324,9 @@ class Helper:
         return self.data_from_tasks(tasks)
 
     def sw_raw_post(self, url, data=None, header=None, params=None, files=None):
-        if not self.sws or [sw for sw in self.sws if sw.active]:
+        if not self.sws or not [sw for sw in self.sws if sw.active]:
             sprint("[CONFIG] has no active switch rest")
-            return []
+            return
         tasks = [self.loop.create_task(
             rest.raw_post(url, data, header, params, files))
             for rest in self.sws if rest.active]
@@ -335,9 +335,9 @@ class Helper:
         return self.data_from_tasks(tasks)
 
     def sw_patch(self, url, data=None, params=None):
-        if not self.sws or [sw for sw in self.sws if sw.active]:
+        if not self.sws or not [sw for sw in self.sws if sw.active]:
             sprint("[CONFIG] has no active switch rest")
-            return []
+            return
         tasks = [self.loop.create_task(
             rest.patch(url, data, params)) for rest in self.sws if rest.active]
         patch = asyncio.wait(tasks)
@@ -345,9 +345,9 @@ class Helper:
         return self.data_from_tasks(tasks)
 
     def sw_delete(self, url, data=None, params=None):
-        if not self.sws or [sw for sw in self.sws if sw.active]:
+        if not self.sws or not [sw for sw in self.sws if sw.active]:
             sprint("[CONFIG] has no active switch rest")
-            return []
+            return
         tasks = [self.loop.create_task(
             rest.delete(url, data, params)) for rest in self.sws if rest.active]
         delete = asyncio.wait(tasks)
