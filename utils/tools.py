@@ -149,7 +149,15 @@ def gen_table(data, tab="item", filter=None):
         if not isinstance(d, list) or len(d) != 3:
             return
     tb = PrettyTable()
-    tb.field_names = [tab, *[item[1] for item in data]]
+    fnams = []
+    dupt_count = 1
+    for item in data:
+        if item[1] not in fnams:
+            fnams.append(item[1])
+        else:
+            fnams.append(item[1]+str(dupt_count))
+            dupt_count += 1
+    tb.field_names = [tab, *fnams]
     tb.align[tab] = "l"
     # if isinstance(data[0][2], dict):
     for one in data:

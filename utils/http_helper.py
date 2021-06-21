@@ -72,7 +72,7 @@ class Http:
 
     async def get(self, short_url, data=None, params=None, loop=0):
         loop += 1
-        if loop > 5:
+        if loop > 3:
             return [400, self.addr, "E(1)"]
         async with self.session.get(url=self.base_url + short_url, params=params, timeout=self.timeout) as res:
             try:
@@ -89,7 +89,7 @@ class Http:
         def save_file(fd , data):
             fd.write(data)
         loop += 1
-        if loop > 5:
+        if loop > 3:
             return [400, self.addr, "E(1)"]
         async with self.session.get(url=self.base_url + short_url, params=params, timeout=self.long_timeout) as res:
             if res.status== HTTP.OK:
@@ -112,7 +112,7 @@ class Http:
 
     async def post(self, short_url, data, params=None, loop=0):
         loop += 1
-        if loop > 5:
+        if loop > 3:
             return [400, self.addr, "E(1)"]
         async with self.session.post(url=self.base_url + short_url, json=data, params=params, timeout=self.timeout) as res:
             data = await res.text()
@@ -123,7 +123,7 @@ class Http:
 
     async def post_file(self, short_url, filename=None,  params=None, loop=4):
         loop += 1
-        if loop > 5:
+        if loop > 3:
             return [400, self.addr, "E(1)"]
         from aiohttp import FormData
         data = FormData()  
@@ -142,7 +142,7 @@ class Http:
 
     async def delete(self, short_url, data=None, params=None, loop=0):
         loop += 1
-        if loop > 5:
+        if loop > 3:
             return [400, self.addr, "E(1)"]
         async with self.session.delete(url=self.base_url+short_url, params=params, timeout=self.timeout) as res:
             data = await res.text()
@@ -153,7 +153,7 @@ class Http:
 
     async def put(self, short_url, data, params=None, loop=0):
         loop += 1
-        if loop > 5:
+        if loop > 3:
             return [400, self.addr, "E(1)"]
         async with self.session.put(url=self.base_url+short_url, json=data, params=params, timeout=self.timeout) as res:
             data = await res.text()
@@ -164,7 +164,7 @@ class Http:
 
     async def patch(self, short_url, data, params=None, loop=0):
         loop += 1
-        if loop > 5:
+        if loop > 3:
             return [400, self.addr, "E(1)"]
         async with self.session.patch(url=self.base_url + short_url, json=data, params=params, timeout=self.timeout) as res:
             data = await res.text()
