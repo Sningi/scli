@@ -1,3 +1,4 @@
+from common.base import sprint
 from sys import exit
 
 from utils.mprettytable import PrettyTable
@@ -188,13 +189,13 @@ def gen_table(data, tab="item", filter=None):
     return cut_line(rstr)
 
 
-def gen_table_sw(data, expect, tab="item", filter=None):
+def gen_table_sw(data, expect, tab="item", filter=None, portid=None):
     if not isinstance(data, list) or len(data) < 1:
         return
     tb = PrettyTable()
     tb.field_names = [tab, *expect[filter]]
     tb.align[tab] = "l"
-    for portinfo in data:
+    for index, portinfo in enumerate(data):
         if isinstance(portinfo[2], dict):
             for port in portinfo[2]:
                 if isinstance(portinfo[2][port],dict) and filter in portinfo[2][port]:
@@ -216,6 +217,25 @@ def gen_table_sw(data, expect, tab="item", filter=None):
             row = [tab, *[item[2] for item in data]]
             if len(tb.field_names) == len(row):
                 tb.add_row(row)
+            elif isinstance(portinfo[2],str):
+                from json import loads
+                try:
+                    pdata = loads(portinfo[2])
+                except Exception as e:
+                    sprint('[ERROR] PORT: {0} {1}'.format(portid[index],str(e)))
+                    continue
+                if isinstance(pdata, dict) and filter in pdata:
+                    portstat = []
+                    for stat in expect[filter]:
+                        if stat in pdata[filter]:
+                            portstat.append(pdata[filter][stat])
+                        else:
+                            portstat.append(None)
+                    if portid:
+                        row = [portid[index], *portstat]
+                    else:
+                        row = ['0', *portstat]
+                    tb.add_row(row)
     rstr = tb.get_string(sortby=tab, reversesort=True)
     return cut_line(rstr)
 

@@ -118,7 +118,7 @@ def intf_sw(op, intf, filter):
                 wait_task = asyncio.wait(tasks)
                 hp.loop.run_until_complete(wait_task)
                 data += hp.data_from_tasks(tasks)
-            tb = gen_table_sw(data, sw_intf_expect, tab=sw.addr, filter=filter)
+            tb = gen_table_sw(data, sw_intf_expect, tab=sw.addr, filter=filter, portid=restid)
             sprint(click.style(str(tb), fg='green',))
     elif op == 'set':
         """
