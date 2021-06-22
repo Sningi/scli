@@ -155,7 +155,7 @@ def gen_table(data, tab="item", filter=None):
         if item[1] not in fnams:
             fnams.append(item[1])
         else:
-            fnams.append(item[1]+str(dupt_count))
+            fnams.append(item[1]+'_'+str(dupt_count))
             dupt_count += 1
     tb.field_names = [tab, *fnams]
     tb.align[tab] = "l"
