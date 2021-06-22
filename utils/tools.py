@@ -152,11 +152,14 @@ def gen_table(data, tab="item", filter=None):
     fnams = []
     dupt_count = 1
     for item in data:
-        if item[1] not in fnams:
+        print("ite",item[1])
+        if str(item[1]) not in fnams:
             fnams.append(item[1])
         else:
-            fnams.append(item[1]+'_'+str(dupt_count))
+            fnams.append(str(item[1])+'_'+str(dupt_count))
             dupt_count += 1
+        print("f",fnams)
+    
     tb.field_names = [tab, *fnams]
     tb.align[tab] = "l"
     # if isinstance(data[0][2], dict):
