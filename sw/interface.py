@@ -1,4 +1,5 @@
 import asyncio
+from json import loads
 import click
 from sys import exit
 
@@ -64,11 +65,15 @@ def sw_intfs(ctx, args, incomplete):
             if isinstance(d[2], list):
                 for item in d[2]:
                     intfs.add(item.split('/')[-1])
-        # .append(("all", "all port"))
+            elif isinstance(d[2],str):
+                data = loads(d[2])
+                if isinstance(data, list):
+                    for item in data:
+                        intfs.add(item.split('/')[-1])
         return [i for i in intfs if incomplete in i]
 
     except Exception as e:
-        sprint("\nget sw interface error:{0}".format(e))
+        return []
 
 sw_intf_expect = {
     "statistics": [

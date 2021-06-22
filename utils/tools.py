@@ -1,3 +1,4 @@
+from os import spawnlp
 from common.base import sprint
 from sys import exit
 
@@ -98,7 +99,7 @@ def gen_intfs_sw(desc):
     def diss_a(child_str):
         intfs = child_str.split("-")
         if len(intfs) < 2 or intfs[0] not in INTF_MAP or intfs[-1] not in INTF_MAP:
-            print("range error")
+            sprint("range error", fg='red')
         for i in range(INTF_MAP[intfs[0]], INTF_MAP[intfs[-1]]+1):
             restid.append(INTF_MAP_REST[i])
     childs = desc.split(",")
@@ -222,7 +223,7 @@ def gen_table_sw(data, expect, tab="item", filter=None, portid=None):
                 try:
                     pdata = loads(portinfo[2])
                 except Exception as e:
-                    sprint('[ERROR] PORT: {0} {1}'.format(portid[index],str(e)))
+                    sprint('[ERROR] PORT: {0}'.format(portid[index]), fg='red')
                     continue
                 if isinstance(pdata, dict) and filter in pdata:
                     portstat = []
