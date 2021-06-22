@@ -1,4 +1,3 @@
-from base import sprint
 import os
 import time
 import asyncio
@@ -8,8 +7,8 @@ import aiohttp
 from json import dumps
 from aiohttp import TCPConnector
 from utils.http_code import HTTP
-from config import Config
-
+from common.base import sprint
+from common.config import Config
 class Http:
     timeout = 3
     long_timeout = 30

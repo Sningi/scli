@@ -1,7 +1,7 @@
 import asyncio
 import click
 
-from base import cli, sprint
+from common.base import cli, sprint
 from utils.http_helper import get_hp, hp
 from utils.tools import gen_table, gen_table_sw, INTF_MAP, INTF_MAP_REST
 

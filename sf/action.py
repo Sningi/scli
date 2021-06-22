@@ -1,7 +1,7 @@
 import click
 from sys import exit
 
-from base import cli, sprint
+from common.base import cli, sprint
 from utils.http_helper import hp, get_hp
 from utils.tools import *
 from utils.static_data import *

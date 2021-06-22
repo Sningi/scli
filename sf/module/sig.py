@@ -1,7 +1,7 @@
 import click
 from sys import exit
 
-from base import cli, sprint
+from common.base import cli, sprint
 from sf.general_rest_api import general_clean_data
 from utils.http_helper import hp
 from utils.tools import gen_table

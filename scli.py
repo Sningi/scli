@@ -1,19 +1,22 @@
-from genericpath import exists
 import json
 import click
 from itertools import zip_longest
 
-from config import Config
-from base import cli,sprint
+from common.base import cli,sprint
+from common.config import Config
 from utils.http_helper import hp
 from utils.tools import *
 
+from common.syscfg import sf_sys_finish
+# sf
 from sf.acl import sf_acl_finish
 from sf.action import sf_action_finish
 from sf.interface import sf_intf_finish
 
+# switch
 from sw.interface import sw_intf_finish
 from sw.acl import sw_acl_finish
+
 
 # module
 from sf.module.sctp import sf_sctp_finish
@@ -26,8 +29,6 @@ from sf.module.ip_reass import sf_ipreass_finish
 from sf.module.sslcon import sf_sslcon_finish
 from sf.module.dpdk import sf_dpdk_finish
 from sw.module.sslcon import sw_sslcon_finsh
-
-from syscfg import sf_sys_finish
 
 
 def dev_op(ctx, args, incomplete):

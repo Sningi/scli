@@ -1,6 +1,6 @@
 import click
 
-from base import cli,sprint
+from common.base import cli,sprint
 from utils.http_helper import hp
 from utils.tools import *
 
