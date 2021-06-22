@@ -186,19 +186,21 @@ class Helper:
         return Helper._instance
 
     def __init__(self, cfg, dev):
-        self.sws = [Http(cfg.sw_user,  cfg.sw_pwd,  addr,
-                         cfg.sw_restv, "switch") for addr in cfg.sw_addrs]
-        self.cpus = [Http(cfg.cpu_user, cfg.cpu_pwd, addr,
-                          cfg.cpu_restv, "cpu") for addr in cfg.cpu_addrs]
         self.loop = asyncio.get_event_loop()
+        tasks = []
         if dev in ['all','switch']:
+            self.sws = [Http(cfg.sw_user,  cfg.sw_pwd,  addr,
+                            cfg.sw_restv, "switch") for addr in cfg.sw_addrs]
             tasks = [self.loop.create_task(
                 sw.login_may_use_cookie()) for sw in self.sws]
         if dev in ['all', 'cpu']:
+            self.cpus = [Http(cfg.cpu_user, cfg.cpu_pwd, addr,
+                          cfg.cpu_restv, "cpu") for addr in cfg.cpu_addrs]
             tasks += [self.loop.create_task(cpu.login_may_use_cookie())
                     for cpu in self.cpus]
-        wait_login = asyncio.wait(tasks)
-        self.loop.run_until_complete(wait_login)
+        if tasks:
+            wait_login = asyncio.wait(tasks)
+            self.loop.run_until_complete(wait_login)
 
 
     def data_from_tasks(self, tasks):
