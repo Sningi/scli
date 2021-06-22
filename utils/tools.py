@@ -43,7 +43,7 @@ def table_add_colum(tb, data):
 
 
 def get_intfs_from_rest():
-    hp = get_hp()
+    hp = get_hp(dev='cpu')
     intfs = []
     data = hp.cpu_get("interfaces/config")
     for d in data:
@@ -54,7 +54,7 @@ def get_intfs_from_rest():
 
 
 def get_existed_action():
-    hp = get_hp()
+    hp = get_hp(dev='cpu')
     idxs = []
     data = hp.cpu_get("actions")
     for d in data:
@@ -64,7 +64,7 @@ def get_existed_action():
     return idxs
 
 def get_existed_acl():
-    hp = get_hp()
+    hp = get_hp(dev='cpu')
     acl_ids = set()
     data = hp.cpu_get("acl/config/group_1")
     for d in data:

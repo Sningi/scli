@@ -65,7 +65,7 @@ def target_intf(ctx, args, incomplete):
         pass
     elif "create".startswith(args[-3]):
         if "no_basis_action".startswith(args[-1]):
-            hp = get_hp()
+            hp = get_hp(dev='switch')
             data = hp.sw_get("interfaces")
             for d in data:
                 if isinstance(d[2], list):

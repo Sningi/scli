@@ -185,16 +185,18 @@ class Helper:
             Helper._instance = Helper(*args, **kwargs)
         return Helper._instance
 
-    def __init__(self, cfg):
+    def __init__(self, cfg, dev):
         self.sws = [Http(cfg.sw_user,  cfg.sw_pwd,  addr,
                          cfg.sw_restv, "switch") for addr in cfg.sw_addrs]
         self.cpus = [Http(cfg.cpu_user, cfg.cpu_pwd, addr,
                           cfg.cpu_restv, "cpu") for addr in cfg.cpu_addrs]
         self.loop = asyncio.get_event_loop()
-        tasks = [self.loop.create_task(
-            sw.login_may_use_cookie()) for sw in self.sws]
-        tasks += [self.loop.create_task(cpu.login_may_use_cookie())
-                  for cpu in self.cpus]
+        if dev in ['all','switch']:
+            tasks = [self.loop.create_task(
+                sw.login_may_use_cookie()) for sw in self.sws]
+        if dev in ['all', 'cpu']:
+            tasks += [self.loop.create_task(cpu.login_may_use_cookie())
+                    for cpu in self.cpus]
         wait_login = asyncio.wait(tasks)
         self.loop.run_until_complete(wait_login)
 
@@ -361,10 +363,26 @@ class Helper:
         self.loop.run_until_complete(wait_login)
         self.loop.close()
 hp = None
-def get_hp():
+def get_hp(dev='all'):
     global hp
     if not hp:
-        hp = Helper(Config)
+        hp = Helper(Config, dev)
     return hp
-if click.get_os_args():
-    hp = get_hp()
+args = click.get_os_args()
+
+if args:
+    cpu_cmd = ['acl','action','dpdk-stat','gtpu-cfg','gtpu-stat',
+        'gtpv1-cfg','gtpv1-stat','gtpv2-cfg','gtpv2-stat',
+        'http2-cfg','http2-stat','intf-cpu','sctp-cfg','sctp-stat',
+        'ipreass-cfg','ipreass-stat','sig-cfg','sig-stat',
+        'sslcon-config','sslcon-stat','sslcon-passthrough-ip','sslcon-server-config',
+        ]
+    sw_cmd = ['acl-sw','intf-sw','policies','sslcon-sw-base-configuration']
+    both_cmd = ['delete','get','post','patch','version','syscfg']
+    other = ['dev-ip']
+    if args[0] in cpu_cmd:
+        hp = get_hp(dev='cpu')
+    elif args[0] in sw_cmd:
+        hp = get_hp(dev='switch')
+    elif args[0] in both_cmd:
+        hp = get_hp(dev='all')

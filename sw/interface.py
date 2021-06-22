@@ -43,7 +43,7 @@ def sw_intf_filter(ctx, args, incomplete):
     elif args[-2] in ("enable", "disable"):
         comp = feature_comp
     elif args[-2] == "bind":
-        hp = get_hp()
+        hp = get_hp(dev='switch')
         data = hp.sw_get("acls")
         comp = []
         for one in data:
@@ -59,7 +59,7 @@ def sw_intfs(ctx, args, incomplete):
     try:
         if args[-1] == "clean":
             return [("all", "clean all")]
-        hp = get_hp()
+        hp = get_hp(dev='switch')
         data = hp.sw_get("interfaces")
         for d in data:
             if isinstance(d[2], list):

@@ -16,7 +16,7 @@ def sw_acl_op(ctx, args, incomplete):
 
 def sw_acl_group(ctx, args, incomplete):
     if "show".startswith(args[-1]) or "delete".startswith(args[-1]) or "add".startswith(args[-1]):
-        hp = get_hp()
+        hp = get_hp('switch')
         data = hp.sw_get("acls")
         # data = hp.sw_get("forward_policies") sample as acls
         comp = []
@@ -31,7 +31,7 @@ def sw_acl_group(ctx, args, incomplete):
 
 def sw_acl_idx(ctx, args, incomplete):
     if "show".startswith(args[-2]) or "delete".startswith(args[-2]) or "add".startswith(args[-2]):
-        hp = get_hp()
+        hp = get_hp(dev='switch')
         data = hp.sw_get("acls/{0}".format(args[-1]))
         comp = []
         for one in data:
