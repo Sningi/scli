@@ -106,6 +106,8 @@ def gen_intfs_sw(desc):
             diss_a(c)
         elif c in INTF_MAP:
             restid.append(c)
+        elif 'C' in c or 'Y' in c:
+            restid.append(c)
     return restid
 
 def cut_line(rstr, step=120):
