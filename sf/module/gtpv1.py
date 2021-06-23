@@ -1,19 +1,11 @@
-import click
+from click import argument,option,STRING,Choice
 from sys import exit
 
-from common.base import cli,sprint
+from common.base import cli,sprint, get_args
 from sf.general_rest_api import general_clean_data
 from utils.http_helper import hp
 from utils.tools import gen_table
 from utils.static_data import *
-
-
-def gtpv1_op(ctx, args, incomplete):
-    comp = [('show', 'show config'),
-              ('enable', 'enable feature'),
-              ('disable', 'disble feature'),
-              ('set', 'set timeout')]
-    return [c for c in comp if c[0].startswith(incomplete)]
 
 
 gtpv1_cfg_field = [("cdr_mode","cdr_mode"),
@@ -31,9 +23,10 @@ gtpv1_cfg_dict = dict(gtpv1_cfg_field)
 
 
 def cfg_field(ctx, args, incomplete):
-    if args[-1] == "set":
+    args = get_args(args)
+    if "set" in args:
         return [i for i in gtpv1_cfg_field if i[0].startswith(incomplete) and "timeout" in i[0] or 'mode' in i[0]]
-    elif args[-1] in ["enable", "disable"]:
+    elif "enable" in args or "disable" in args:
         return [i for i in gtpv1_cfg_field if i[0].startswith(incomplete) and "timeout" not in i[0]]
     elif args[-1] == "show":
         return [i for i in gtpv1_cfg_field if i[0].startswith(incomplete)]
@@ -45,9 +38,9 @@ def cfg_value(ctx, args, incomplete):
 
 
 @cli.command()  # @cli, not @click!
-@click.argument("op", type=click.STRING, autocompletion=gtpv1_op)
-@click.argument("field", type=click.STRING, autocompletion=cfg_field, required=False)
-@click.argument("value", type=click.STRING, autocompletion=cfg_value, required=False)
+@argument("op", type=Choice(['show','enable','disable','set']),default='show')
+@argument("field", type=STRING, autocompletion=cfg_field, required=False)
+@argument("value", type=STRING, autocompletion=cfg_value, required=False)
 def gtpv1_cfg(op, field=None, value=None):
     if op == 'show':
         data = hp.cpu_get('gtpv1/config')
@@ -70,25 +63,9 @@ def gtpv1_cfg(op, field=None, value=None):
         data = hp.cpu_patch('gtpv1/config', op_data)
         sprint(gen_table(data, tab="code"))
 
-
-def gtpv1_stat_operation(ctx, args, incomplete):
-    comp = [('show', 'show stat'),
-              ('clean', 'clean stat')]
-    return [c for c in comp if c[0].startswith(incomplete)]
-
-
-def gtpv1_stat_filter(ctx, args, incomplete):
-    comp = [('ggsn_bear', 'ggsn_bear stat'),
-              ('gtpu_bear', 'gtpu_bear stat'),
-              ('pdp', 'pdp stat'),
-              ('refill', 'refill stat'),
-              ('node', 'hash node stat')]
-    return [c for c in comp if c[0].startswith(incomplete)]
-
-
 @cli.command()
-@click.argument("op", type=click.STRING, autocompletion=gtpv1_stat_operation)
-@click.argument("filter", type=click.STRING, autocompletion=gtpv1_stat_filter, required=False)
+@argument("op", type=Choice(['show','clean']),default='show')
+@option('--filter','-f', type=Choice(['ggsn_bear', 'gtpu_bear','pdp','refill']), default=None, required=False)
 def gtpv1_stat(op, filter):
     if 'show'.startswith(op):
         data = hp.cpu_get('gtpv1/stat')
