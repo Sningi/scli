@@ -7,11 +7,12 @@ from utils.http_helper import hp
 from utils.tools import gen_table
 from utils.static_data import *
 
-gtpu_cfg_field = [('gtpu_decode', 'gtpu_bear_dec_enable'),
-                  ('gtpu_inner_decode', 'gtpu_inner_decode'),
+gtpu_cfg_field = [('decode', 'gtpu_bear_dec_enable'),
+                  ('inner_decode', 'gtpu_inner_decode'),
                   ('device_number', 'device_number'),
                   ('bear_timeout_mul', 'gtpu_bear_tab_timeout_mul'),
                   ('bear_timeout_sec', 'gtpu_bear_tab_timeout_sec'),
+                  ('modify_mac', 'gtpu_add_pad_change_mac'),
                   ('split_number', 'split_number')]
 gtpu_cfg_dict = dict(gtpu_cfg_field)
 
@@ -21,7 +22,7 @@ def cfg_field(ctx, args, incomplete):
     if "set" in args:
         return [i for i in gtpu_cfg_field if i[0].startswith(incomplete) and ("timeout" in i[0] or "num" in i[0])]
     elif "enable" in args or "disable" in args:
-        return [i for i in gtpu_cfg_field if i[0].startswith(incomplete) and "decode" in i[0]]
+        return [i for i in gtpu_cfg_field if i[0].startswith(incomplete) and "decode" in i[0] or 'modify' in i[0]]
     elif "show" in args:
         return [i for i in gtpu_cfg_field if i[0].startswith(incomplete)]
 

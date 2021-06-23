@@ -1,21 +1,11 @@
-import click
 from sys import exit
+from click import argument, option, STRING, Choice
 
-from common.base import cli, sprint
+from common.base import cli, sprint, get_args
 from sf.general_rest_api import general_clean_data
 from utils.http_helper import hp
 from utils.tools import gen_table
 from utils.static_data import *
-
-
-def http2_operation(ctx, args, incomplete):
-    colors = [('show', 'show config'),
-              ('enable', 'enable feature'),
-              ('disable', 'disble feature'),
-              ('set', 'set feature'),
-              ('timeout', 'set timeout')]
-    return [c for c in colors if c[0].startswith(incomplete)]
-
 
 http2_cfg_field = [('http2_decode', 'enable'),
                    ('n11_decode', 'enable_N11_decode'),
@@ -28,13 +18,12 @@ http2_cfg_dict = dict(http2_cfg_field)
 
 
 def cfg_field(ctx, args, incomplete):
-    if args[-1] == "timeout":
-        return [i for i in http2_cfg_field if incomplete in i[0] and "timeout" in i[0]]
-    elif args[-1] in ["enable", "disable"]:
+    args = get_args(args)
+    if "set" in args:
+        return [i for i in http2_cfg_field if incomplete in i[0] and "timeout" in i[0] or "limit" in i[0]]
+    elif "enable" in args or "disable" in args:
         return [i for i in http2_cfg_field if incomplete in i[0] and "timeout" not in i[0]]
-    elif args[-1] == "set":
-        return [i for i in http2_cfg_field if incomplete in i[0] and "limit" in i[0]]
-    elif args[-1] == "show":
+    elif "show" in args:
         return [i for i in http2_cfg_field if incomplete in i[0]]
 
 
@@ -44,9 +33,9 @@ def cfg_value(ctx, args, incomplete):
 
 
 @cli.command()  # @cli, not @click!
-@click.argument("op", type=click.STRING, autocompletion=http2_operation)
-@click.argument("field", type=click.STRING, autocompletion=cfg_field, required=False)
-@click.argument("value", type=click.STRING, autocompletion=cfg_value, required=False)
+@argument("op", type=Choice(['show','enable','disable','set']),default='show')
+@argument("field", type=STRING, autocompletion=cfg_field, required=False)
+@argument("value", type=STRING, autocompletion=cfg_value, required=False)
 def http2_cfg(op, field=None, value=None):
     if op == 'show':
         data = hp.cpu_get('http2/config')
@@ -76,26 +65,9 @@ def http2_cfg(op, field=None, value=None):
         data = hp.cpu_patch('http2/config', op_data)
         sprint(gen_table(data, tab="code"))
 
-
-def http2_stat_operation(ctx, args, incomplete):
-    colors = [('show', 'show stat'),
-              ('clean', 'clean stat')]
-    return [c for c in colors if incomplete in c[0]]
-
-
-def http2_stat_filter(ctx, args, incomplete):
-    if args[-1] == "clean":
-        comp = [('all', 'all stat')]
-    elif args[-1] == "show":
-        comp = [('h2', 'http2 stat'),
-                ('n11', 'n11 stat'),
-                ('all', 'all stat')]
-    return [c for c in comp if incomplete in c[0]]
-
-
 @cli.command()
-@click.argument("op", type=click.STRING, autocompletion=http2_stat_operation)
-@click.argument("filter", type=click.STRING, autocompletion=http2_stat_filter, required=False)
+@argument("op", type=Choice(['show','clean']),default='show')
+@option('--filter','-f', type=Choice(['h2', 'n11','cache']), default=None, required=False)
 def http2_stat(op, filter):
     if op == 'show':
         data = hp.cpu_get('http2/stat')

@@ -2,7 +2,6 @@ import os
 import time
 import asyncio
 
-import click
 import aiohttp
 from json import dumps
 from aiohttp import TCPConnector
@@ -375,16 +374,16 @@ def get_hp(dev='all'):
     if not hp:
         hp = Helper(Config, dev)
     return hp
-args = click.get_os_args()
+import sys
+args = sys.argv[1:]
 
 if args:
     cpu_cmd = ['acl','action','dpdk-stat','gtpu-cfg','gtpu-stat',
         'gtpv1-cfg','gtpv1-stat','gtpv2-cfg','gtpv2-stat',
         'http2-cfg','http2-stat','intf-cpu','sctp-cfg','sctp-stat',
-        'ipreass-cfg','ipreass-stat','sig-cfg','sig-stat',
-        'sslcon-config','sslcon-stat','sslcon-passthrough-ip','sslcon-server-config',
+        'sig-cfg','sig-stat','ngap-stat'
         ]
-    sw_cmd = ['acl-sw','intf-sw','policies','sslcon-sw-base-configuration']
+    sw_cmd = ['acl-sw','intf-sw','policies']
     both_cmd = ['delete','get','post','patch','version','syscfg']
     other = ['dev-ip']
     if args[0] in cpu_cmd:

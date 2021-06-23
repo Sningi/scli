@@ -1,7 +1,7 @@
-import click
-from sys import exit
+from sys import argv, exit
+from click import argument, option, STRING, Choice
 
-from common.base import cli,sprint
+from common.base import cli,sprint, get_args
 from sf.general_rest_api import general_clean_data
 from utils.http_helper import hp
 from utils.tools import gen_table
@@ -17,18 +17,17 @@ def sctp_operation(ctx, args, incomplete):
 
 
 sctp_cfg_field = [('sctp_decode', 'sctp_decode_enable'),
-                  ('sctp_decode_upproto', 'sctp_decode_upproto_enable'),
-                  ('ngap_decode', 'ngap_decode_enable'),
-                  ('ngap_skip_paging', 'ngap_decode_skip_paging_enable'),
-                  ('ngap_cdr', 'ngap_cdr_enable'),
-                  ('nas_decrypt', 'ngap_nas_decrypt_enable'),
-                  ('nas_decrypted_output', 'ngap_nas_decrypted_output_enable'),
-                  ('learn_ip', 'learn_ip'),
-
-                  ('ngap_imsi_timeout', 'ngap_imsi_timeout_cycle'),
-                  ('ngap_cdr_timeout', 'ngap_cdr_timeout'),
-                  ('ngap_small_cdr_timeout', 'ngap_small_cdr_timeout'),
-                  ('ngap_handover_cdr_timeout', 'ngap_handover_cdr_timeout'),
+                    ('sctp_decode_upproto', 'sctp_decode_upproto_enable'),
+                    ('ngap_decode', 'ngap_decode_enable'),
+                    ('ngap_skip_paging', 'ngap_decode_skip_paging_enable'),
+                    ('ngap_cdr', 'ngap_cdr_enable'),
+                    ('nas_decrypt', 'ngap_nas_decrypt_enable'),
+                    ('nas_decrypted_output', 'ngap_nas_decrypted_output_enable'),
+                    ('learn_ip', 'learn_ip'),
+                    ('ngap_imsi_timeout', 'ngap_imsi_timeout_cycle'),
+                    ('ngap_cdr_timeout', 'ngap_cdr_timeout'),
+                    ('ngap_small_cdr_timeout', 'ngap_small_cdr_timeout'),
+                    ('ngap_handover_cdr_timeout', 'ngap_handover_cdr_timeout'),
                     ("sctp_frag_assemble", "sctp_frag_assemble"),
                     ("s1ap_decode_enable", "s1ap_decode_enable"),
                     ("s1ap_decode_skip_paging_enable", "s1ap_decode_skip_paging_enable"),
@@ -40,17 +39,25 @@ sctp_cfg_field = [('sctp_decode', 'sctp_decode_enable'),
                     ("s1ap_cdr_timeout", "s1ap_cdr_timeout"),
                     ("s1ap_small_cdr_timeout", "s1ap_small_cdr_timeout"),
                     ("s1ap_handover_cdr_timeout", "s1ap_handover_cdr_timeout"),
+                    ("s1ap_cdr_multi", "s1ap_cdr_multi"),
                     ("s1ap_imsi_timeout_cycle", "s1ap_imsi_timeout_cycle"),
+                    ("sctp_n2_n4_n11_assoc_switch", 'sctp_n2_n4_n11_assoc_switch'),
+                    ("diameter_decode_enable", "diameter_decode_enable"),
+                    ("s6a_cdr_proc_enable", "s6a_cdr_proc_enable"),
+                    ("s6a_cdr_timeout", "s6a_cdr_timeout"),
+                    ("s6a_auth_ass_timeout", "s6a_auth_ass_timeout"),
+                    ("s6a_create_imsi_vector_open", "s6a_create_imsi_vector_open"),
                   ]
 sctp_cfg_dict = dict(sctp_cfg_field)
 
 
 def cfg_field(ctx, args, incomplete):
-    if args[-1] == "set":
-        return [i for i in sctp_cfg_field if i[0].startswith(incomplete) and "timeout" in i[0]]
-    elif args[-1] in ["enable", "disable"]:
+    args = get_args(args)
+    if "set" in args:
+        return [i for i in sctp_cfg_field if i[0].startswith(incomplete) and "timeout" in i[0] or 'mul' in i[0] or 'swit' in i[0]]
+    elif "enable" in args or "disable" in args:
         return [i for i in sctp_cfg_field if i[0].startswith(incomplete) and "timeout" not in i[0]]
-    elif args[-1] == "show":
+    elif "show" in args:
         return [i for i in sctp_cfg_field if i[0].startswith(incomplete)]
 
 
@@ -60,9 +67,9 @@ def cfg_value(ctx, args, incomplete):
 
 
 @cli.command()  # @cli, not @click!
-@click.argument("op", type=click.STRING, autocompletion=sctp_operation)
-@click.argument("field", type=click.STRING, autocompletion=cfg_field, required=False)
-@click.argument("value", type=click.STRING, autocompletion=cfg_value, required=False)
+@argument("op", type=Choice(['show','enable','disable','set']),default='show')
+@argument("field", type=STRING, autocompletion=cfg_field, required=False)
+@argument("value", type=STRING, autocompletion=cfg_value, required=False)
 def sctp_cfg(op, field=None, value=None):
     if op == 'show':
         data = hp.cpu_get('sctp/config')
@@ -85,24 +92,9 @@ def sctp_cfg(op, field=None, value=None):
         data = hp.cpu_patch('sctp/config', op_data)
         sprint(gen_table(data, tab="code"))
 
-
-def sctp_stat_operation(ctx, args, incomplete):
-    comp = [('show', 'show stat'),
-              ('clean', 'clean stat')
-              ]
-    return [c for c in comp if c[0].startswith(incomplete)]
-
-
-def sctp_stat_filter(ctx, args, incomplete):
-    comp = [('chunk', 'chunk stat'),
-              ('error', 'error stat'),
-              ('total', 'total stat')]
-    return [c for c in comp if c[0].startswith(incomplete)]
-
-
 @cli.command()
-@click.argument("op", type=click.STRING, autocompletion=sctp_stat_operation)
-@click.argument("filter", type=click.STRING, autocompletion=sctp_stat_filter, required=False)
+@argument("op", type=Choice(['show','clean']),default='show')
+@option('--filter','-f', type=Choice(['chunk', 'error','total']), default=None, required=False)
 def sctp_stat(op, filter):
     if 'show'.startswith(op):
         data = hp.cpu_get('sctp/stat')
@@ -124,18 +116,10 @@ ngap_type = {'small_cdr': ("small_cdr", 'ngap/small_cdr/stat'),
 def ngap_type_comp(ctx, args, incomplete):
     return [ngap_type[key] for key in ngap_type if ngap_type[key][0].startswith(incomplete)]
 
-
-def ngap_stat_filter(ctx, args, incomplete):
-    comp = [('create', 'chunk stat'),
-            ('failed', 'error stat'),
-            ('total', 'total stat')]
-    return [c for c in comp if c[0].startswith(incomplete)]
-
-
 @cli.command()
-@click.argument("op", type=click.STRING, autocompletion=sctp_stat_operation)
-@click.argument("type", type=click.STRING, autocompletion=ngap_type_comp)
-@click.argument("filter", type=click.STRING, autocompletion=ngap_stat_filter, required=False)
+@argument("op", type=Choice(['show','clean']),default='show')
+@argument("type", type=STRING, autocompletion=ngap_type_comp)
+@option('--filter','-f', type=STRING, default=None, required=False)
 def ngap_stat(op, type, filter):
     if op == 'show':
         if type == '5gip':

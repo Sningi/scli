@@ -8,17 +8,16 @@ from utils.tools import gen_table
 from utils.static_data import *
 
 
-gtpv1_cfg_field = [("cdr_mode","cdr_mode"),
-    ("ggsn_bear_uinfo_timeout","ggsn_bear_uinfo_timeout"),
-    ("gtpu_bear","gtpu_bear_enable"),
-    ("cdr","gtpv1_cdr_enable"),
-    ("cache","gtpv1_cache"),
-    ("cdr_timeout","gtpv1_cdr_timeout"),
-    ("decode","gtpv1_enable"),
-    ("ggsn_bear","gtpv1_ggsn_enable"),
-    ("assoc_timeout","gtpv1_sig_timeout"),
-    ("learn_flag","learn_enable_flag"),
-                  ]
+gtpv1_cfg_field = [ ("cdr_mode","cdr_mode"),
+                    ("ggsn_bear_uinfo_timeout","ggsn_bear_uinfo_timeout"),
+                    ("gtpu_bear","gtpu_bear_enable"),
+                    ("cdr","gtpv1_cdr_enable"),
+                    ("cache","gtpv1_cache"),
+                    ("cdr_timeout","gtpv1_cdr_timeout"),
+                    ("decode","gtpv1_enable"),
+                    ("ggsn_bear","gtpv1_ggsn_enable"),
+                    ("assoc_timeout","gtpv1_sig_timeout"),
+                    ("learn_flag","learn_enable_flag"),]
 gtpv1_cfg_dict = dict(gtpv1_cfg_field)
 
 
@@ -27,8 +26,8 @@ def cfg_field(ctx, args, incomplete):
     if "set" in args:
         return [i for i in gtpv1_cfg_field if i[0].startswith(incomplete) and "timeout" in i[0] or 'mode' in i[0]]
     elif "enable" in args or "disable" in args:
-        return [i for i in gtpv1_cfg_field if i[0].startswith(incomplete) and "timeout" not in i[0]]
-    elif args[-1] == "show":
+        return [i for i in gtpv1_cfg_field if i[0].startswith(incomplete) and "timeout" not in i[0] and 'mode' not in i[0]]
+    elif "show" in args:
         return [i for i in gtpv1_cfg_field if i[0].startswith(incomplete)]
 
 
@@ -65,7 +64,7 @@ def gtpv1_cfg(op, field=None, value=None):
 
 @cli.command()
 @argument("op", type=Choice(['show','clean']),default='show')
-@option('--filter','-f', type=Choice(['ggsn_bear', 'gtpu_bear','pdp','refill']), default=None, required=False)
+@option('--filter','-f', type=Choice(['ggsn_bear', 'gtpu_bear','pdp','cache','refill']), default=None, required=False)
 def gtpv1_stat(op, filter):
     if 'show'.startswith(op):
         data = hp.cpu_get('gtpv1/stat')

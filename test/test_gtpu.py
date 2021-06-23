@@ -16,8 +16,8 @@ def test_gtpu_cfg():
         assert result.exit_code == 0
 
     switch = {
-        "gtpu_decode": '0',
-        'gtpu_inner_decode':'0'
+        "decode": '0',
+        'inner_decode':'0'
     }
 
     for key in switch:
