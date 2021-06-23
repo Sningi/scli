@@ -11,6 +11,8 @@ pip3 install --editable .
 ```shell
 eval "$(_SCLI_COMPLETE=source scli)"
 eval "$(_SCLI_COMPLETE=source_zsh scli)"
+#click 8
+eval "$(_SCLI_COMPLETE=bash_source scli)"
 ```
 2.2 effective
 ```shell

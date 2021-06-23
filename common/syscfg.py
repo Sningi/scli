@@ -41,11 +41,11 @@ def syscfg(op, dev):
 
 @cli.command()
 @argument("dev", type=Choice(['cpu', 'sw','all']),default='cpu',required=False)
-@option('--filter','-f', type=Choice(['sf_version', 'release_version','platform','host_name','all']), default='sf_version', required=False)
+@option('--filter','-f', type=Choice(['sf_version', 'release_version','platform','host_name','none']), default='sf_version', required=False)
 def version(dev, filter):
     def cpu_ver():
         data = hp.cpu_get("system/info")
-        if filter == 'all':
+        if filter == 'none':
             sprint(gen_table(data, tab="cpu",filter=None))
         else:
             sprint(gen_table(data, tab="cpu",filter=filter))
