@@ -187,6 +187,7 @@ class Helper:
 
     def __init__(self, cfg, dev):
         self.loop = asyncio.get_event_loop()
+        self.dev = dev
         tasks = []
         if dev in ['all','switch']:
             self.sws = [Http(cfg.sw_user,  cfg.sw_pwd,  addr,
@@ -358,11 +359,15 @@ class Helper:
         return self.data_from_tasks(tasks)
 
     def __del__(self):
-        tasks = [self.loop.create_task(sw.del_session()) for sw in self.sws]
-        tasks += [self.loop.create_task(cpu.del_session())
-                  for cpu in self.cpus]
-        wait_login = asyncio.wait(tasks)
-        self.loop.run_until_complete(wait_login)
+        tasks = []
+        if self.dev in ['all','switch']:
+            tasks += [self.loop.create_task(sw.del_session()) for sw in self.sws]
+        if self.dev in ['all', 'cpu']:
+            tasks += [self.loop.create_task(cpu.del_session())
+                    for cpu in self.cpus]
+        if tasks:
+            wait_login = asyncio.wait(tasks)
+            self.loop.run_until_complete(wait_login)
         self.loop.close()
 hp = None
 def get_hp(dev='all'):
