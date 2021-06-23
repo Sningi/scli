@@ -1,5 +1,5 @@
-import json
-import configparser
+from json import loads
+from configparser import ConfigParser
 from sys import exit
 
 class Config:
@@ -25,7 +25,7 @@ class Config:
 scli_cfg_dir = ""
 scli_cfg_filename = scli_cfg_dir + "scli.cfg"
 
-scli_config = configparser.ConfigParser()
+scli_config = ConfigParser()
 scli_config.read(scli_cfg_filename, encoding="utf-8")
 
 devControl = "devControl"
@@ -47,13 +47,13 @@ if scli_config.has_section(devControl):
             Config.sw_restv = scli_config.get(devControl, option)
         elif option == "cpu_addrs":
             try:
-                Config.cpu_addrs = json.loads(scli_config.get(devControl, option))
+                Config.cpu_addrs = loads(scli_config.get(devControl, option))
             except Exception as e:
                 print("Config: CPU addrs error",e)
                 exit()
         elif option == "sw_addrs":
             try:
-                Config.sw_addrs = json.loads(scli_config.get(devControl, option))
+                Config.sw_addrs = loads(scli_config.get(devControl, option))
             except:
                 print("Config: SWITCH addrs error")
                 exit()

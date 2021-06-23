@@ -1,13 +1,12 @@
-import click
-
+from click import group, secho
 
 def sprint(*args, **kwargs):
     if not kwargs.get("fg"):
         kwargs["fg"] = 'green'
-    click.secho(*args, **kwargs)
+    secho(*args, **kwargs)
 
 
-@click.group()
+@group()
 def cli():
     """  base --> module --> scli  """
     pass

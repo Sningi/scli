@@ -18,11 +18,12 @@ def gtpv1_op(ctx, args, incomplete):
 
 gtpv1_cfg_field = [("cdr_mode","cdr_mode"),
     ("ggsn_bear_uinfo_timeout","ggsn_bear_uinfo_timeout"),
-    ("gtpu_bear_enable","gtpu_bear_enable"),
-    ("cdr_enable","gtpv1_cdr_enable"),
+    ("gtpu_bear","gtpu_bear_enable"),
+    ("cdr","gtpv1_cdr_enable"),
+    ("cache","gtpv1_cache"),
     ("cdr_timeout","gtpv1_cdr_timeout"),
     ("decode","gtpv1_enable"),
-    ("ggsn_enable","gtpv1_ggsn_enable"),
+    ("ggsn_bear","gtpv1_ggsn_enable"),
     ("assoc_timeout","gtpv1_sig_timeout"),
     ("learn_flag","learn_enable_flag"),
                   ]
