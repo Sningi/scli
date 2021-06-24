@@ -208,7 +208,7 @@ class Helper:
         for task in tasks:
             try:
                 data.append(task.result())
-            except client_exceptions.ClientConnectorError as e:
+            except ClientConnectorError as e:
                 data.append([111, '{0}:{1}'.format(e.host, e.port), "E(2)"])
             except Exception as e:
                 data.append([111, e, "E(5)"])
