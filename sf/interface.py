@@ -1,19 +1,11 @@
-import click
-import asyncio
+from asyncio import wait
 from sys import exit
+from click import argument,Choice,STRING
 
-from common.base import cli, sprint
+from common.base import cli, sprint, get_args
 from sf.general_rest_api import general_clean_data
 from utils.http_helper import hp
 from utils.tools import *
-
-
-def cpu_intf_op(ctx, args, incomplete):
-    comp = [('show', 'show stat'),
-            ('clean', 'clean stat'),
-            ('set', 'set config')]
-    return [c for c in comp if incomplete in c[0]]
-
 
 def cpu_intf_filter(ctx, args, incomplete):
     comp = [('port_list', ''),
@@ -37,15 +29,16 @@ def cpu_intfs(ctx, args, incomplete):
 
 
 def cpu_intf_field(ctx, args, incomplete):
-    if 'ingress_config'.startswith(args[-1]):
+    args = get_args(args)
+    if 'ingress_config' in args:
         comp = [('default_action_id', ''),
                 ('rule_to_action', ''),
                 ('tuple_mode', ''), ]
-    elif 'tcp_reass_config'.startswith(args[-1]):
+    elif 'tcp_reass_config' in args:
         comp = []
-    elif 'ip_reass_config'.startswith(args[-1]):
+    elif 'ip_reass_config' in args:
         comp = []
-    elif 'deduplication_config'.startswith(args[-1]):
+    elif 'deduplication_config' in args:
         comp = [
             # "deduplication_no_care_dscp",
             ("deduplication_no_care_interface",""),
@@ -110,11 +103,11 @@ sf_intf_expect = {
 
 
 @cli.command()
-@click.argument("op", type=click.STRING, autocompletion=cpu_intf_op)
-@click.argument("intf", type=click.STRING, autocompletion=cpu_intfs)
-@click.argument("filter", type=click.STRING, autocompletion=cpu_intf_filter)
-@click.argument("value", type=click.STRING, autocompletion=cpu_intf_field, required=False)
-@click.argument("value2", type=click.STRING, autocompletion=cpu_intf_value, required=False)
+@argument("op", type=Choice(['show','clean','set','enable','disable']),default='show')
+@argument("intf", type=STRING, autocompletion=cpu_intfs)
+@argument("filter", type=STRING, autocompletion=cpu_intf_filter)
+@argument("value", type=STRING, autocompletion=cpu_intf_field, required=False)
+@argument("value2", type=STRING, autocompletion=cpu_intf_value, required=False)
 def intf_cpu(op, intf, filter=None, value=None, value2=None):
     restid = gen_intfs_cpu(intf)
     if not restid:
@@ -126,11 +119,11 @@ def intf_cpu(op, intf, filter=None, value=None, value2=None):
             for idx in restid:
                 surl = 'interfaces/config/{0}'.format(idx)
                 tasks = [hp.loop.create_task(cpu.get(surl))]
-                wait_task = asyncio.wait(tasks)
+                wait_task = wait(tasks)
                 hp.loop.run_until_complete(wait_task)
                 data += hp.data_from_tasks(tasks)
             tb = gen_table_sw(data, sf_intf_expect, cpu.addr, filter=filter)
-            sprint(click.style(str(tb), fg='green'))
+            sprint(tb)
     elif op == 'clean':
         data = hp.cpu_patch('interfaces/config', general_clean_data)
         sprint(gen_table(data, tab="code"))

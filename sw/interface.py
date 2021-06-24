@@ -1,9 +1,9 @@
 import asyncio
 from json import loads
-import click
+from click import argument, STRING
 from sys import exit
 
-from common.base import cli, sprint
+from common.base import cli, sprint, get_args
 from utils.http_helper import hp
 from utils.tools import *
 
@@ -36,13 +36,13 @@ feature_comp = {
 
 
 def sw_intf_filter(ctx, args, incomplete):
-    if args[-2] == "show":
+    if "show" in args:
         comp = show_comp
-    elif args[-2] == "set":
+    elif "set" in args:
         comp = speed_comp
-    elif args[-2] in ("enable", "disable"):
+    elif "enable" in args or "disable" in args:
         comp = feature_comp
-    elif args[-2] == "bind":
+    elif "bind" in args:
         hp = get_hp(dev='switch')
         data = hp.sw_get("acls")
         comp = []
@@ -55,9 +55,10 @@ def sw_intf_filter(ctx, args, incomplete):
 
 
 def sw_intfs(ctx, args, incomplete):
+    args = get_args(args)
     intfs = set()
     try:
-        if args[-1] == "clean":
+        if "clean" in args:
             return [("all", "clean all")]
         hp = get_hp(dev='switch')
         data = hp.sw_get("interfaces")
@@ -104,9 +105,9 @@ sw_intf_expect = {
 
 
 @cli.command()
-@click.argument("op", type=click.STRING, autocompletion=sw_intf_op)
-@click.argument("intf", type=click.STRING, autocompletion=sw_intfs)
-@click.argument("filter", type=click.STRING, autocompletion=sw_intf_filter, required=False)
+@argument("op", type=STRING, autocompletion=sw_intf_op)
+@argument("intf", type=STRING, autocompletion=sw_intfs)
+@argument("filter", type=STRING, autocompletion=sw_intf_filter, required=False)
 def intf_sw(op, intf, filter):
     restid = gen_intfs_sw(intf)
     if not restid and op != "clean":
@@ -124,7 +125,7 @@ def intf_sw(op, intf, filter):
                 hp.loop.run_until_complete(wait_task)
                 data += hp.data_from_tasks(tasks)
             tb = gen_table_sw(data, sw_intf_expect, tab=sw.addr, filter=filter, portid=restid)
-            sprint(click.style(str(tb), fg='green',))
+            sprint(tb)
     elif op == 'set':
         """
         {"op": "add", "path": "/configuration/speed", "value": "10000"},

@@ -1,6 +1,6 @@
-import click
+from click import argument,option,STRING,Choice
 
-from common.base import cli, sprint
+from common.base import cli, sprint,get_args
 from sf.general_rest_api import general_clean_data
 from utils.http_helper import hp
 from utils.tools import *
@@ -8,19 +8,10 @@ from utils.tools import *
 sync_data = [{"op": "replace", "path": "/", "value": 1}]
 
 
-def acl_operation(ctx, args, incomplete):
-    op = [('show', 'show acl'),
-          ('create', 'create acl'),
-          ('delete', 'delete acl'),
-          ('clean', 'clean acl stat'),
-          ('sync', 'sync acl'),
-          ]
-    return [c for c in op if c[0].startswith(incomplete)]
-
-
 def acl_types(ctx, args, incomplete):
+    args = get_args(args)
     field = []
-    if "create".startswith(args[-2]):
+    if "create" in args:
         field = [('imsi', 'imsi'),
                  ('imei', 'imei'),
                  ('msisdn', 'msisdn'),
@@ -36,10 +27,10 @@ def acl_types(ctx, args, incomplete):
                  ('tcpflag', 'tcpflag'),
                  ('combined', 'combined'),
                  ]
-    elif "show".startswith(args[-2]):
+    elif "show" in args:
         field = [("stat", "acl hit count"), ("cfg", "acl cfg")
                  ]
-    elif "clean".startswith(args[-2]):
+    elif "clean" in args:
         field = [("stat", "acl hit count"),
                  ]
     return [i for i in field if incomplete in i[0]]
@@ -47,9 +38,9 @@ def acl_types(ctx, args, incomplete):
 
 def acl_idx(ctx, args, incomplete):
     idxs = get_existed_acl()
-    if "show".startswith(args[-1]) or "delete".startswith(args[-1]) or "clean".startswith(args[-1]):
+    if "show" in args or "delete" in args or "clean" in args:
         return [(idx, '') for idx in idxs if idx.startswith(incomplete)]
-    elif "create".startswith(args[-1]):
+    elif "create" in args:
         return [(str(idx), '') for idx in range(1, 101) if str(idx) not in idxs and str(idx).startswith(incomplete)]
     else:
         return []
@@ -66,18 +57,19 @@ packet_types = (
 
 
 def acl_values(ctx, args, incomplete):
+    args = get_args(args)
     field = []
-    if "create".startswith(args[-3]):
-        if "packet_type".startswith(args[-1]):
+    if "create" in args:
+        if "packet_type" in args:
             return [(ptype, ptype) for ptype in packet_types if ptype.startswith(incomplete)]
     return [i for i in field if incomplete in i[0]]
 
 
 @cli.command()  # @cli, not @click!
-@click.argument("op", type=click.STRING, autocompletion=acl_operation)
-@click.argument("idx", type=click.STRING, autocompletion=acl_idx, required=False)
-@click.argument("atype", type=click.STRING, autocompletion=acl_types, default="cfg", required=False)
-@click.argument("value", type=click.STRING, autocompletion=acl_values,  required=False)
+@argument("op", type=Choice(['show','create','delete','clean','sync']),default='show')
+@argument("idx", type=STRING, autocompletion=acl_idx, required=False)
+@argument("atype", type=STRING, autocompletion=acl_types, default="cfg", required=False)
+@argument("value", type=STRING, autocompletion=acl_values,  required=False)
 def acl(op, idx, atype, value):
     if 'show'.startswith(op):
         if "stat".startswith(atype):

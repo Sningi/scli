@@ -2,9 +2,9 @@ import os
 import time
 import asyncio
 
-import aiohttp
 from json import dumps
-from aiohttp import TCPConnector
+from aiohttp import TCPConnector, CookieJar, ClientSession
+from aiohttp.client_exceptions import ClientConnectorError
 from utils.http_code import HTTP
 from common.base import sprint
 from common.config import Config
@@ -34,7 +34,7 @@ class Http:
     async def login_may_use_cookie(self, clear_cookie=False, diff_time=7190):
 
         cookie = "/tmp/cookie_"+self.addr.replace(":", "_")
-        jar = aiohttp.CookieJar(unsafe=True)
+        jar = CookieJar(unsafe=True)
         with_cookie = False
 
         async def login():
@@ -59,7 +59,7 @@ class Http:
             jar.load(cookie)
             with_cookie = True
         if not clear_cookie:
-            self.session = aiohttp.ClientSession(
+            self.session = ClientSession(
                 connector=TCPConnector(ssl=False), cookie_jar=jar)
 
         if not with_cookie:
@@ -208,7 +208,7 @@ class Helper:
         for task in tasks:
             try:
                 data.append(task.result())
-            except aiohttp.client_exceptions.ClientConnectorError as e:
+            except client_exceptions.ClientConnectorError as e:
                 data.append([111, '{0}:{1}'.format(e.host, e.port), "E(2)"])
             except Exception as e:
                 data.append([111, e, "E(5)"])

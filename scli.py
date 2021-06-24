@@ -1,5 +1,5 @@
 import json
-import click
+from click import argument,option, STRING, Choice
 from itertools import zip_longest
 
 from common.base import cli,sprint
@@ -40,8 +40,8 @@ def dev_type(ctx, args, incomplete):
 
 
 @cli.command()
-@click.argument("op", type=click.STRING, autocompletion=dev_op)
-@click.option('--dev','-d', type=click.Choice(['cpu', 'switch','all']), default="all", required=False)
+@argument("op", type=STRING, autocompletion=dev_op)
+@option('--dev','-d', type=Choice(['cpu', 'switch','all']), default="all", required=False)
 def dev_ip(op, dev='all'):
     data = []
     if op == "show":
@@ -66,9 +66,9 @@ def dev_ip(op, dev='all'):
 
 
 @cli.command()
-@click.argument("dev",  type=click.Choice(['cpu', 'switch']))
-@click.argument("url", type=click.STRING)
-@click.option('--format','-f', type=click.Choice(['json', 'table']), default="json", required=False)
+@argument("dev",  type=Choice(['cpu', 'switch']))
+@argument("url", type=STRING)
+@option('--format','-f', type=Choice(['json', 'table']), default="json", required=False)
 def get(dev, url, format):
     if 'cpu'.startswith(dev):
         data = hp.cpu_get(url)
@@ -88,10 +88,10 @@ def get(dev, url, format):
 
 
 @cli.command()
-@click.argument("dev",  type=click.Choice(['cpu', 'switch']))
-@click.argument("url", type=click.STRING)
-@click.argument("file", type=click.STRING)
-@click.option('--format','-f', type=click.Choice(['json', 'table']), default="json", required=False)
+@argument("dev",  type=Choice(['cpu', 'switch']))
+@argument("url", type=STRING)
+@argument("file", type=STRING)
+@option('--format','-f', type=Choice(['json', 'table']), default="json", required=False)
 def patch(dev, url, file, format):
     import os
     if not os.path.exists(file):
@@ -117,10 +117,10 @@ def patch(dev, url, file, format):
 
 
 @cli.command()
-@click.argument("dev", type=click.Choice(['cpu', 'switch']))
-@click.argument("url", type=click.STRING)
-@click.argument("file", type=click.STRING)
-@click.option('--format','-f', type=click.Choice(['json', 'table']), default="json", required=False)
+@argument("dev", type=Choice(['cpu', 'switch']))
+@argument("url", type=STRING)
+@argument("file", type=STRING)
+@option('--format','-f', type=Choice(['json', 'table']), default="json", required=False)
 def post(dev, url,file, format):
     import os
     if not os.path.exists(file):
@@ -146,9 +146,9 @@ def post(dev, url,file, format):
 
 
 @cli.command()
-@click.argument("dev", type=click.Choice(['cpu', 'switch']))
-@click.argument("url", type=click.STRING)
-@click.option('--format','-f', type=click.Choice(['json', 'table']), default="json", required=False)
+@argument("dev", type=Choice(['cpu', 'switch']))
+@argument("url", type=STRING)
+@option('--format','-f', type=Choice(['json', 'table']), default="json", required=False)
 def delete(dev, url, format):
     if 'cpu'.startswith(dev):
         data = hp.cpu_delete(url)

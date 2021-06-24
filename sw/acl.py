@@ -1,28 +1,20 @@
-import asyncio
-import click
+from click import argument, option, STRING, Choice
 
-from common.base import cli, sprint
+from common.base import cli, sprint, get_args
 from utils.http_helper import get_hp, hp
 from utils.tools import gen_table, gen_table_sw, INTF_MAP, INTF_MAP_REST
 
-
-def sw_acl_op(ctx, args, incomplete):
-    comp = [('show', 'show aco'),
-            ('create', 'create acl'),
-            ('add', 'add acl'),
-            ('delete', 'deletw acl')]
-    return [c for c in comp if c[0].startswith(incomplete)]
-
-
 def sw_acl_group(ctx, args, incomplete):
-    if "show".startswith(args[-1]) or "delete".startswith(args[-1]) or "add".startswith(args[-1]):
+    args = get_args(args)
+    if "show" in args or "delete" in args or "add" in args:
         hp = get_hp('switch')
         data = hp.sw_get("acls")
-        # data = hp.sw_get("forward_policies") sample as acls
+        if not data:
+            return []
         comp = []
         for one in data:
             comp += [(acl.split("/")[-1], "acl existed") for acl in one[2]]
-        if "delete".startswith(args[-1]):
+        if "delete" in args:
             comp.append(("all", 'all'))
     elif "create":
         comp = ["group_{0}".format(idx) for idx in range(1, 11)]
@@ -30,7 +22,7 @@ def sw_acl_group(ctx, args, incomplete):
 
 
 def sw_acl_idx(ctx, args, incomplete):
-    if "show".startswith(args[-2]) or "delete".startswith(args[-2]) or "add".startswith(args[-2]):
+    if "show" in args or "delete" in args or "add" in args:
         hp = get_hp(dev='switch')
         data = hp.sw_get("acls/{0}".format(args[-1]))
         comp = []
@@ -50,12 +42,10 @@ show_comp = {'statistics': ('statistics', 'port stat'),
 
 
 def sw_acl_filter(ctx, args, incomplete):
-    if args[-3] == "show":
+    if "show" in args:
         comp = show_comp
-    elif args[-2] == "set":
-        comp = speed_comp
-    elif args[-2] in ("enable", "disable"):
-        comp = feature_comp
+    elif "set" in args:
+        comp = []
     else:
         comp = []
     return [comp[c] for c in comp if comp[c][0].startswith(incomplete)]
@@ -89,22 +79,22 @@ sw_acl_expect = {
 
 
 @cli.command()
-@click.argument("op", type=click.STRING, autocompletion=sw_acl_op)
-@click.argument("group", type=click.STRING, autocompletion=sw_acl_group)
-@click.argument("idx", type=click.STRING, autocompletion=sw_acl_idx, required=False)
-@click.argument("filter", type=click.STRING, autocompletion=sw_acl_filter, required=False)
-@click.option('--type', '-type', type=click.Choice(['ipv4', 'ipv6'], case_sensitive=False), default="ipv4", required=False)
-@click.option('--vlan', '-vlan', type=click.STRING, required=False)
-@click.option('--sip', type=click.STRING, required=False)
-@click.option('--dip', type=click.STRING, required=False)
-@click.option('--sport', type=click.STRING, required=False)
-@click.option('--dport', type=click.STRING, required=False)
-@click.option('--protocol', type=click.STRING, required=False)
-@click.option('--vlanid', type=click.STRING, required=False)
-@click.option('--vlan_cmd', type=click.STRING, required=False)
-@click.option('--en_count', type=click.Choice(['ture', 'false']), required=False)
-@click.option('--action', type=click.Choice(['forward', 'copy'], case_sensitive=False))
-@click.option('--evif_name', type=click.STRING)
+@argument("op", type=Choice(['show','cleate','delete','add']),default='show')
+@argument("group", type=STRING, autocompletion=sw_acl_group)
+@argument("idx", type=STRING, autocompletion=sw_acl_idx, required=False)
+@argument("filter", type=STRING, autocompletion=sw_acl_filter, required=False)
+@option('--type', '-type', type=Choice(['ipv4', 'ipv6'], case_sensitive=False), default="ipv4", required=False)
+@option('--vlan', '-vlan', type=STRING, required=False)
+@option('--sip', type=STRING, required=False)
+@option('--dip', type=STRING, required=False)
+@option('--sport', type=STRING, required=False)
+@option('--dport', type=STRING, required=False)
+@option('--protocol', type=STRING, required=False)
+@option('--vlanid', type=STRING, required=False)
+@option('--vlan_cmd', type=STRING, required=False)
+@option('--en_count', type=Choice(['ture', 'false']), required=False)
+@option('--action', type=Choice(['forward', 'copy'], case_sensitive=False))
+@option('--evif_name', type=STRING)
 def acl_sw(op, group, idx, filter, type, vlan, sip, dip, sport, dport, protocol, action, evif_name, vlanid, vlan_cmd, en_count):
     if 'show'.startswith(op):
         if not filter:
@@ -115,8 +105,7 @@ def acl_sw(op, group, idx, filter, type, vlan, sip, dip, sport, dport, protocol,
         url += "?depth=1"
         data = hp.sw_get(url)
         tb = gen_table_sw(data, sw_acl_expect, tab="id", filter=filter)
-        sprint(click.style(tb.get_string(
-            sortby="id", reversesort=True), fg='green',))
+        sprint(tb)
     elif 'create'.startswith(op):
         op_data = {
             group: {

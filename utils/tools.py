@@ -1,7 +1,7 @@
 from os import spawnlp
-from common.base import sprint
 from sys import exit
 
+from common.base import sprint
 from utils.mprettytable import PrettyTable
 from utils.http_code import HTTP
 from utils.http_helper import hp,get_hp

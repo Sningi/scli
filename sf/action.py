@@ -1,30 +1,21 @@
-import click
+from click import argument,STRING,Choice
 from sys import exit
 
-from common.base import cli, sprint
+from common.base import cli, sprint, get_args
 from utils.http_helper import hp, get_hp
 from utils.tools import *
 from utils.static_data import *
 
-
-def action_op(ctx, args, incomplete):
-    op = [('show', 'show action'),
-          ('create', 'create action'),
-          ('enable', 'enable additional'),
-          ('disable', 'disable additional'),
-          ('delete', 'delete action')]
-    return [c for c in op if c[0].startswith(incomplete)]
-
-
 def action_idx(ctx, args, incomplete):
+    args = get_args(args)
     try:
         idxs = get_existed_action()
-        if args[-1] in ["show", "delete", "enable", "disable"]:
+        if  [char for char in ["show", "delete", "enable", "disable"] if char in args]:
             comp = idxs
-            if args[-1] == "show":
+            if "show" in args:
                 comp.append("all")
             return [i for i in comp if i.startswith(incomplete)]
-        elif args[-1] in ["create"]:
+        elif "create" in args:
             return [str(i) for i in range(1, 129) if str(i).startswith(incomplete) and str(i) not in idxs]
     except Exception as e:
         sprint("\nget cpu action error:{0}".format(e))
@@ -42,36 +33,38 @@ additional_cfg = [
 
 
 def action_type(ctx, args, incomplete):
+    args = get_args(args)
     types = set()
-    if "show".startswith(args[-2]):
+    if "show" in args:
         types = [
             ('basis_actions', 'when has sw ignore basis action'),
             ('additional_actions', 'when has sw ignore basis action')]
-    elif "enable".startswith(args[-2]) or "disable".startswith(args[-2]):
+    elif "enable" in args or "disable" in args:
         return [c for c in additional_cfg if c[0].startswith(incomplete)]
-    elif "create".startswith(args[-2]):
+    elif "create" in args:
         types = [
             ('forward', 'forward interface'),
             # ('load_balance', 'load_balance interfaces'), now not support
             ('no_basis_action', 'when has sw ignore basis action')]
-    elif "delete".startswith(args[-2]):
+    elif "delete" in args:
         pass
     return [c for c in types if c[0].startswith(incomplete)]
 
 
 def target_intf(ctx, args, incomplete):
+    args = get_args(args)
     comp = set()
-    if "disable".startswith(args[-3]) or "enable".startswith(args[-3]):
+    if "disable" in args or "enable" in args:
         pass
-    elif "create".startswith(args[-3]):
-        if "no_basis_action".startswith(args[-1]):
+    elif "create" in args:
+        if "no_basis_action" in args:
             hp = get_hp(dev='switch')
             data = hp.sw_get("interfaces")
             for d in data:
                 if isinstance(d[2], list):
                     for item in d[2]:
                         comp.add(item.split('/')[-1])
-        elif "forward".startswith(args[-1]):
+        elif "forward" in args:
             for it in get_intfs_from_rest():
                 comp.add(it)
     return [i for i in comp if i.startswith(incomplete)]
@@ -89,21 +82,14 @@ action_expect = {
         "remove_tunnel_header_gre",
         "remove_tunnel_header_gtp",
         "g33_pad",
-        # [
-        #     "switch",
-        #     "cpu_vlan_interfaces",
-        #     "cpu_vlan_load_balance_mode",
-        #     "cpu_vlan_load_balance_weight",
-        # ]
     ]
 }
 
-
 @cli.command()  # @cli, not @click!
-@click.argument("op", type=click.STRING, autocompletion=action_op)
-@click.argument("idx", type=click.STRING, autocompletion=action_idx)
-@click.argument("type", type=click.STRING, autocompletion=action_type,default="basis_actions", required=False)
-@click.argument("intf", type=click.STRING, autocompletion=target_intf, required=False)
+@argument("op", type=Choice(['show','create','delete','enable','disable']),default='show')
+@argument("idx", type=STRING, autocompletion=action_idx)
+@argument("type", type=STRING, autocompletion=action_type,default="basis_actions", required=False)
+@argument("intf", type=STRING, autocompletion=target_intf, required=False)
 def action(op, idx=None, type=None, intf=None):
     if 'show'.startswith(op):
         if intf:

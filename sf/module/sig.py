@@ -1,7 +1,7 @@
 from sys import exit
 from click import argument, option, STRING, Choice
 
-from common.base import cli, sprint
+from common.base import cli, sprint,get_args
 from sf.general_rest_api import general_clean_data
 from utils.http_helper import hp
 from utils.tools import gen_table
@@ -13,6 +13,7 @@ sig_cfg_dict = dict(sig_cfg_field)
 
 
 def cfg_field(ctx, args, incomplete):
+    args = get_args(args)
     if "set" in args:
         return [i for i in sig_cfg_field if i[0].startswith(incomplete) and ("timeout" in i[0] or "num" in i[0])]
 
