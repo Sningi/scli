@@ -1,5 +1,5 @@
-INPUT=X21
-CPU=C6
+INPUT=X1
+CPU=C5
 
 scli syscfg reset all
 
@@ -18,6 +18,6 @@ scli action enable 1 g33_pad
 scli intf-sw enable C2 loopback
 
 scli intf-cpu set IG1 port_list X1-X48,C1-C4
-scli intf-cpu set IG1 ingress_config rule_to_action {1:1}
+scli intf-cpu set IG1 ingress_config default_action 1
 
 scli sctp-stat clean

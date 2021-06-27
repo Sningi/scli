@@ -12,7 +12,6 @@ def get_args(args):
         from click.parser import split_arg_string
         import os
         args = split_arg_string(os.environ["COMP_WORDS"])
-        print(args)
     return args
 
 @group()

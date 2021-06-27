@@ -24,7 +24,10 @@ class Config:
 
 scli_cfg_dir = ""
 scli_cfg_filename = scli_cfg_dir + "scli.cfg"
-
+from os import path
+if not path.exists(scli_cfg_filename):
+    print("[CONFIG] Config File Not Exists")
+    exit()
 scli_config = ConfigParser()
 scli_config.read(scli_cfg_filename, encoding="utf-8")
 

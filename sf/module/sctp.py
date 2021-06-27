@@ -54,7 +54,7 @@ sctp_cfg_dict = dict(sctp_cfg_field)
 def cfg_field(ctx, args, incomplete):
     args = get_args(args)
     if "set" in args:
-        return [i for i in sctp_cfg_field if i[0].startswith(incomplete) and "timeout" in i[0] or 'mul' in i[0] or 'swit' in i[0]]
+        return [i for i in sctp_cfg_field if i[0].startswith(incomplete)]# and "timeout" in i[0] or 'mul' in i[0] or 'swit' in i[0]]
     elif "enable" in args or "disable" in args:
         return [i for i in sctp_cfg_field if i[0].startswith(incomplete) and "timeout" not in i[0]]
     elif "show" in args:

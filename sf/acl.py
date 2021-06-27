@@ -70,7 +70,8 @@ def acl_values(ctx, args, incomplete):
 @argument("idx", type=STRING, autocompletion=acl_idx, required=False)
 @argument("atype", type=STRING, autocompletion=acl_types, default="cfg", required=False)
 @argument("value", type=STRING, autocompletion=acl_values,  required=False)
-def acl(op, idx, atype, value):
+@option('--sip','-s', type=STRING, default=None, required=False)
+def acl(op, idx, atype, value,sip):
     if 'show'.startswith(op):
         if "stat".startswith(atype):
             data2 = hp.cpu_get('acl/stat?group=1&index={0}'.format(idx))
@@ -119,6 +120,31 @@ def acl(op, idx, atype, value):
                         "rule_cfg": {
                             "packet_type": value,
                         },
+                    },
+                }
+            }
+        elif "tuple4" == atype:
+            rule_var = {
+                "dip": "0.0.0.0",
+                "dip_mask": 0,
+                "dport_max": 65535,
+                "dport_min": 0,
+                "proto_max": 255,
+                "proto_min": 0,
+                "sip": "0.0.0.0",
+                "sip_mask": 32,
+                "sport_max": 65535,
+                "sport_min": 0,
+                "vlan_max": 4095,
+                "vlan_min": 0
+            }
+            if sip:
+                rule_var['sip'] = sip
+            postd = {
+                "group_1": {
+                    idx: {
+                        "rule_type": atype,
+                        "rule_cfg": rule_var,
                     },
                 }
             }

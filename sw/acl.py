@@ -79,7 +79,7 @@ sw_acl_expect = {
 
 
 @cli.command()
-@argument("op", type=Choice(['show','cleate','delete','add']),default='show')
+@argument("op", type=Choice(['show','create','delete','add']),default='show')
 @argument("group", type=STRING, autocompletion=sw_acl_group)
 @argument("idx", type=STRING, autocompletion=sw_acl_idx, required=False)
 @argument("filter", type=STRING, autocompletion=sw_acl_filter, required=False)
