@@ -383,7 +383,7 @@ if args:
         'http2-cfg','http2-stat','intf-cpu','sctp-cfg','sctp-stat',
         'sig-cfg','sig-stat','ngap-stat'
         ]
-    sw_cmd = ['acl-sw','intf-sw','policies']
+    sw_cmd = ['acl-sw','intf-sw','policies','errpkt-permit']
     both_cmd = ['delete','get','post','patch','version','syscfg']
     other = ['dev-ip']
     if args[0] in cpu_cmd:

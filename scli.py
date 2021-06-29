@@ -16,6 +16,7 @@ from sf.interface import sf_intf_finish
 # switch
 from sw.interface import sw_intf_finish
 from sw.acl import sw_acl_finish
+from sw.feature import sw_feature_finish
 
 
 # module
