@@ -1,5 +1,6 @@
 import asyncio
 from json import loads
+from os import getgid
 from click import argument, STRING
 from sys import exit
 
@@ -36,6 +37,7 @@ feature_comp = {
 
 
 def sw_intf_filter(ctx, args, incomplete):
+    args = get_args(args)
     if "show" in args:
         comp = show_comp
     elif "set" in args:

@@ -71,7 +71,8 @@ def acl_values(ctx, args, incomplete):
 @argument("atype", type=STRING, autocompletion=acl_types, default="cfg", required=False)
 @argument("value", type=STRING, autocompletion=acl_values,  required=False)
 @option('--sip','-s', type=STRING, default=None, required=False)
-def acl(op, idx, atype, value,sip):
+@option('--dip','-d', type=STRING, default=None, required=False)
+def acl(op, idx, atype, value, sip, dip):
     if 'show'.startswith(op):
         if "stat".startswith(atype):
             data2 = hp.cpu_get('acl/stat?group=1&index={0}'.format(idx))
@@ -140,6 +141,8 @@ def acl(op, idx, atype, value,sip):
             }
             if sip:
                 rule_var['sip'] = sip
+            if dip:
+                rule_var['dip'] = dip
             postd = {
                 "group_1": {
                     idx: {

@@ -96,16 +96,21 @@ def gen_intfs_cpu(desc):
 def gen_intfs_sw(desc):
     restid = []
 
-    def diss_a(child_str):
+    def diss_a(child_str,restid):
         intfs = child_str.split("-")
-        if len(intfs) < 2 or intfs[0] not in INTF_MAP or intfs[-1] not in INTF_MAP:
-            sprint("range error", fg='red')
-        for i in range(INTF_MAP[intfs[0]], INTF_MAP[intfs[-1]]+1):
-            restid.append(INTF_MAP_REST[i])
+        if 'Y' not in child_str and 'X' in child_str:
+            if len(intfs) < 2 or intfs[0] not in INTF_MAP or intfs[-1] not in INTF_MAP:
+                sprint("range error", fg='red')
+            for i in range(INTF_MAP[intfs[0]], INTF_MAP[intfs[-1]]+1):
+                restid.append(INTF_MAP_REST[i])
+        elif "Y" in child_str and "C" not in child_str:
+            restid += ['Y{0}'.format(i) for i in range(int(intfs[0][1:]),int(intfs[-1][1:])+1)]
+        elif "Y" not in child_str and "C" in child_str:
+            restid += ['C{0}'.format(i) for i in range(int(intfs[0][1:]),int(intfs[-1][1:])+1)]
     childs = desc.split(",")
     for c in childs:
         if "-" in c:
-            diss_a(c)
+            diss_a(c, restid)
         elif c in INTF_MAP:
             restid.append(c)
         elif 'C' in c or 'Y' in c:
