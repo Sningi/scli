@@ -381,7 +381,7 @@ if args:
     cpu_cmd = ['acl','action','dpdk-stat','gtpu-cfg','gtpu-stat',
         'gtpv1-cfg','gtpv1-stat','gtpv2-cfg','gtpv2-stat',
         'http2-cfg','http2-stat','intf-cpu','sctp-cfg','sctp-stat',
-        'sig-cfg','sig-stat','ngap-stat'
+        'sig-cfg','sig-stat','ngap-stat','pfcp-stat','pfcp-cfg'
         ]
     sw_cmd = ['acl-sw','intf-sw','policies','errpkt-permit']
     both_cmd = ['delete','get','post','patch','version','syscfg']
@@ -392,3 +392,5 @@ if args:
         hp = get_hp(dev='switch')
     elif args[0] in both_cmd:
         hp = get_hp(dev='all')
+    else:
+        hp = get_hp(dev='cpu')

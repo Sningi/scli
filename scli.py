@@ -27,7 +27,7 @@ from sf.module.gtpv2 import sf_gtpv2_finish
 from sf.module.gtpv1 import sf_gtpv1_finish
 from sf.module.sig import sf_sig_finish
 from sf.module.dpdk import sf_dpdk_finish
-
+from sf.module.pfcp import sf_pfcp_finish
 
 def dev_op(ctx, args, incomplete):
     comp = [('show', 'show stat')]
