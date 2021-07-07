@@ -7,7 +7,7 @@ sync_data = [{"op": "replace", "path": "/", "value": 1}]
 
 @cli.command()  # @cli, not @click!
 @argument("op", type=Choice(['save', 'reset','download','upload']))
-@argument("dev", type=Choice(['cpu', 'sw','all']))
+@argument("dev", type=Choice(['cpu', 'sw','all']),default='cpu')
 def syscfg(op, dev):
     # '''
     # CPU PATCH https://192.168.1.200:2020/rest/v1/system/config
