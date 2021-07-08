@@ -6,6 +6,7 @@ import asyncio
 from json import dumps
 from aiohttp import TCPConnector, CookieJar, ClientSession
 from aiohttp.client_exceptions import ClientConnectorError
+from attr import has
 from utils.http_code import HTTP
 from click import secho as sprint
 from common.config import Config
@@ -189,6 +190,7 @@ class Helper:
         self.loop = asyncio.get_event_loop()
         self.dev = dev
         tasks = []
+        self.need_del = []
         if dev in ['all','switch']:
             self.sws = [Http(cfg.sw_user,  cfg.sw_pwd,  addr,
                             cfg.sw_restv, "switch") for addr in cfg.sw_addrs]
@@ -205,17 +207,19 @@ class Helper:
 
     def load_conf(self,cfg):
         tasks = []
+        old_ses = []
         if hasattr(self,'cpus'):
-            old_ses = self.cpus
+            old_ses += self.cpus
         if hasattr(self,'sws'):
             old_ses += self.sws
-        if cfg.cpu_addrs:
+        if cfg.cpu_addrs and self.dev== 'cpu':
             addr = cfg.cpu_addrs[0]
             new_cpus =[]
-            for c in self.cpus:
-                if "https://" + addr + cfg.cpu_restv in c.base_url:
-                    new_cpus = [c]
-                    break
+            if hasattr(self,'cpus'):
+                for c in self.cpus:
+                    if "https://" + addr + cfg.cpu_restv in c.base_url:
+                        new_cpus = [c]
+                        break
             self.cpus = new_cpus
             if not self.cpus:
                 self.cpus = [Http(cfg.cpu_user, cfg.cpu_pwd, addr,
@@ -226,10 +230,11 @@ class Helper:
         if cfg.sw_addrs:
             swaddr = cfg.sw_addrs[0]
             new_sws = []
-            for sw in self.sws:
-                if "https://" + swaddr + cfg.sw_restv in sw.base_url:
-                    new_sws = [sw]
-                    break
+            if hasattr(self,'sws'):
+                for sw in self.sws:
+                    if "https://" + swaddr + cfg.sw_restv in sw.base_url:
+                        new_sws = [sw]
+                        break
             self.sws = new_sws
             if not self.sws:
                 self.sws = [Http(cfg.sw_user,  cfg.sw_pwd,  swaddr,
@@ -240,7 +245,6 @@ class Helper:
             wait_login = asyncio.wait(tasks)
             self.loop.run_until_complete(wait_login)
 
-        self.need_del = []
         for rest in old_ses:
             used = 0
             if hasattr(self,'cpus'):
@@ -408,9 +412,9 @@ class Helper:
 
     def __del__(self):
         tasks = []
-        if self.dev in ['all','switch']:
+        if hasattr(self,'sws'):
             tasks += [self.loop.create_task(sw.del_session()) for sw in self.sws]
-        if self.dev in ['all', 'cpu']:
+        if hasattr(self, 'cpus'):
             tasks += [self.loop.create_task(cpu.del_session())
                     for cpu in self.cpus]
         tasks += [self.loop.create_task(rest.del_session())
