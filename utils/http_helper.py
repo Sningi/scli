@@ -1,4 +1,5 @@
 import os
+from re import S
 import time
 import asyncio
 
@@ -6,7 +7,7 @@ from json import dumps
 from aiohttp import TCPConnector, CookieJar, ClientSession
 from aiohttp.client_exceptions import ClientConnectorError
 from utils.http_code import HTTP
-from common.base import sprint
+from click import secho as sprint
 from common.config import Config
 class Http:
     timeout = 4
@@ -202,6 +203,54 @@ class Helper:
             wait_login = asyncio.wait(tasks)
             self.loop.run_until_complete(wait_login)
 
+    def load_conf(self,cfg):
+        tasks = []
+        if hasattr(self,'cpus'):
+            old_ses = self.cpus
+        if hasattr(self,'sws'):
+            old_ses += self.sws
+        if cfg.cpu_addrs:
+            addr = cfg.cpu_addrs[0]
+            new_cpus =[]
+            for c in self.cpus:
+                if "https://" + addr + cfg.cpu_restv in c.base_url:
+                    new_cpus = [c]
+                    break
+            self.cpus = new_cpus
+            if not self.cpus:
+                self.cpus = [Http(cfg.cpu_user, cfg.cpu_pwd, addr,
+                            cfg.cpu_restv, "cpu")]
+                tasks += [self.loop.create_task(cpu.login_may_use_cookie())
+                        for cpu in self.cpus]
+        
+        if cfg.sw_addrs:
+            swaddr = cfg.sw_addrs[0]
+            new_sws = []
+            for sw in self.sws:
+                if "https://" + swaddr + cfg.sw_restv in sw.base_url:
+                    new_sws = [sw]
+                    break
+            self.sws = new_sws
+            if not self.sws:
+                self.sws = [Http(cfg.sw_user,  cfg.sw_pwd,  swaddr,
+                                cfg.sw_restv, "switch")]
+                tasks = [self.loop.create_task(
+                    sw.login_may_use_cookie()) for sw in self.sws]
+        if tasks:
+            wait_login = asyncio.wait(tasks)
+            self.loop.run_until_complete(wait_login)
+
+        self.need_del = []
+        for rest in old_ses:
+            used = 0
+            if hasattr(self,'cpus'):
+                if rest in self.cpus:
+                    used = 1
+            if hasattr(self,'sws'):
+                if rest in self.sws:
+                    used = 1
+            if not used:
+                self.need_del.append(rest)
 
     def data_from_tasks(self, tasks):
         data = []
@@ -364,6 +413,8 @@ class Helper:
         if self.dev in ['all', 'cpu']:
             tasks += [self.loop.create_task(cpu.del_session())
                     for cpu in self.cpus]
+        tasks += [self.loop.create_task(rest.del_session())
+                    for rest in self.need_del]
         if tasks:
             wait_login = asyncio.wait(tasks)
             self.loop.run_until_complete(wait_login)
@@ -374,9 +425,20 @@ def get_hp(dev='all'):
     if not hp:
         hp = Helper(Config, dev)
     return hp
+
+def set_hp(sw, cpu):
+    global hp
+    if cpu:
+        Config.cpu_addrs = [cpu]
+    if sw:
+        Config.sw_addrs = [sw]
+    if not hp:
+        hp = Helper(Config, 'all')
+    else:
+        hp.load_conf(Config)
+
 import sys
 args = sys.argv[1:]
-
 if args:
     cpu_cmd = ['acl','action','dpdk-stat','gtpu-cfg','gtpu-stat',
         'gtpv1-cfg','gtpv1-stat','gtpv2-cfg','gtpv2-stat',

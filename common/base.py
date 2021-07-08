@@ -1,6 +1,5 @@
-from click import group, secho
-from click.decorators import argument
-
+from click import group, secho, option, STRING
+from utils.http_helper import set_hp
 def sprint(*args, **kwargs):
     if not kwargs.get("fg"):
         kwargs["fg"] = 'green'
@@ -14,7 +13,10 @@ def get_args(args):
         args = split_arg_string(os.environ["COMP_WORDS"])
     return args
 
+@option('--sw','-s', type=STRING, required=False)
+@option('--cpu','-c', type=STRING, required=False)
 @group()
-def cli():
+def cli(sw, cpu):
+    set_hp(sw=sw,cpu=cpu)
     """  base --> module --> scli  """
     pass
