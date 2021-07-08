@@ -17,6 +17,7 @@ class Http:
     def __init__(self, uname, pwd, addr, restv, dev_rest_type="switch"):
         self.addr = addr.split(".")[-1]
         self.base_url = "https://" + addr + restv
+        self.dev_rest_type = dev_rest_type
         if dev_rest_type == "cpu":
             """cpu"""
             self.auth = {'username': uname, 'password': pwd}
@@ -49,7 +50,7 @@ class Http:
                         self.active = True
                     return code
             except Exception as e:
-                print("[ERROR]: login {0} failed".format(self.addr), e)
+                print("[ERROR]: login {1} {0} failed".format(self.addr,self.dev_rest_type))
 
         if clear_cookie:
             # await self.del_session()
