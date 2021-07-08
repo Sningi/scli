@@ -1,6 +1,6 @@
 from asyncio import wait
 from sys import exit
-from click import argument,Choice,STRING
+from click import argument,Choice,STRING,option
 
 from common.base import cli, sprint, get_args
 from sf.general_rest_api import general_clean_data
@@ -108,7 +108,8 @@ sf_intf_expect = {
 @argument("filter", type=STRING, autocompletion=cpu_intf_filter)
 @argument("value", type=STRING, autocompletion=cpu_intf_field, required=False)
 @argument("value2", type=STRING, autocompletion=cpu_intf_value, required=False)
-def intf_cpu(op, intf, filter=None, value=None, value2=None):
+@option('--device','-d', type=Choice(['orth','nf2000']),default='nf2000',required=False)
+def intf(op, intf, device,filter=None, value=None, value2=None):
     restid = gen_intfs_cpu(intf)
     if not restid:
         sprint("PORT INDEX ERROR")
@@ -130,7 +131,10 @@ def intf_cpu(op, intf, filter=None, value=None, value2=None):
     elif op == "set":
         op_data = []
         if 'port_list'.startswith(filter):
-            plist = gen_intfs_sw(value)
+            if device == 'orth':
+                plist = [i for i in value.split(',')]
+            else:
+                plist = gen_intfs_sw(value)
             for idx in restid:
                 cfg = {"op": "replace",
                        "path": "/{0}/{1}".format(idx, filter), "value": plist}

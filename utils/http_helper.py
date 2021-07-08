@@ -9,7 +9,7 @@ from utils.http_code import HTTP
 from common.base import sprint
 from common.config import Config
 class Http:
-    timeout = 3
+    timeout = 4
     long_timeout = 30
 
     def __init__(self, uname, pwd, addr, restv, dev_rest_type="switch"):
@@ -380,7 +380,7 @@ args = sys.argv[1:]
 if args:
     cpu_cmd = ['acl','action','dpdk-stat','gtpu-cfg','gtpu-stat',
         'gtpv1-cfg','gtpv1-stat','gtpv2-cfg','gtpv2-stat',
-        'http2-cfg','http2-stat','intf-cpu','sctp-cfg','sctp-stat',
+        'http2-cfg','http2-stat','intf','sctp-cfg','sctp-stat',
         'sig-cfg','sig-stat','ngap-stat','pfcp-stat','pfcp-cfg'
         ]
     sw_cmd = ['acl-sw','intf-sw','policies','errpkt-permit']
