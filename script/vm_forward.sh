@@ -16,7 +16,7 @@ scli syscfg reset cpu
 #scli acl create 201 imsi 460017783705082
 #scli acl create 202 msisdn 8614537784120 
 # scli acl create 203 imei 358464061191850
-scli acl create 203 imei 3584640611918540
+# scli acl create 203 imei 3584640611918540
 
 
 
@@ -28,14 +28,15 @@ scli acl create 203 imei 3584640611918540
 # scli acl create 304 imei 865166023744290
 
 scli action create 1 forward G2
-scli gtpv1-cfg enable cache
+# scli gtpv1-cfg enable cache
 
 #scli acl create 144 tuple4 -s 10.150.198.182
 #scli acl create 145 tuple4 -s 202.69.206.55
 #scli intf-cpu set G1 ingress_config tuple_mode 2
 
+scli acl create 300 packet_type gtpu_bear
 
 scli acl sync
-scli intf-cpu set G1 ingress_config rule_to_action {203:1}
+scli intf set G1 ingress_config rule_to_action {300:1}
 # scli intf-cpu set G1 ingress_config rule_to_action {145:1}
 #scli intf-cpu set G1 ingress_config default_action 1
