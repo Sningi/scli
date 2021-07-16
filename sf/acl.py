@@ -14,6 +14,7 @@ def acl_types(ctx, args, incomplete):
     if "create" in args:
         field = [('imsi', 'imsi'),
                  ('imei', 'imei'),
+                 ('imsi-prefix', 'imsi-prefix'),
                  ('msisdn', 'msisdn'),
                  ('ipset4', 'ipset4'),
                  ('ipset6', 'ipset6'),
@@ -98,6 +99,28 @@ def acl(op, idx, atype, value, sip, dip):
                         "rule_type": atype,
                         "rule_cfg": {
                             "imei": value,
+                        },
+                    },
+                }
+            }
+        elif "imsi-prefix".startswith(atype):
+            postd = {
+                "group_1": {
+                    idx: {
+                        "rule_type": atype,
+                        "rule_cfg": {
+                            "imsi-prefix": value,
+                        },
+                    },
+                }
+            }
+        elif "imsi-suffix".startswith(atype):
+            postd = {
+                "group_1": {
+                    idx: {
+                        "rule_type": atype,
+                        "rule_cfg": {
+                            "imsi-suffix": value,
                         },
                     },
                 }
