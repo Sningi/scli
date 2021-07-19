@@ -85,7 +85,7 @@ def acl(op, idx, atype, value, sip, dip):
             postd = {
                 "group_1": {
                     idx: {
-                        "rule_type": atype,
+                        "rule_type": 'imsi',
                         "rule_cfg": {
                             "imsi": value,
                         },
@@ -96,7 +96,7 @@ def acl(op, idx, atype, value, sip, dip):
             postd = {
                 "group_1": {
                     idx: {
-                        "rule_type": atype,
+                        "rule_type": 'imei',
                         "rule_cfg": {
                             "imei": value,
                         },
@@ -107,7 +107,7 @@ def acl(op, idx, atype, value, sip, dip):
             postd = {
                 "group_1": {
                     idx: {
-                        "rule_type": atype,
+                        "rule_type": 'imsi-prefix',
                         "rule_cfg": {
                             "imsi-prefix": value,
                         },
@@ -118,7 +118,7 @@ def acl(op, idx, atype, value, sip, dip):
             postd = {
                 "group_1": {
                     idx: {
-                        "rule_type": atype,
+                        "rule_type": 'imsi-suffix',
                         "rule_cfg": {
                             "imsi-suffix": value,
                         },
@@ -129,7 +129,7 @@ def acl(op, idx, atype, value, sip, dip):
             postd = {
                 "group_1": {
                     idx: {
-                        "rule_type": atype,
+                        "rule_type": 'msisdn',
                         "rule_cfg": {
                             "msisdn": value,
                         },
@@ -140,7 +140,7 @@ def acl(op, idx, atype, value, sip, dip):
             postd = {
                 "group_1": {
                     idx: {
-                        "rule_type": atype,
+                        "rule_type": 'packet_type',
                         "rule_cfg": {
                             "packet_type": value,
                         },
@@ -169,7 +169,7 @@ def acl(op, idx, atype, value, sip, dip):
             postd = {
                 "group_1": {
                     idx: {
-                        "rule_type": atype,
+                        "rule_type": 'tuple4',
                         "rule_cfg": rule_var,
                     },
                 }
