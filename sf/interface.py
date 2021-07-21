@@ -14,6 +14,7 @@ def cpu_intf_filter(ctx, args, incomplete):
             ('ip_reass_config', ''),
             ('deduplication_enable', ''),
             ('deduplication_config', ''),
+            ('stat','')
             ]
     return [c for c in comp if c[0].startswith(incomplete)]
 
@@ -101,6 +102,17 @@ sf_intf_expect = {
     ]
 }
 
+except_stat = [
+        "drop_packets",
+        "in_octets",
+        "in_packets",
+        "out_octets",
+        "out_packets",
+        "packet_type_packets",
+        "rx_miss_packets",
+        "tx_error_packets",
+    ],
+
 
 @cli.command()
 @argument("op", type=Choice(['show','clean','set','enable','disable']),default='show')
@@ -116,15 +128,26 @@ def intf(op, intf, device,filter=None, value=None, value2=None):
         exit()
     if op == 'show':
         for cpu in hp.cpus:
-            data = []
-            for idx in restid:
-                surl = 'interfaces/config/{0}'.format(idx)
-                tasks = [hp.loop.create_task(cpu.get(surl))]
-                wait_task = wait(tasks)
-                hp.loop.run_until_complete(wait_task)
-                data += hp.data_from_tasks(tasks)
-            tb = gen_table_sw(data, sf_intf_expect, cpu.addr, filter=filter)
-            sprint(tb)
+            if filter == 'stat':
+                data = []
+                for idx in restid:
+                    surl = 'interfaces/stat/{0}'.format(idx)
+                    tasks = [hp.loop.create_task(cpu.get(surl))]
+                    wait_task = wait(tasks)
+                    hp.loop.run_until_complete(wait_task)
+                    data += hp.data_from_tasks(tasks)
+                from json import dumps
+                sprint(dumps(data,indent=2))
+            else:
+                data = []
+                for idx in restid:
+                    surl = 'interfaces/config/{0}'.format(idx)
+                    tasks = [hp.loop.create_task(cpu.get(surl))]
+                    wait_task = wait(tasks)
+                    hp.loop.run_until_complete(wait_task)
+                    data += hp.data_from_tasks(tasks)
+                tb = gen_table_sw(data, sf_intf_expect, cpu.addr, filter=filter)
+                sprint(tb)
     elif op == 'clean':
         data = hp.cpu_patch('interfaces/config', general_clean_data)
         sprint(gen_table(data, tab="code"))

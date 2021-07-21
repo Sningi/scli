@@ -6,7 +6,7 @@ scli syscfg reset cpu
 
 # HUAWEI
 # scli acl create 200 packet_type n2_cdr
-# scli acl create 101 imsi 460072011500023
+scli acl create 101 imsi 460072011500023
 # scli acl create 102 msisdn 8617201150204 
 # scli acl create 103 imei 
 
@@ -34,9 +34,9 @@ scli action create 1 forward G2
 #scli acl create 145 tuple4 -s 202.69.206.55
 #scli intf-cpu set G1 ingress_config tuple_mode 2
 
-scli acl create 300 packet_type gtpu_bear
+# scli acl create 300 packet_type gtpu_bear
 
 scli acl sync
-scli intf set G1 ingress_config rule_to_action {300:1}
+scli intf set G1 ingress_config rule_to_action {101:1}
 # scli intf-cpu set G1 ingress_config rule_to_action {145:1}
 #scli intf-cpu set G1 ingress_config default_action 1
