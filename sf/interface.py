@@ -149,7 +149,13 @@ def intf(op, intf, device,filter=None, value=None, value2=None):
                 tb = gen_table_sw(data, sf_intf_expect, cpu.addr, filter=filter)
                 sprint(tb)
     elif op == 'clean':
-        data = hp.cpu_patch('interfaces/config', general_clean_data)
+        if filter=='stat':
+            data =[]
+            for idx in restid:
+                surl = 'interfaces/stat/{0}'.format(idx)
+                data += hp.cpu_patch(surl, general_clean_data)
+        else:
+            data = hp.cpu_patch('interfaces/config', general_clean_data)
         sprint(gen_table(data, tab="code"))
     elif op == "set":
         op_data = []

@@ -1,4 +1,5 @@
 scli syscfg reset cpu
+scli sctp-cfg enable s1ap_decode
 
 # scli acl create 100 packet_type n2_cdr
 scli acl create 200 packet_type s1_cdr

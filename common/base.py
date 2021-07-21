@@ -17,6 +17,7 @@ def get_args(args):
 @option('--cpu','-c', type=STRING, required=False)
 @group()
 def cli(sw, cpu):
-    set_hp(sw=sw,cpu=cpu)
+    if sw or cpu:
+        set_hp(sw=sw,cpu=cpu)
     """  base --> module --> scli  """
     pass
